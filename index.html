@@ -107,11 +107,11 @@
         .date-controls label { font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase;}
         
         .home-kpi-container { 
-            display: flex; gap: 15px; flex-wrap: wrap; width: 100%; padding-bottom: 15px;
+            display: flex; gap: 15px; flex-wrap: nowrap; width: 100%; overflow-x: auto; padding-bottom: 15px;
         }
         
         .home-master-tile { 
-            flex: 1; min-width: 320px; padding: 20px; cursor: default; border-top: 4px solid var(--gold) !important; 
+            flex: 1; min-width: 360px; padding: 20px; cursor: default; border-top: 4px solid var(--gold) !important; 
         }
         .home-master-tile:hover { transform: none; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
         .home-master-tile .kpi-name { font-size: 18px; margin-bottom: 15px; }
@@ -144,6 +144,8 @@
         .view-title { font-size: 24px; margin-bottom: 15px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
         .controls-group button { padding: 8px 15px; margin-left: 10px; cursor: pointer; background: #666; color: #fff; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
         .controls-group button:hover { background: #444; }
+        .btn-export { background: #5cb85c !important; } 
+        .btn-export:hover { background: #449d44 !important; }
         
         .drilldown-container { background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 20px; margin-top: 10px; }
         details { margin-bottom: 10px; }
@@ -179,7 +181,7 @@
         .badge-ecd-missing { background-color: #fff3cd; color: #d9534f; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; border: 1px solid #d9534f; white-space: nowrap; display: inline-block; }
 
         /* ERS Specific Styles */
-        .side-by-side-container { display: flex; gap: 20px; align-items: stretch; margin-bottom: 24px; }
+        .side-by-side-container { display: flex; gap: 20px; align-items: stretch; margin-bottom: 30px; }
         .side-table { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; padding: 15px; min-width: 0; background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
         .side-table .table-wrapper { flex: 1; overflow-y: auto; margin-top: 0; }
         .outlier-red { color: var(--urgent-red); font-weight: 700; background-color: #fee2e2; padding: 2px 6px; border-radius: 4px; }
@@ -355,7 +357,7 @@
                     </select>
                 </div>
                 <div class="controls-group">
-                    <button class="btn-action" onclick="exportDrilldownToExcel()">Export to XLSX</button>
+                    <button class="btn-action btn-export" onclick="exportDrilldownToExcel()">Export to XLSX</button>
                     <button onclick="toggleAllDetails(true)">Expand All</button>
                     <button onclick="toggleAllDetails(false)">Collapse All</button>
                     <button id="dynamic-back-btn">&larr; Back</button>
@@ -373,7 +375,7 @@
 
         <div id="ers-detail-view" class="view-section">
             <div class="view-title">
-                <span id="ers-name-title" style="font-weight: 700;">ERS Coordinator Details</span>
+                <span id="ers-name-title" style="font-weight: 700;">Overall ERS Details</span>
                 <div class="date-controls">
                     <label>Date Range:</label>
                     <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
@@ -384,12 +386,12 @@
                         <option value="ALL">All Customers</option>
                     </select>
 
-                    <button class="btn-action" style="margin-left: 15px;" onclick="exportErsDrilldownToExcel()">Export to XLSX</button>
+                    <button class="btn-action btn-export" style="margin-left: 15px;" onclick="exportErsDrilldownToExcel()">Export to XLSX</button>
                     <button id="ers-dynamic-back-btn" class="btn-action" style="margin-left: 10px; background:#666;">&larr; Back</button>
                 </div>
             </div>
 
-            <div id="ers-master-kpis"></div>
+            <div id="ers-master-kpis" style="margin-bottom: 30px;"></div>
 
             <div class="side-by-side-container">
                 <div class="side-table">
@@ -433,7 +435,7 @@
             </div>
 
             <div class="drilldown-container" style="margin-bottom: 24px;">
-                <details open>
+                <details>
                     <summary style="font-size: 16px; color: var(--gold); margin-bottom: 0;">Ticket Details</summary>
                     <div class="table-wrapper" style="margin-top: 15px;">
                         <table>
@@ -532,13 +534,31 @@
             return '';
         }
 
+        // --- NORMALIZING CUSTOMER NAMES ---
+        function getCustKey(rawStr) {
+            let c = (rawStr || '').toUpperCase();
+            if (c.includes('FERGUSON')) return 'Ferguson';
+            if (c.includes('AMERIT FLEET SOLUTIONS')) return 'Amerit Fleet Solutions';
+            if (c.includes('BRINKS')) return 'Brinks';
+            if (c.includes('US FOODS')) return 'US Foods';
+            if (c.includes('FRONTIER') || c.includes('CUSTOM TRUCK')) return 'Frontier';
+            if (c.includes('COLONY HARDWARE')) return 'Colony Hardware';
+            if (c.includes('SUKUT CONSTRUCTION')) return 'Sukut Construction';
+            if (c.includes('GARDA')) return 'Garda';
+            return rawStr.split('-')[0].trim() || 'Unknown Customer';
+        }
+
         // --- EXPORT LOGIC ---
         function exportDrilldownToExcel() {
             if (!currentOwnerView || processedData.length === 0) return;
-            let ownerDataAll = processedData.filter(ro => ro.owner === currentOwnerView);
+            
+            let ownerDataAll = processedData;
+            if (currentOwnerView === 'ALL_PM') ownerDataAll = processedData.filter(ro => pmOwners.includes(ro.owner));
+            else if (currentOwnerView === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => vendedOwners.includes(ro.owner));
+            else ownerDataAll = processedData.filter(ro => ro.owner === currentOwnerView);
             
             if (currentCustomerFilter !== 'ALL') {
-                ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+                ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
             }
 
             let targetData = ownerDataAll.filter(ro => ro.isOpen);
@@ -551,7 +571,7 @@
 
             const excelRows = targetData.map(ro => ({
                 "AFS RO #": ro.roNum, "Unit No": ro.unitNo, "Priority": ro.priority,
-                "OOS Status": (ro.customer.toUpperCase().includes('GARDA') && ro.isOOS) ? "OOS" : "",
+                "OOS Status": (ro.custKey === 'Garda' && ro.isOOS) ? "OOS" : "",
                 "Total Unit ROs": ro.roCount, "Status": ro.status, "ECD": ro.ecdFormatted,
                 "Task / VMRS": ro.vmrs, "Customer Group": ro.drillTopLevel, "Subregion": ro.subregion, "Branch": ro.branch
             }));
@@ -734,6 +754,13 @@
             return dt;
         }
 
+        function formatDate(dt) { return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`; }
+        function formatTime(dt) { 
+            let h = dt.getHours(), m = String(dt.getMinutes()).padStart(2, '0');
+            let ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12; h = h ? h : 12;
+            return `${h}:${m} ${ampm}`;
+        }
         function formatDateTimeShort(dt) {
             if(!dt) return 'N/A';
             let m = dt.getMonth() + 1; let d = dt.getDate();
@@ -750,7 +777,8 @@
                 finalOwner = ownerMap[rawOwner.toLowerCase().trim()].name;
             }
             
-            let customer = getCol(row, ['Customer', 'Customer Name']);
+            let rawCustomer = getCol(row, ['Customer', 'Customer Name']);
+            let custKey = getCustKey(rawCustomer);
             let priorityStr = getCol(row, ['OSC - Priority', 'Priority', 'Call Type']).toUpperCase();
             
             if (priorityStr !== 'ERS') return null;
@@ -766,7 +794,8 @@
 
             let metric = {
                 coordinator: finalOwner,
-                customer: customer,
+                customer: rawCustomer,
+                custKey: custKey,
                 priority: priorityStr,
                 intakeDateRaw: inDate,
                 errIntake: false, errETA: false, errArrival: false, errResolution: false, isGood: false
@@ -794,6 +823,8 @@
             if (!p.ampm && h === 24) h = 0;
             dt.setHours(h, m, 0, 0);
             intakeDT = dt;
+
+            metric.intakeDT = intakeDT;
 
             function processEvent(dateStr, timeStr, minDT, maxDT) {
                 if(!minDT) return { dt: null, hasError: true };
@@ -851,7 +882,8 @@
             row.completeDT = resComp.dt;
             row.finalOwner = finalOwner;
             row.priorityStr = priorityStr;
-            row.customerStr = customer;
+            row.customerStr = rawCustomer;
+            row.custKey = custKey;
             row.ticketId = ticketId;
 
             let downtimeHours = -1;
@@ -968,43 +1000,55 @@
                 }
 
                 let loc = unitToLocation[unit] || { region: 'Unknown Region', subregion: 'Unknown Subregion', branch: 'Unknown Branch' };
-                let drillTopLevel = 'Uncategorized';
-                let fallbackLoc = { region: 'Unknown Region', subregion: 'Unknown Subregion', branch: customer.trim() };
+                let custKey = getCustKey(customer);
                 
+                let locPart = customer;
                 if(customer.includes('-')) {
-                    let locPart = customer.substring(customer.lastIndexOf('-') + 1).trim(); 
-                    let stateName = 'Unknown State'; let cityName = 'Unknown City';
-                    if(locPart.includes(',')) {
-                        let splitComma = locPart.split(','); cityName = splitComma[0].trim();
-                        let stateZip = splitComma[1].trim().split(' ').filter(s => s.trim() !== ''); 
-                        if(stateZip.length > 0) stateName = stateZip[0].trim();
+                    locPart = customer.substring(customer.indexOf('-') + 1).trim(); 
+                }
+                
+                let stateName = 'Unknown State';
+                let cityName = 'Unknown City';
+
+                if (locPart.includes(',')) {
+                    let splitComma = locPart.split(','); 
+                    cityName = splitComma[0].trim();
+                    let afterComma = splitComma[1].trim().split(' ').filter(s => s.trim() !== ''); 
+                    if(afterComma.length > 0) stateName = afterComma[0].trim();
+                } else {
+                    let spaceSplit = locPart.split(' ').filter(s => s.trim() !== '');
+                    if (spaceSplit.length === 1 && spaceSplit[0].length === 2) {
+                        stateName = spaceSplit[0].toUpperCase();
+                        cityName = 'Unknown City';
+                    } else if (spaceSplit.length >= 2) {
+                        let last = spaceSplit[spaceSplit.length - 1].trim();
+                        let secLast = spaceSplit[spaceSplit.length - 2].trim();
+                        if (last.length === 2 && !/\d/.test(last)) {
+                            stateName = last.toUpperCase();
+                            cityName = spaceSplit.slice(0, spaceSplit.length - 1).join(' ');
+                        } else if (secLast.length === 2 && !/\d/.test(secLast)) {
+                            stateName = secLast.toUpperCase();
+                            cityName = spaceSplit.slice(0, spaceSplit.length - 2).join(' ');
+                        } else {
+                            cityName = locPart;
+                        }
                     } else {
-                        let parts = locPart.split(' ').filter(s => s.trim() !== '');
-                        if (parts.length >= 2) { let stateIdx = parts.length - 2; stateName = parts[stateIdx].trim(); cityName = parts.slice(0, stateIdx).join(' ').trim(); }
-                        else cityName = locPart;
+                        cityName = locPart;
                     }
-                    fallbackLoc = { region: stateName, subregion: cityName, branch: customer.trim() };
                 }
 
-                let custUpper = customer.toUpperCase();
-                let custKey = 'Unknown Customer';
-                if(custUpper.includes('FERGUSON')) { loc = fallbackLoc; custKey = 'Ferguson'; drillTopLevel = 'Ferguson ' + loc.region; }
-                else if(custUpper.includes('AMERIT FLEET SOLUTIONS')) { loc = fallbackLoc; custKey = 'Amerit Fleet Solutions'; drillTopLevel = 'Amerit ' + loc.region; }
-                else if(custUpper.includes('BRINKS')) { loc = fallbackLoc; custKey = 'Brinks'; drillTopLevel = 'Brinks ' + loc.region; }
-                else if(custUpper.includes('US FOODS')) { loc = fallbackLoc; custKey = 'US Foods'; drillTopLevel = 'US Foods ' + loc.region; }
-                else if(custUpper.includes('FRONTIER')) { loc = fallbackLoc; custKey = 'Frontier'; drillTopLevel = 'Frontier ' + loc.region; }
-                else if(custUpper.includes('COLONY HARDWARE')) { loc = fallbackLoc; custKey = 'Colony Hardware'; drillTopLevel = 'Colony Hardware ' + loc.region; }
-                else if(custUpper.includes('SUKUT CONSTRUCTION')) { loc = fallbackLoc; custKey = 'Sukut Construction'; drillTopLevel = 'Sukut ' + loc.region; }
-                else if(custUpper.includes('GARDA')) {
+                let fallbackLoc = { region: stateName, subregion: cityName, branch: customer.trim() };
+                
+                if(custKey === 'Ferguson' || custKey === 'Amerit Fleet Solutions' || custKey === 'Brinks' || custKey === 'US Foods' || custKey === 'Frontier' || custKey === 'Colony Hardware' || custKey === 'Sukut Construction') { 
+                    loc = fallbackLoc; 
+                } else if(custKey === 'Garda') {
                     if(loc.region === 'Unknown Region' || loc.region === 'Unspecified Region') loc = fallbackLoc;
-                    custKey = 'Garda';
-                    drillTopLevel = 'Garda ' + loc.region;
                 } else {
                     if(loc.region === 'Unknown Region' || loc.region === 'Unspecified Region') loc = fallbackLoc;
-                    drillTopLevel = customer || 'Unknown Customer';
-                    custKey = customer;
                 }
-                allCustSet.add(custKey.toUpperCase());
+                
+                let drillTopLevel = custKey + (loc.region !== 'Unknown State' && loc.region !== 'Unknown Region' ? ' ' + loc.region : '');
+                allCustSet.add(custKey);
 
                 let isOOS = oosSet.has(unit); 
                 let isOpen = !excludedStatuses.includes(status.toUpperCase());
@@ -1048,18 +1092,19 @@
                     } else isCompletedKPI = false;
                 }
                 
-                return { roNum, customer, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, priority: priorityStr, priorityClass, ecdState, ecdFormatted, openedDT };
+                return { roNum, customer, custKey, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, priority: priorityStr, priorityClass, ecdState, ecdFormatted, openedDT };
             }).filter(ro => ro.roNum !== '');
 
             rawErsData = [];
             masterErsMetrics = [];
             let ersCustSet = new Set();
+
             if (ersTabRaw && ersTabRaw.length > 0) {
                 for (let i = 0; i < ersTabRaw.length; i++) {
                     let result = cleanErsRow(ersTabRaw[i], ownerMap);
                     if (result) {
                         masterErsMetrics.push(result.metric);
-                        if (result.metric.customer) ersCustSet.add(result.metric.customer.toUpperCase());
+                        if (result.metric.custKey) ersCustSet.add(result.metric.custKey);
                         if (result.cleaned) {
                             rawErsData.push(result.cleaned); 
                         }
@@ -1074,7 +1119,6 @@
                 sortedAllCust.forEach(c => {
                     let opt = document.createElement('option');
                     opt.value = c;
-                    // Capitalize nicely
                     opt.innerText = c.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
                     dd.appendChild(opt);
                 });
@@ -1237,7 +1281,7 @@
             globalChartInstances[chartId] = new Chart(canvas.getContext('2d'), {
                 type: 'doughnut',
                 data: { labels: ['On-Time', 'Late'], datasets: [{ data: chartData, backgroundColor: bgColors, borderWidth: 0 }] },
-                options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } }, elements: { center: { text: comp + '%' } } }
+                options: { maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } }, elements: { center: { text: comp + '%' } } }
             });
         }
 
@@ -1248,8 +1292,8 @@
             let aggErsData = rawErsData;
 
             if (currentCustomerFilter !== 'ALL') {
-                aggData = aggData.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
-                aggErsData = aggErsData.filter(ro => ro.customerStr.toUpperCase().includes(currentCustomerFilter));
+                aggData = aggData.filter(ro => ro.custKey === currentCustomerFilter);
+                aggErsData = aggErsData.filter(ro => ro.custKey === currentCustomerFilter);
             }
             
             let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
@@ -1274,9 +1318,11 @@
             let ersRoData = aggData.filter(ro => ersOwners.includes(ro.owner));
 
             const pmTile = document.createElement('div'); pmTile.className = 'kpi-tile home-master-tile'; pmTile.innerHTML = generateTileHTML('PM Dashboard', pmData, 'chart-pm');
+            pmTile.onclick = () => loadPersonDrilldown('ALL_PM', 'home-view');
             container.appendChild(pmTile);
             
             const vendedTile = document.createElement('div'); vendedTile.className = 'kpi-tile home-master-tile'; vendedTile.innerHTML = generateTileHTML('Vended Repair Dashboard', vendedData, 'chart-vended');
+            vendedTile.onclick = () => loadPersonDrilldown('ALL_VENDED', 'home-view');
             container.appendChild(vendedTile);
             
             const ersTile = document.createElement('div'); ersTile.className = 'kpi-tile home-master-tile'; 
@@ -1295,11 +1341,8 @@
                 let ownerDataAll = processedData.filter(ro => ro.owner === owner);
                 
                 if (currentCustomerFilter !== 'ALL') {
-                    ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+                    ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
                 }
-
-                // Date filtering ONLY for Home and ERS. 
-                // Removed from PM and Vended inside the HTML view itself.
 
                 let targetData = ownerDataAll.filter(ro => ro.isOpen);
                 if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
@@ -1324,8 +1367,8 @@
                 let data = rawErsData.filter(d => d.finalOwner.toLowerCase().trim() === owner.toLowerCase().trim());
 
                 if (currentErsCustomerFilter !== 'ALL') {
-                    ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentErsCustomerFilter));
-                    data = data.filter(d => d.customerStr.toUpperCase().includes(currentErsCustomerFilter));
+                    ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentErsCustomerFilter);
+                    data = data.filter(d => d.custKey === currentErsCustomerFilter);
                 }
 
                 let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
@@ -1360,10 +1403,12 @@
             let ownerDataAll = processedData;
             if (owner !== 'ALL') {
                 ownerDataAll = processedData.filter(ro => ro.owner === owner);
+            } else {
+                ownerDataAll = processedData.filter(ro => ersOwners.includes(ro.owner));
             }
 
             if (currentErsCustomerFilter !== 'ALL') {
-                ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentErsCustomerFilter));
+                ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentErsCustomerFilter);
             }
 
             let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
@@ -1408,7 +1453,7 @@
                             else if (ro.ecdState === 'red') ecdCell = `<span class="ecd-red">${ro.ecdFormatted}</span>`;
                             else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
                             
-                            let isGarda = ro.customer.toUpperCase().includes('GARDA');
+                            let isGarda = ro.custKey === 'Garda';
                             let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
 
                             tableHTML += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
@@ -1427,6 +1472,10 @@
             document.querySelectorAll('#ers-ro-drilldown-body details').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); });
         }
 
+        function toggleErsTicketDetails(expand) {
+            document.querySelectorAll('#ers-ticket-drilldown-toggle').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); });
+        }
+
         function loadErsDrilldown(owner, parentViewId) {
             navigate('ers-detail-view', null, true); 
             currentOwnerView = owner; currentParentView = parentViewId;
@@ -1441,12 +1490,14 @@
                 fMetrics = fMetrics.filter(m => m.coordinator.toLowerCase().trim() === owner.toLowerCase().trim());
                 fData = fData.filter(d => d.finalOwner.toLowerCase().trim() === owner.toLowerCase().trim());
                 fRoData = fRoData.filter(r => r.owner.toLowerCase().trim() === owner.toLowerCase().trim());
+            } else {
+                fRoData = fRoData.filter(r => ersOwners.includes(r.owner));
             }
 
             if (currentErsCustomerFilter !== 'ALL') {
-                fMetrics = fMetrics.filter(m => m.customer.toUpperCase().includes(currentErsCustomerFilter));
-                fData = fData.filter(d => d.customerStr.toUpperCase().includes(currentErsCustomerFilter));
-                fRoData = fRoData.filter(r => r.customer.toUpperCase().includes(currentErsCustomerFilter));
+                fMetrics = fMetrics.filter(m => m.custKey === currentErsCustomerFilter);
+                fData = fData.filter(d => d.custKey === currentErsCustomerFilter);
+                fRoData = fRoData.filter(r => r.custKey === currentErsCustomerFilter);
             }
 
             let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
@@ -1459,10 +1510,9 @@
                     return true;
                 });
                 fMetrics = fMetrics.filter(m => {
-                    let idt = parseDateStringLocal(m.intakeDateRaw);
-                    if (!idt) return false;
-                    if (sDate && idt < sDate) return false;
-                    if (eDate && idt > eDate) return false;
+                    if (!m.intakeDT) return false;
+                    if (sDate && m.intakeDT < sDate) return false;
+                    if (eDate && m.intakeDT > eDate) return false;
                     return true;
                 });
                 fRoData = fRoData.filter(ro => {
@@ -1692,68 +1742,6 @@
             });
         }
 
-        // --- Standard Drilldown Details ---
-        function loadPersonDrilldown(owner, parentViewId) {
-            navigate('person-view', null, true); 
-            currentOwnerView = owner; currentParentView = parentViewId;
-            document.getElementById('person-name-title').innerText = `RO Hierarchy: ${owner}`;
-            document.getElementById('dynamic-back-btn').onclick = () => navigate(parentViewId, null, true);
-            const container = document.getElementById('drilldown-body'); container.innerHTML = '';
-            
-            let ownerDataAll = processedData.filter(ro => ro.owner === owner);
-            
-            if (currentCustomerFilter !== 'ALL') {
-                ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
-            }
-
-            let targetData = ownerDataAll.filter(ro => ro.isOpen);
-            if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
-            else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
-            else if(currentFilter === 'LOW') targetData = targetData.filter(ro => ro.priority === 'LOW');
-            else if(currentFilter === 'OOS') targetData = targetData.filter(ro => ro.isOOS);
-            
-            if(targetData.length === 0) { container.innerHTML = `<p>No records for ${owner} under the current filters.</p>`; return; }
-            
-            let hierarchy = {};
-            targetData.forEach(ro => {
-                if(!hierarchy[ro.drillTopLevel]) hierarchy[ro.drillTopLevel] = {};
-                if(!hierarchy[ro.drillTopLevel][ro.subregion]) hierarchy[ro.drillTopLevel][ro.subregion] = {};
-                if(!hierarchy[ro.drillTopLevel][ro.subregion][ro.branch]) hierarchy[ro.drillTopLevel][ro.subregion][ro.branch] = [];
-                hierarchy[ro.drillTopLevel][ro.subregion][ro.branch].push(ro);
-            });
-            for(let topLvl in hierarchy) {
-                const regDetails = document.createElement('details'); regDetails.innerHTML = `<summary>${topLvl}</summary>`; 
-                for(let sub in hierarchy[topLvl]) {
-                    const subDetails = document.createElement('details'); subDetails.innerHTML = `<summary>${sub}</summary>`;
-                    for(let branch in hierarchy[topLvl][sub]) {
-                        const branchDetails = document.createElement('details');
-                        let branchROs = hierarchy[topLvl][sub][branch];
-                        branchROs.sort((a,b) => { 
-                            const ord = {'URGENT':1,'MEDIUM':2,'LOW':3};
-                            if(ord[a.priority] !== ord[b.priority]) return ord[a.priority] - ord[b.priority];
-                            return (b.isOOS - a.isOOS);
-                        });
-                        branchDetails.innerHTML = `<summary>${branch} (${branchROs.length} ROs)</summary>`;
-                        let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:12%;"><col style="width:10%;"><col style="width:8%;"><col style="width:8%;"><col style="width:6%;"><col style="width:14%;"><col style="width:10%;"><col style="width:32%;"></colgroup><thead><tr><th>AFS RO #</th><th>Unit No</th><th>Priority</th><th>OOS Status</th><th>Total Unit ROs</th><th>Status</th><th>ECD</th><th>Task / VMRS</th></tr></thead><tbody>`;
-                        branchROs.forEach(ro => {
-                            let ecdCell = '';
-                            if (ro.ecdState === 'missing') ecdCell = `<span class="badge-ecd-missing">${ro.ecdFormatted}</span>`;
-                            else if (ro.ecdState === 'red') ecdCell = `<span class="ecd-red">${ro.ecdFormatted}</span>`;
-                            else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
-                            
-                            let isGarda = ro.customer.toUpperCase().includes('GARDA');
-                            let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
-
-                            tableHTML += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
-                        });
-                        tableHTML += `</tbody></table></div>`; branchDetails.innerHTML += tableHTML; subDetails.appendChild(branchDetails);
-                    }
-                    regDetails.appendChild(subDetails);
-                }
-                container.appendChild(regDetails);
-            }
-        }
-
         function toggleAllDetails(expand) { document.querySelectorAll('#drilldown-body details').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); }); }
 
         function handleSearch() {
@@ -1773,7 +1761,7 @@
                         else if (ro.ecdState === 'red') ecdCell = `<span class="ecd-red">${ro.ecdFormatted}</span>`;
                         else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
 
-                        let isGarda = ro.customer.toUpperCase().includes('GARDA');
+                        let isGarda = ro.custKey === 'Garda';
                         let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
 
                         searchHtml += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.owner}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
