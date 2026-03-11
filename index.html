@@ -59,13 +59,16 @@
         
         .btn-action { background-color: var(--gold); color: #fff; padding: 10px 20px; border-radius: 4px; font-weight: bold; transition: 0.2s; border: none; cursor: pointer; font-size: 13px;}
         .btn-action:hover { background-color: var(--gold-hover); }
+        
+        .btn-green { background-color: #5cb85c; color: #fff; padding: 8px 15px; border-radius: 4px; font-weight: bold; transition: 0.2s; border: none; cursor: pointer; font-size: 13px; }
+        .btn-green:hover { background-color: #4cae4c; }
 
         /* Vendor Maps Dropdown Styling */
         .dropdown { position: relative; display: inline-block; }
         .dropdown-content { 
-            display: none; position: absolute; right: 0; background-color: #fff; 
+            display: none; position: absolute; right: 0; top: 100%; background-color: #fff; 
             min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.15); 
-            z-index: 20; border-radius: 4px; overflow: hidden; border: 1px solid var(--border); margin-top: 5px;
+            z-index: 20; border-radius: 4px; overflow: hidden; border: 1px solid var(--border);
         }
         .dropdown-content a { color: #333; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; font-weight: 600; border-bottom: 1px solid #f4f6f9; }
         .dropdown-content a:hover { background-color: #f9f9f9; color: var(--gold); }
@@ -106,14 +109,10 @@
         .date-controls { display: flex; gap: 10px; align-items: center; }
         .date-controls label { font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase;}
         
-        .home-kpi-container { 
-            display: flex; gap: 15px; flex-wrap: nowrap; width: 100%; overflow-x: auto; padding-bottom: 15px;
-        }
+        .home-kpi-container { display: flex; gap: 15px; flex-wrap: nowrap; width: 100%; overflow-x: auto; padding-bottom: 15px; }
         
-        .home-master-tile { 
-            flex: 1; min-width: 360px; padding: 20px; cursor: default; border-top: 4px solid var(--gold) !important; 
-        }
-        .home-master-tile:hover { transform: none; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .home-master-tile { flex: 1; min-width: 360px; padding: 20px; cursor: pointer; border-top: 4px solid #333 !important; }
+        .home-master-tile:hover { transform: none; box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-top-color: var(--gold) !important; }
         .home-master-tile .kpi-name { font-size: 18px; margin-bottom: 15px; }
 
         /* KPI Layout - PM/Vended Master Highlight Boxes (SHRUNK) */
@@ -124,7 +123,6 @@
         .highlight-box .num { font-size: 26px; font-weight: 800; color: var(--gold); line-height: 1; text-align: right; }
         .highlight-box.urgent-box .num { color: var(--urgent-red); }
 
-        /* SHRUNK CHART BOX */
         .chart-box { width: 50px; height: 50px; flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: center; margin: auto 5px; }
 
         /* KPI Layout - Bottom Row */
@@ -135,7 +133,6 @@
         .stat-box .num.urgent { color: var(--urgent-red); }
         .stat-box .num.good { color: var(--low-green); }
 
-        /* Master Dashboard Inline Stats */
         .home-master-tile .stat-box { padding: 10px 5px; }
         .home-master-tile .stat-box .title { font-size: 11px; }
         .home-master-tile .stat-box .num { font-size: 18px; }
@@ -144,8 +141,6 @@
         .view-title { font-size: 24px; margin-bottom: 15px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
         .controls-group button { padding: 8px 15px; margin-left: 10px; cursor: pointer; background: #666; color: #fff; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
         .controls-group button:hover { background: #444; }
-        .btn-export { background: #5cb85c !important; } 
-        .btn-export:hover { background: #449d44 !important; }
         
         .drilldown-container { background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 20px; margin-top: 10px; }
         details { margin-bottom: 10px; }
@@ -181,7 +176,7 @@
         .badge-ecd-missing { background-color: #fff3cd; color: #d9534f; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; border: 1px solid #d9534f; white-space: nowrap; display: inline-block; }
 
         /* ERS Specific Styles */
-        .side-by-side-container { display: flex; gap: 20px; align-items: stretch; margin-bottom: 30px; }
+        .side-by-side-container { display: flex; gap: 20px; align-items: stretch; margin-bottom: 24px; }
         .side-table { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; padding: 15px; min-width: 0; background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
         .side-table .table-wrapper { flex: 1; overflow-y: auto; margin-top: 0; }
         .outlier-red { color: var(--urgent-red); font-weight: 700; background-color: #fee2e2; padding: 2px 6px; border-radius: 4px; }
@@ -291,7 +286,7 @@
                         
                         <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)" style="margin-left: 10px;">
                             <option value="ALL">All Customers</option>
-                            </select>
+                        </select>
                     </div>
                 </div>
                 <div class="home-kpi-container" id="home-kpi-container"></div>
@@ -357,7 +352,7 @@
                     </select>
                 </div>
                 <div class="controls-group">
-                    <button class="btn-action btn-export" onclick="exportDrilldownToExcel()">Export to XLSX</button>
+                    <button class="btn-green" onclick="exportDrilldownToExcel()">Export to XLSX</button>
                     <button onclick="toggleAllDetails(true)">Expand All</button>
                     <button onclick="toggleAllDetails(false)">Collapse All</button>
                     <button id="dynamic-back-btn">&larr; Back</button>
@@ -386,7 +381,7 @@
                         <option value="ALL">All Customers</option>
                     </select>
 
-                    <button class="btn-action btn-export" style="margin-left: 15px;" onclick="exportErsDrilldownToExcel()">Export to XLSX</button>
+                    <button class="btn-green" style="margin-left: 15px;" onclick="exportErsDrilldownToExcel()">Export to XLSX</button>
                     <button id="ers-dynamic-back-btn" class="btn-action" style="margin-left: 10px; background:#666;">&larr; Back</button>
                 </div>
             </div>
@@ -636,12 +631,13 @@
         }
 
         function triggerViewUpdate() {
-            if(lastActiveView === 'home-view') renderHomeDashboard();
-            else if(lastActiveView === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
-            else if(lastActiveView === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
-            else if(lastActiveView === 'ers-view') renderErsTiles();
-            else if(lastActiveView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView); }
-            else if(lastActiveView === 'ers-detail-view') { if(currentOwnerView) loadErsDrilldown(currentOwnerView, currentParentView); }
+            let activeView = document.querySelector('.view-section.active').id;
+            if(activeView === 'home-view') renderHomeDashboard();
+            else if(activeView === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
+            else if(activeView === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
+            else if(activeView === 'ers-view') renderErsTiles();
+            else if(activeView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView); }
+            else if(activeView === 'ers-detail-view') { if(currentOwnerView) loadErsDrilldown(currentOwnerView, currentParentView); }
         }
 
         // --- AUTO-FETCH LOGIC ---
@@ -754,13 +750,6 @@
             return dt;
         }
 
-        function formatDate(dt) { return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`; }
-        function formatTime(dt) { 
-            let h = dt.getHours(), m = String(dt.getMinutes()).padStart(2, '0');
-            let ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12; h = h ? h : 12;
-            return `${h}:${m} ${ampm}`;
-        }
         function formatDateTimeShort(dt) {
             if(!dt) return 'N/A';
             let m = dt.getMonth() + 1; let d = dt.getDate();
@@ -773,9 +762,12 @@
         function cleanErsRow(row, ownerMap) {
             let rawOwner = getCol(row, ['Assignee name', 'Coordinator', 'Created By']);
             let finalOwner = rawOwner;
-            if (rawOwner && ownerMap[rawOwner.toLowerCase().trim()]) {
-                finalOwner = ownerMap[rawOwner.toLowerCase().trim()].name;
-            }
+            let normOwner = (rawOwner || '').toLowerCase().trim();
+            
+            // FUZZY MATCH SAFETY NET FOR TAB 4 SPELLING DISCREPANCIES
+            if (normOwner.includes('sydney') || normOwner.includes('wooten')) finalOwner = 'Sydney Wooten';
+            else if (normOwner.includes('damian') || normOwner.includes('damien') || normOwner.includes('nicholson')) finalOwner = 'Damian Nicholson';
+            else if (ownerMap[normOwner]) finalOwner = ownerMap[normOwner].name;
             
             let rawCustomer = getCol(row, ['Customer', 'Customer Name']);
             let custKey = getCustKey(rawCustomer);
@@ -1112,7 +1104,6 @@
                 }
             }
 
-            // Dynamically populate general customer dropdowns
             let sortedAllCust = Array.from(allCustSet).sort();
             document.querySelectorAll('.customer-filter-select').forEach(dd => {
                 dd.innerHTML = '<option value="ALL">All Customers</option>';
@@ -1124,7 +1115,6 @@
                 });
             });
 
-            // Dynamically populate purely ERS customer dropdowns
             let sortedErsCust = Array.from(ersCustSet).sort();
             document.querySelectorAll('.ers-customer-filter-select').forEach(dd => {
                 dd.innerHTML = '<option value="ALL">All Customers</option>';
@@ -1201,7 +1191,6 @@
             return innerHtml;
         }
 
-        // --- NEW ERS HYBRID TILE (Shows Orders & Tickets) ---
         function generateErsTileHTML(name, roDataArray, ersDataArray) {
             let filteredOpen = roDataArray.filter(ro => ro.isOpen).length;
 
@@ -1281,7 +1270,7 @@
             globalChartInstances[chartId] = new Chart(canvas.getContext('2d'), {
                 type: 'doughnut',
                 data: { labels: ['On-Time', 'Late'], datasets: [{ data: chartData, backgroundColor: bgColors, borderWidth: 0 }] },
-                options: { maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } }, elements: { center: { text: comp + '%' } } }
+                options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } }, elements: { center: { text: comp + '%' } } }
             });
         }
 
@@ -1479,7 +1468,8 @@
         function loadErsDrilldown(owner, parentViewId) {
             navigate('ers-detail-view', null, true); 
             currentOwnerView = owner; currentParentView = parentViewId;
-            document.getElementById('ers-name-title').innerText = owner === 'ALL' ? 'Overall ERS Details' : `ERS Coordinator: ${owner}`;
+            let titleText = owner === 'ALL' ? 'Overall ERS Details' : `ERS Coordinator: ${owner}`;
+            document.getElementById('ers-name-title').innerText = titleText;
             document.getElementById('ers-dynamic-back-btn').onclick = () => navigate(parentViewId, null, true);
             
             let fMetrics = masterErsMetrics;
