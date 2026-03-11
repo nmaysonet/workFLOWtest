@@ -117,13 +117,13 @@
         .kpi-tile:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
         .kpi-name { font-size: 20px; font-weight: 800; margin-bottom: 15px; color: #333; }
         
-        /* Master Dashboard Container & Tiles */
+        /* Master Dashboard Container */
         .home-dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
         .filter-select { padding: 8px 15px; border-radius: 4px; border: 1px solid #ccc; font-weight: 700; font-size: 14px; }
         
         .home-kpi-container { 
             display: flex; 
-            gap: 30px; 
+            gap: 15px;  /* Reduced gap to pull tiles closer together */
             flex-wrap: nowrap; 
             width: 100%; 
             overflow-x: auto; 
@@ -132,30 +132,33 @@
         
         .home-master-tile { 
             flex: 1; 
-            min-width: 550px; 
-            padding: 30px; 
+            min-width: 320px; /* Scaled down slightly to fit on 1 screen seamlessly */
+            padding: 25px 20px; 
             cursor: default; 
             border-top: 4px solid #333 !important; 
         }
         .home-master-tile:hover { transform: none; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-        .home-master-tile .kpi-name { font-size: 26px; margin-bottom: 20px; }
-        
-        .flex-tile { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
-        .flex-tile-left { flex: 1; min-width: 0; }
-        .flex-tile-right { width: 180px; height: 180px; flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: center; }
+        .home-master-tile .kpi-name { font-size: 22px; margin-bottom: 15px; }
 
-        /* Highlight Boxes */
-        .kpi-top-metrics { display: flex; gap: 15px; margin-bottom: 15px; }
-        .highlight-box { flex: 1; background: #fffaf0; border: 1px solid var(--gold); border-radius: 6px; padding: 15px 20px; display: flex; flex-direction: column; justify-content: center;}
+        /* Highlight Boxes (Top Row) */
+        .kpi-top-metrics { display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch; }
+        .highlight-box { flex: 1; background: #fffaf0; border: 1px solid var(--gold); border-radius: 6px; padding: 15px 10px; display: flex; flex-direction: column; justify-content: center;}
         .highlight-box.urgent-box { background: #fff0f0; border-color: var(--urgent-red); }
-        .highlight-box .title { font-size: 18px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 10px; text-align: left; }
-        .highlight-box .num { font-size: 46px; font-weight: 800; color: var(--gold); line-height: 1; text-align: right; }
+        .highlight-box .title { font-size: 16px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 5px; text-align: left; }
+        .highlight-box .num { font-size: 38px; font-weight: 800; color: var(--gold); line-height: 1; text-align: right; }
         .highlight-box.urgent-box .num { color: var(--urgent-red); }
 
-        .home-master-tile .highlight-box .title { font-size: 20px; }
-        .home-master-tile .highlight-box .num { font-size: 56px; }
+        /* Chart Box aligns perfectly next to Highlight Boxes */
+        .chart-box { 
+            flex: 1; 
+            min-height: 100px; 
+            position: relative; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
 
-        /* Advanced KPI Layout */
+        /* Advanced KPI Layout (Bottom Row) */
         .kpi-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; flex-grow: 1;}
         .stat-box { background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center; }
         .stat-box .title { font-size: 12px; color: #666; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
@@ -163,14 +166,15 @@
         .stat-box .num.urgent { color: var(--urgent-red); }
         .stat-box .num.good { color: var(--low-green); }
 
+        /* Master Dashboard Inline Stats (Spans full width now) */
         .home-master-tile .kpi-stats-grid { 
             grid-template-columns: repeat(4, 1fr); 
-            gap: 15px; 
-            padding-top: 20px;
+            gap: 10px; 
+            padding-top: 15px;
         }
-        .home-master-tile .stat-box { padding: 15px 10px; }
-        .home-master-tile .stat-box .title { font-size: 13px; }
-        .home-master-tile .stat-box .num { font-size: 26px; }
+        .home-master-tile .stat-box { padding: 12px 5px; }
+        .home-master-tile .stat-box .title { font-size: 11px; }
+        .home-master-tile .stat-box .num { font-size: 20px; }
 
         /* Data Table & Drilldown */
         .view-title { font-size: 24px; margin-bottom: 15px; color: #333; display: flex; justify-content: space-between; align-items: center;}
@@ -835,8 +839,47 @@
             let latePct = compCount > 0 ? Math.round((lateCount / compCount) * 100) : 0;
             let filterLabel = currentFilter === 'ALL' ? 'Open ROs' : `${currentFilter} ROs`;
 
-            let innerHtml = `<div class="kpi-name">${name}</div><div class="kpi-top-metrics"><div class="highlight-box"><div class="title">${filterLabel}</div><div class="num">${filteredOpen.length}</div></div><div class="highlight-box urgent-box"><div class="title">Urgent</div><div class="num">${urgentCount}</div></div></div><div class="kpi-stats-grid"><div class="stat-box"><div class="title">Completed</div><div class="num">${compCount}</div></div><div class="stat-box"><div class="title">On-Time</div><div class="num">${onTimeCount}</div></div><div class="stat-box"><div class="title">% Compliance</div><div class="num good">${compPct}%</div></div><div class="stat-box"><div class="title">% Late</div><div class="num urgent">${latePct}%</div></div></div>`;
-            if (chartId) return `<div class="flex-tile"><div class="flex-tile-left">${innerHtml}</div><div class="flex-tile-right"><canvas id="${chartId}" data-comp="${compPct}" data-late="${latePct}"></canvas></div></div>`;
+            let chartHTML = '';
+            if (chartId) {
+                chartHTML = `
+                    <div class="chart-box">
+                        <canvas id="${chartId}" data-comp="${compPct}" data-late="${latePct}"></canvas>
+                    </div>
+                `;
+            }
+
+            let innerHtml = `
+                <div class="kpi-name">${name}</div>
+                <div class="kpi-top-metrics">
+                    <div class="highlight-box">
+                        <div class="title">${filterLabel}</div>
+                        <div class="num">${filteredOpen.length}</div>
+                    </div>
+                    <div class="highlight-box urgent-box">
+                        <div class="title">Urgent</div>
+                        <div class="num">${urgentCount}</div>
+                    </div>
+                    ${chartHTML}
+                </div>
+                <div class="kpi-stats-grid">
+                    <div class="stat-box">
+                        <div class="title">Completed</div>
+                        <div class="num">${compCount}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="title">On-Time</div>
+                        <div class="num">${onTimeCount}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="title">% Compliance</div>
+                        <div class="num good">${compPct}%</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="title">% Late</div>
+                        <div class="num urgent">${latePct}%</div>
+                    </div>
+                </div>
+            `;
             return innerHtml;
         }
 
@@ -849,7 +892,7 @@
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                     var centerX = ((chart.chartArea.left + chart.chartArea.right) / 2);
                     var centerY = ((chart.chartArea.top + chart.chartArea.bottom) / 2);
-                    ctx.font = "bold 34px Raleway"; ctx.fillStyle = centerConfig.color || '#333';
+                    ctx.font = "bold 24px Raleway"; ctx.fillStyle = centerConfig.color || '#333';
                     ctx.fillText(txt, centerX, centerY);
                 }
             }
@@ -865,7 +908,7 @@
             globalChartInstances[chartId] = new Chart(canvas.getContext('2d'), {
                 type: 'doughnut',
                 data: { labels: ['On-Time', 'Late'], datasets: [{ data: chartData, backgroundColor: bgColors, borderWidth: 0 }] },
-                options: { cutout: '75%', plugins: { legend: { display: false } }, elements: { center: { text: comp + '%' } } }
+                options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } }, elements: { center: { text: comp + '%' } } }
             });
         }
 
@@ -896,19 +939,16 @@
             ownersList.forEach(owner => {
                 let ownerDataAll = processedData.filter(ro => ro.owner === owner);
                 
-                // Apply global customer filter to owner tiles
                 if (currentCustomerFilter !== 'ALL') {
                     ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
                 }
 
-                // Check open count based on current tab filter to decide if we hide the tile entirely
                 let targetData = ownerDataAll.filter(ro => ro.isOpen);
                 if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
                 else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
                 else if(currentFilter === 'LOW') targetData = targetData.filter(ro => ro.priority === 'LOW');
                 else if(currentFilter === 'OOS') targetData = targetData.filter(ro => ro.isOOS);
                 
-                // HIDE TILE IF 0 OPEN ROs MATCH FILTER
                 if (targetData.length === 0) return; 
 
                 const tile = document.createElement('div'); tile.className = 'kpi-tile';
@@ -919,7 +959,7 @@
         }
 
         function loadPersonDrilldown(owner, parentViewId) {
-            navigate('person-view', null, true); // Prevent resetting customer filter on drilldown
+            navigate('person-view', null, true); 
             currentOwnerView = owner; currentParentView = parentViewId;
             document.getElementById('person-name-title').innerText = `RO Hierarchy: ${owner}`;
             document.getElementById('dynamic-back-btn').onclick = () => navigate(parentViewId, null, true);
@@ -927,7 +967,6 @@
             
             let ownerDataAll = processedData.filter(ro => ro.owner === owner);
             
-            // Apply global customer filter to drilldown
             if (currentCustomerFilter !== 'ALL') {
                 ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
             }
@@ -1010,7 +1049,6 @@
         }
 
         function navigate(viewId, menuElement = null, preserveCustomerFilter = false) {
-            // Reset customer filter when switching sidebar tabs (unless preserving for drilldown/search)
             if (!preserveCustomerFilter) {
                 currentCustomerFilter = 'ALL';
                 document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = 'ALL'; });
