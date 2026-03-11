@@ -306,13 +306,9 @@
 
         <div id="pm-view" class="view-section">
             <div class="view-title">
-                <span style="font-weight: 700;">PM Queue</span>
-                <div class="date-controls">
-                    <label>Date Range:</label>
-                    <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
-                    <span style="font-weight:bold; color:#666;">-</span>
-                    <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
-                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)" style="margin-left: 10px;">
+                <div style="display:flex; align-items:center; gap: 20px;">
+                    <span style="font-weight: 700;">PM Queue</span>
+                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
                         <option value="ALL">All Customers</option>
                         <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
                         <option value="BRINKS">Brinks</option>
@@ -337,13 +333,9 @@
 
         <div id="vended-view" class="view-section">
             <div class="view-title">
-                <span style="font-weight: 700;">Vended Repair Queue</span>
-                <div class="date-controls">
-                    <label>Date Range:</label>
-                    <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
-                    <span style="font-weight:bold; color:#666;">-</span>
-                    <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
-                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)" style="margin-left: 10px;">
+                <div style="display:flex; align-items:center; gap: 20px;">
+                    <span style="font-weight: 700;">Vended Repair Queue</span>
+                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
                         <option value="ALL">All Customers</option>
                         <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
                         <option value="BRINKS">Brinks</option>
@@ -427,17 +419,24 @@
             <div class="view-title">
                 <div style="display:flex; align-items:center; gap: 20px;">
                     <span id="ers-name-title" style="font-weight: 700;">ERS Coordinator Details</span>
-                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
-                        <option value="ALL">All Customers</option>
-                        <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
-                        <option value="BRINKS">Brinks</option>
-                        <option value="COLONY HARDWARE">Colony Hardware</option>
-                        <option value="FERGUSON">Ferguson</option>
-                        <option value="FRONTIER">Frontier</option>
-                        <option value="GARDA">Garda</option>
-                        <option value="SUKUT CONSTRUCTION">Sukut Construction</option>
-                        <option value="US FOODS">US Foods</option>
-                    </select>
+                    <div class="date-controls">
+                        <label>Date Range:</label>
+                        <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
+                        <span style="font-weight:bold; color:#666;">-</span>
+                        <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
+                        
+                        <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)" style="margin-left: 10px;">
+                            <option value="ALL">All Customers</option>
+                            <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
+                            <option value="BRINKS">Brinks</option>
+                            <option value="COLONY HARDWARE">Colony Hardware</option>
+                            <option value="FERGUSON">Ferguson</option>
+                            <option value="FRONTIER">Frontier</option>
+                            <option value="GARDA">Garda</option>
+                            <option value="SUKUT CONSTRUCTION">Sukut Construction</option>
+                            <option value="US FOODS">US Foods</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="controls-group">
                     <button class="btn-export" onclick="exportErsDrilldownToExcel()">Export to XLSX</button>
@@ -1578,7 +1577,7 @@
             currentErsSummaryData.forEach(item => {
                 let sosClass = ''; let dtClass = '';
                 if (item.avgSOS >= 0) { if (item.avgSOS > 90) sosClass = 'status-red'; else if (item.avgSOS >= 85) sosClass = 'status-yellow'; else sosClass = 'status-green'; }
-                if (item.avgDT >= 0) { if (item.avgDT > 3.0) dtClass = 'status-red'; else if (item.avgDT >= 2.5) dtClass = 'status-yellow'; else dtClass = 'status-green'; }
+                if (item.avgDT >= 0) { if (item.avgDT >= 3.0) dtClass = 'status-red'; else if (item.avgDT >= 2.5) dtClass = 'status-yellow'; else dtClass = 'status-green'; }
                 
                 let fmtSos = item.avgSOS < 0 ? 'N/A' : (item.avgSOS < 60 ? Math.round(item.avgSOS) + 'm' : (item.avgSOS / 60).toFixed(2) + 'h');
                 let fmtDt = item.avgDT < 0 ? 'N/A' : item.avgDT.toFixed(2) + 'h';
@@ -1655,7 +1654,7 @@
                 let downDisplay = 'N/A';
                 if (item.downtimeHours >= 0) {
                     let fmt = item.downtimeHours.toFixed(2) + ' hrs';
-                    downDisplay = item.downtimeHours > 3.0 ? `<span class="outlier-red">${fmt}</span>` : `<span class="badge status-green">${fmt}</span>`;
+                    downDisplay = item.downtimeHours >= 3.0 ? `<span class="outlier-red">${fmt}</span>` : `<span class="badge status-green">${fmt}</span>`;
                 }
                 let statusBadge = item.eventStatus === 'Completed' ? 'status-green' : 'status-yellow';
                 tr.innerHTML = `
