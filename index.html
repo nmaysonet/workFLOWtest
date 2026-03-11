@@ -176,7 +176,7 @@
         .badge-ecd-missing { background-color: #fff3cd; color: #d9534f; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; border: 1px solid #d9534f; white-space: nowrap; display: inline-block; }
 
         /* ERS Specific Styles */
-        .side-by-side-container { display: flex; gap: 20px; align-items: stretch; margin-bottom: 24px; }
+        .side-by-side-container { display: flex; gap: 20px; align-items: stretch; margin-bottom: 30px; }
         .side-table { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; padding: 15px; min-width: 0; background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
         .side-table .table-wrapper { flex: 1; overflow-y: auto; margin-top: 0; }
         .outlier-red { color: var(--urgent-red); font-weight: 700; background-color: #fee2e2; padding: 2px 6px; border-radius: 4px; }
@@ -1104,6 +1104,7 @@
                 }
             }
 
+            // Dynamically populate general customer dropdowns
             let sortedAllCust = Array.from(allCustSet).sort();
             document.querySelectorAll('.customer-filter-select').forEach(dd => {
                 dd.innerHTML = '<option value="ALL">All Customers</option>';
@@ -1115,6 +1116,7 @@
                 });
             });
 
+            // Dynamically populate purely ERS customer dropdowns
             let sortedErsCust = Array.from(ersCustSet).sort();
             document.querySelectorAll('.ers-customer-filter-select').forEach(dd => {
                 dd.innerHTML = '<option value="ALL">All Customers</option>';
@@ -1191,6 +1193,7 @@
             return innerHtml;
         }
 
+        // --- NEW ERS HYBRID TILE (Shows Orders & Tickets) ---
         function generateErsTileHTML(name, roDataArray, ersDataArray) {
             let filteredOpen = roDataArray.filter(ro => ro.isOpen).length;
 
@@ -1390,10 +1393,10 @@
         // Generate the RO Drilldown HTML
         function generateErsRoDrilldownHtml(owner) {
             let ownerDataAll = processedData;
-            if (owner !== 'ALL') {
-                ownerDataAll = processedData.filter(ro => ro.owner === owner);
-            } else {
+            if (owner === 'ALL') {
                 ownerDataAll = processedData.filter(ro => ersOwners.includes(ro.owner));
+            } else {
+                ownerDataAll = processedData.filter(ro => ro.owner === owner);
             }
 
             if (currentErsCustomerFilter !== 'ALL') {
