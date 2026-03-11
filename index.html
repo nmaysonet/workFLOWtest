@@ -72,7 +72,8 @@
         }
         .dropdown-content a { color: #333; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; font-weight: 600; border-bottom: 1px solid #f4f6f9; }
         .dropdown-content a:hover { background-color: #f9f9f9; color: var(--gold); }
-        .dropdown:hover .dropdown-content { display: block; }
+        /* Add a small invisible bridge so hover doesn't break */
+        .dropdown:hover .dropdown-content { display: block; margin-top: -2px; padding-top: 2px; }
 
         /* Views */
         .view-section { padding: 30px; display: none; }
@@ -142,8 +143,6 @@
         .view-title { font-size: 24px; margin-bottom: 15px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
         .controls-group button { padding: 8px 15px; margin-left: 10px; cursor: pointer; background: #666; color: #fff; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
         .controls-group button:hover { background: #444; }
-        .btn-export { background: #5cb85c !important; } 
-        .btn-export:hover { background: #449d44 !important; }
         
         .drilldown-container { background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 20px; margin-top: 10px; }
         details { margin-bottom: 10px; }
@@ -179,9 +178,12 @@
         .badge-ecd-missing { background-color: #fff3cd; color: #d9534f; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; border: 1px solid #d9534f; white-space: nowrap; display: inline-block; }
 
         /* ERS Specific Styles */
-        .side-by-side-container { display: flex; gap: 20px; align-items: stretch; margin-bottom: 30px; }
-        .side-table { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; padding: 15px; min-width: 0; background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-        .side-table .table-wrapper { flex: 1; overflow-y: auto; margin-top: 0; }
+        .side-by-side-container { display: flex; gap: 20px; align-items: stretch; margin-bottom: 30px; flex-wrap: wrap; }
+        .side-table { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; padding: 15px; min-width: 400px; background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .side-table .table-wrapper { flex: 1; overflow-x: auto; margin-top: 0; }
+        .side-table table { min-width: 100%; table-layout: auto; } 
+        .side-table th, .side-table td { padding: 10px 8px; } 
+        
         .outlier-red { color: var(--urgent-red); font-weight: 700; background-color: #fee2e2; padding: 2px 6px; border-radius: 4px; }
         .error-marker { color: var(--urgent-red); font-weight: bold; }
         .good-marker { color: var(--low-green); font-weight: bold; }
@@ -433,7 +435,7 @@
             </div>
 
             <div class="drilldown-container" style="margin-bottom: 24px;">
-                <details id="ers-ticket-drilldown-toggle">
+                <details>
                     <summary style="font-size: 16px; color: var(--gold); margin-bottom: 0;">Ticket Details</summary>
                     <div class="table-wrapper" style="margin-top: 15px;">
                         <table>
@@ -553,7 +555,7 @@
             let ownerDataAll = processedData;
             if (currentOwnerView === 'ALL_PM') ownerDataAll = processedData.filter(ro => pmOwners.includes(ro.owner));
             else if (currentOwnerView === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => vendedOwners.includes(ro.owner));
-            else ownerDataAll = processedData.filter(ro => ro.owner === currentOwnerView);
+            else ownerDataAll = processedData.filter(ro => ro.owner === String(currentOwnerView));
             
             if (currentCustomerFilter !== 'ALL') {
                 ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
@@ -577,7 +579,7 @@
             const worksheet = XLSX.utils.json_to_sheet(excelRows);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered ROs");
-            XLSX.writeFile(workbook, `workflow_export_${currentOwnerView.replace(/\s+/g, '_')}_${currentFilter.toLowerCase()}.xlsx`);
+            XLSX.writeFile(workbook, `workflow_export_${String(currentOwnerView).replace(/\s+/g, '_')}_${currentFilter.toLowerCase()}.xlsx`);
         }
 
         function exportErsDrilldownToExcel() {
@@ -597,7 +599,7 @@
             const worksheet = XLSX.utils.json_to_sheet(excelRows);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "ERS Tickets");
-            XLSX.writeFile(workbook, `ers_export_${currentOwnerView.replace(/\s+/g, '_')}.xlsx`);
+            XLSX.writeFile(workbook, `ers_export_${String(currentOwnerView).replace(/\s+/g, '_')}.xlsx`);
         }
 
         // --- FILTER & CUSTOMER & DATE DROPDOWN LOGIC ---
@@ -660,9 +662,9 @@
                     if(sheetData.length === 0) return;
                     
                     const firstRow = sheetData[0];
-                    const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
+                    const keys = Object.keys(firstRow).map(k => String(k).toLowerCase().trim());
                     
-                    if (sheetName.toUpperCase() === 'ERS') {
+                    if (String(sheetName).toUpperCase() === 'ERS') {
                         ersTabRaw = sheetData;
                     } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
                         resourceRaw = resourceRaw.concat(sheetData);
@@ -700,9 +702,9 @@
                         if(sheetData.length === 0) return;
                         
                         const firstRow = sheetData[0];
-                        const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
+                        const keys = Object.keys(firstRow).map(k => String(k).toLowerCase().trim());
                         
-                        if (sheetName.toUpperCase() === 'ERS') {
+                        if (String(sheetName).toUpperCase() === 'ERS') {
                             ersTabRaw = sheetData;
                         } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
                             resourceRaw = resourceRaw.concat(sheetData);
@@ -764,8 +766,8 @@
 
         function cleanErsRow(row, ownerMap) {
             let rawOwner = getCol(row, ['Assignee name', 'Coordinator', 'Created By']);
-            let finalOwner = rawOwner;
-            let normOwner = (rawOwner || '').toLowerCase().trim();
+            let finalOwner = String(rawOwner || '').trim();
+            let normOwner = finalOwner.toLowerCase();
             
             if (normOwner.includes('sydney') || normOwner.includes('wooten')) finalOwner = 'Sydney Wooten';
             else if (normOwner.includes('damian') || normOwner.includes('damien') || normOwner.includes('nicholson')) finalOwner = 'Damian Nicholson';
@@ -915,9 +917,9 @@
                     let u = unit.toUpperCase();
                     if (oosFlag.toUpperCase() === 'OOS' || oosFlag === '') oosSet.add(u);
                     unitToLocation[u] = { 
-                        region: region || 'Unspecified Region', 
-                        subregion: subregion || 'Unspecified Subregion', 
-                        branch: branch || 'Unspecified Branch' 
+                        region: String(region || 'Unspecified Region').trim(), 
+                        subregion: String(subregion || 'Unspecified Subregion').trim(), 
+                        branch: String(branch || 'Unspecified Branch').trim() 
                     };
                 }
             });
@@ -936,10 +938,10 @@
                 let pmComp = getCol(row, ['PM Comp:']);
                 
                 if (createdBy) {
-                    let key = createdBy.toLowerCase().trim();
-                    let finalName = name || createdBy;
+                    let key = String(createdBy).toLowerCase().trim();
+                    let finalName = String(name || createdBy).trim();
                     ownerMap[key] = { name: finalName, status: status, team: team };
-                    if (name) ownerMap[name.toLowerCase().trim()] = { name: finalName, status: status, team: team };
+                    if (name) ownerMap[String(name).toLowerCase().trim()] = { name: finalName, status: status, team: team };
                     
                     if (status === 'ACTIVE') {
                         if (team === 'PM') activePM.add(finalName);
@@ -977,8 +979,8 @@
                 let dueRaw = getCol(row, ['Unit Due Date', 'Estimate Due Date', 'Due Date', 'L']);
                 let compRaw = getCol(row, ['Completed Date', 'Completed', 'P']);
                 
-                let finalOwner = rawOwner;
-                let ownerLookup = ownerMap[rawOwner.toLowerCase().trim()];
+                let finalOwner = String(rawOwner || '').trim();
+                let ownerLookup = ownerMap[finalOwner.toLowerCase()];
                 if (ownerLookup) finalOwner = ownerLookup.name;
 
                 let openedDate = new Date(openedRaw);
@@ -997,7 +999,7 @@
                 let custKey = getCustKey(customer);
                 
                 let locPart = customer;
-                if(customer.includes('-')) {
+                if(String(customer).includes('-')) {
                     locPart = customer.substring(customer.indexOf('-') + 1).trim(); 
                 }
                 
@@ -1031,7 +1033,7 @@
                     }
                 }
 
-                let fallbackLoc = { region: stateName, subregion: cityName, branch: customer.trim() };
+                let fallbackLoc = { region: stateName, subregion: cityName, branch: String(customer).trim() };
                 
                 if(custKey === 'Ferguson' || custKey === 'Amerit Fleet Solutions' || custKey === 'Brinks' || custKey === 'US Foods' || custKey === 'Frontier' || custKey === 'Colony Hardware' || custKey === 'Sukut Construction') { 
                     loc = fallbackLoc; 
@@ -1390,102 +1392,15 @@
             });
         }
 
-        // --- STANDARD DRILLDOWN ---
-        function loadPersonDrilldown(owner, parentViewId) {
-            navigate('person-view', null, true); 
-            currentOwnerView = owner; currentParentView = parentViewId;
-            
-            let titleText = `RO Hierarchy: ${owner}`;
-            if (owner === 'ALL_PM') titleText = 'Overall PM Details';
-            if (owner === 'ALL_VENDED') titleText = 'Overall Vended Repair Details';
-
-            document.getElementById('person-name-title').innerText = titleText;
-            document.getElementById('dynamic-back-btn').onclick = () => navigate(parentViewId, null, true);
-            const container = document.getElementById('drilldown-body'); container.innerHTML = '';
-            
-            let ownerDataAll = processedData;
-            if (owner === 'ALL_PM') ownerDataAll = processedData.filter(ro => pmOwners.includes(ro.owner));
-            else if (owner === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => vendedOwners.includes(ro.owner));
-            else ownerDataAll = processedData.filter(ro => ro.owner === owner);
-            
-            if (currentCustomerFilter !== 'ALL') {
-                ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
-            }
-
+        // --- MASTER DOM DRILLDOWN HTML GENERATOR ---
+        function generateRoDrilldownHtml(ownerDataAll) {
             let targetData = ownerDataAll.filter(ro => ro.isOpen);
             if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
             else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
             else if(currentFilter === 'LOW') targetData = targetData.filter(ro => ro.priority === 'LOW');
             else if(currentFilter === 'OOS') targetData = targetData.filter(ro => ro.isOOS);
-            
-            if(targetData.length === 0) { container.innerHTML = `<p>No records for ${owner.replace('ALL_', 'Overall ')} under the current filters.</p>`; return; }
-            
-            let hierarchy = {};
-            targetData.forEach(ro => {
-                if(!hierarchy[ro.drillTopLevel]) hierarchy[ro.drillTopLevel] = {};
-                if(!hierarchy[ro.drillTopLevel][ro.subregion]) hierarchy[ro.drillTopLevel][ro.subregion] = {};
-                if(!hierarchy[ro.drillTopLevel][ro.subregion][ro.branch]) hierarchy[ro.drillTopLevel][ro.subregion][ro.branch] = [];
-                hierarchy[ro.drillTopLevel][ro.subregion][ro.branch].push(ro);
-            });
-            for(let topLvl in hierarchy) {
-                const regDetails = document.createElement('details'); regDetails.innerHTML = `<summary>${topLvl}</summary>`; 
-                for(let sub in hierarchy[topLvl]) {
-                    const subDetails = document.createElement('details'); subDetails.innerHTML = `<summary>${sub}</summary>`;
-                    for(let branch in hierarchy[topLvl][sub]) {
-                        const branchDetails = document.createElement('details');
-                        let branchROs = hierarchy[topLvl][sub][branch];
-                        branchROs.sort((a,b) => { 
-                            const ord = {'URGENT':1,'MEDIUM':2,'LOW':3};
-                            if(ord[a.priority] !== ord[b.priority]) return ord[a.priority] - ord[b.priority];
-                            return (b.isOOS - a.isOOS);
-                        });
-                        branchDetails.innerHTML = `<summary>${branch} (${branchROs.length} ROs)</summary>`;
-                        let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:12%;"><col style="width:10%;"><col style="width:8%;"><col style="width:8%;"><col style="width:6%;"><col style="width:14%;"><col style="width:10%;"><col style="width:32%;"></colgroup><thead><tr><th>AFS RO #</th><th>Unit No</th><th>Priority</th><th>OOS Status</th><th>Total Unit ROs</th><th>Status</th><th>ECD</th><th>Task / VMRS</th></tr></thead><tbody>`;
-                        branchROs.forEach(ro => {
-                            let ecdCell = '';
-                            if (ro.ecdState === 'missing') ecdCell = `<span class="badge-ecd-missing">${ro.ecdFormatted}</span>`;
-                            else if (ro.ecdState === 'red') ecdCell = `<span class="ecd-red">${ro.ecdFormatted}</span>`;
-                            else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
-                            
-                            let isGarda = ro.custKey === 'Garda';
-                            let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
 
-                            tableHTML += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
-                        });
-                        tableHTML += `</tbody></table></div>`; branchDetails.innerHTML += tableHTML; subDetails.appendChild(branchDetails);
-                    }
-                    regDetails.appendChild(subDetails);
-                }
-                container.appendChild(regDetails);
-            }
-        }
-
-        // --- ERS SPECIFIC DRILLDOWN ---
-        function generateErsRoDrilldownHtml(owner) {
-            let ownerDataAll = processedData;
-            if (owner !== 'ALL') {
-                ownerDataAll = processedData.filter(ro => ro.owner === owner);
-            } else {
-                ownerDataAll = processedData.filter(ro => ersOwners.includes(ro.owner));
-            }
-
-            if (currentErsCustomerFilter !== 'ALL') {
-                ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentErsCustomerFilter);
-            }
-
-            let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
-            let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
-            if (sDate || eDate) {
-                ownerDataAll = ownerDataAll.filter(ro => {
-                    if (!ro.openedDT) return false;
-                    if (sDate && ro.openedDT < sDate) return false;
-                    if (eDate && ro.openedDT > eDate) return false;
-                    return true;
-                });
-            }
-
-            let targetData = ownerDataAll.filter(ro => ro.isOpen);
-            if(targetData.length === 0) return `<p style="margin-top:15px; color:#666;">No active Repair Orders to display.</p>`;
+            if(targetData.length === 0) return `<p style="margin-top:15px; color:#666;">No active Repair Orders to display under the current filters.</p>`;
             
             let hierarchy = {};
             targetData.forEach(ro => {
@@ -1497,17 +1412,19 @@
             
             let htmlStr = '';
             for(let topLvl in hierarchy) {
-                htmlStr += `<details class="ers-ro-node"><summary>${topLvl}</summary>`; 
+                htmlStr += `<details class="ro-detail-node"><summary>${topLvl}</summary>`; 
                 for(let sub in hierarchy[topLvl]) {
-                    htmlStr += `<details class="ers-ro-node"><summary>${sub}</summary>`;
+                    htmlStr += `<details class="ro-detail-node"><summary>${sub}</summary>`;
                     for(let branch in hierarchy[topLvl][sub]) {
                         let branchROs = hierarchy[topLvl][sub][branch];
                         branchROs.sort((a,b) => { 
                             const ord = {'URGENT':1,'MEDIUM':2,'LOW':3};
-                            if(ord[a.priority] !== ord[b.priority]) return ord[a.priority] - ord[b.priority];
-                            return (b.isOOS - a.isOOS);
+                            let valA = ord[a.priority] || 4;
+                            let valB = ord[b.priority] || 4;
+                            if (valA !== valB) return valA - valB;
+                            return (b.isOOS === true ? 1 : 0) - (a.isOOS === true ? 1 : 0);
                         });
-                        htmlStr += `<details class="ers-ro-node"><summary>${branch} (${branchROs.length} ROs)</summary>`;
+                        htmlStr += `<details class="ro-detail-node"><summary>${branch} (${branchROs.length} ROs)</summary>`;
                         let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:12%;"><col style="width:10%;"><col style="width:8%;"><col style="width:8%;"><col style="width:6%;"><col style="width:14%;"><col style="width:10%;"><col style="width:32%;"></colgroup><thead><tr><th>AFS RO #</th><th>Unit No</th><th>Priority</th><th>OOS Status</th><th>Total Unit ROs</th><th>Status</th><th>ECD</th><th>Task / VMRS</th></tr></thead><tbody>`;
                         branchROs.forEach(ro => {
                             let ecdCell = '';
@@ -1530,10 +1447,36 @@
             return htmlStr;
         }
 
+        function loadPersonDrilldown(owner, parentViewId) {
+            navigate('person-view', null, true); 
+            currentOwnerView = owner; currentParentView = parentViewId;
+            
+            let titleText = `RO Hierarchy: ${owner}`;
+            if (owner === 'ALL_PM') titleText = 'Overall PM Details';
+            if (owner === 'ALL_VENDED') titleText = 'Overall Vended Repair Details';
+
+            document.getElementById('person-name-title').innerText = titleText;
+            document.getElementById('dynamic-back-btn').onclick = () => navigate(parentViewId, null, true);
+            const container = document.getElementById('drilldown-body'); 
+            
+            let ownerDataAll = processedData;
+            if (owner === 'ALL_PM') ownerDataAll = processedData.filter(ro => pmOwners.includes(ro.owner));
+            else if (owner === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => vendedOwners.includes(ro.owner));
+            else ownerDataAll = processedData.filter(ro => ro.owner === String(owner));
+            
+            if (currentCustomerFilter !== 'ALL') {
+                ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
+            }
+
+            container.innerHTML = generateRoDrilldownHtml(ownerDataAll);
+        }
+
+        function toggleAllDetails(expand) { 
+            document.querySelectorAll('.ro-detail-node').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); }); 
+        }
         function toggleErsRODetails(expand) {
             document.querySelectorAll('#ers-ro-drilldown-body details').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); });
         }
-
         function toggleErsTicketDetails(expand) {
             document.querySelectorAll('#ers-ticket-drilldown-toggle').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); });
         }
@@ -1550,9 +1493,9 @@
             let fRoData = processedData;
 
             if (owner !== 'ALL') {
-                fMetrics = fMetrics.filter(m => m.coordinator.toLowerCase().trim() === owner.toLowerCase().trim());
-                fData = fData.filter(d => d.finalOwner.toLowerCase().trim() === owner.toLowerCase().trim());
-                fRoData = fRoData.filter(r => r.owner.toLowerCase().trim() === owner.toLowerCase().trim());
+                fMetrics = fMetrics.filter(m => m.coordinator.toLowerCase().trim() === String(owner).toLowerCase().trim());
+                fData = fData.filter(d => d.finalOwner.toLowerCase().trim() === String(owner).toLowerCase().trim());
+                fRoData = fRoData.filter(r => r.owner.toLowerCase().trim() === String(owner).toLowerCase().trim());
             } else {
                 fRoData = fRoData.filter(r => ersOwners.includes(r.owner));
             }
@@ -1586,6 +1529,7 @@
                 });
             }
 
+            // Top Banner KPIs (5 Separate White Tiles)
             let filteredOpenROs = fRoData.filter(ro => ro.isOpen).length;
             let totalDowntimeHours = 0, validDowntimeCount = 0;
             let totalSOSMins = 0, validSOSCount = 0;
@@ -1616,23 +1560,23 @@
 
             document.getElementById('ers-master-kpis').innerHTML = `
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold);">
+                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold); cursor: default; transform: none;">
                         <div style="font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase;">AVG Downtime (Hours)</div>
                         <div style="font-size: 32px; font-weight: 800; color: ${dtColor}; margin-top: 10px;">${dtStr}</div>
                     </div>
-                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold);">
+                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold); cursor: default; transform: none;">
                         <div style="font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase;">AVG SOS Time (Minutes)</div>
                         <div style="font-size: 32px; font-weight: 800; color: ${sosColor}; margin-top: 10px;">${sosStr}</div>
                     </div>
-                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold);">
+                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold); cursor: default; transform: none;">
                         <div style="font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase;">Open ROs</div>
                         <div style="font-size: 32px; font-weight: 800; color: var(--gold); margin-top: 10px;">${filteredOpenROs}</div>
                     </div>
-                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold);">
+                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold); cursor: default; transform: none;">
                         <div style="font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase;">Call Volume</div>
                         <div style="font-size: 32px; font-weight: 800; color: var(--gold); margin-top: 10px;">${vol}</div>
                     </div>
-                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold);">
+                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold); cursor: default; transform: none;">
                         <div style="font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase;">Vendor On-Time</div>
                         <div style="font-size: 32px; font-weight: 800; color: var(--gold); margin-top: 10px;">${onTimePctErs}%</div>
                     </div>
@@ -1692,7 +1636,7 @@
             sortScorecardData(sortColSc, sortAscSc); renderScorecardTable();
             if (sortColErs) sortErsViewData(sortColErs, sortAscErs); renderErsTable();
 
-            document.getElementById('ers-ro-drilldown-body').innerHTML = generateErsRoDrilldownHtml(owner);
+            document.getElementById('ers-ro-drilldown-body').innerHTML = generateRoDrilldownHtml(fRoData);
         }
 
         // --- ERS SPECIFIC TABLE RENDERING & SORTING ---
@@ -1803,8 +1747,6 @@
                 tbody.appendChild(tr);
             });
         }
-
-        function toggleAllDetails(expand) { document.querySelectorAll('#drilldown-body details').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); }); }
 
         function handleSearch() {
             clearTimeout(searchTimeout);
