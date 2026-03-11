@@ -72,7 +72,6 @@
         }
         .dropdown-content a { color: #333; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; font-weight: 600; border-bottom: 1px solid #f4f6f9; }
         .dropdown-content a:hover { background-color: #f9f9f9; color: var(--gold); }
-        /* Add a small invisible bridge so hover doesn't break */
         .dropdown:hover .dropdown-content { display: block; margin-top: -2px; padding-top: 2px; }
 
         /* Views */
@@ -134,7 +133,6 @@
         .stat-box .num.urgent { color: var(--urgent-red); }
         .stat-box .num.good { color: var(--low-green); }
 
-        /* Master Dashboard Inline Stats */
         .home-master-tile .stat-box { padding: 10px 5px; }
         .home-master-tile .stat-box .title { font-size: 11px; }
         .home-master-tile .stat-box .num { font-size: 18px; }
@@ -187,6 +185,9 @@
         .outlier-red { color: var(--urgent-red); font-weight: 700; background-color: #fee2e2; padding: 2px 6px; border-radius: 4px; }
         .error-marker { color: var(--urgent-red); font-weight: bold; }
         .good-marker { color: var(--low-green); font-weight: bold; }
+        
+        /* Reassign Styles */
+        input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--gold); }
     </style>
 </head>
 <body>
@@ -211,6 +212,7 @@
         <div class="menu-item" id="menu-pm" onclick="navigate('pm-view', this)">PM Queue</div>
         <div class="menu-item" id="menu-vended" onclick="navigate('vended-view', this)">Vended Repair Queue</div>
         <div class="menu-item" id="menu-ers" onclick="navigate('ers-view', this)">ERS Queue</div>
+        <div class="menu-item" id="menu-reassign" onclick="promptPasswordAndNavigate('reassign-view', this)">Assign Orders 🔒</div>
         
         <div class="sidebar-truck">
             <svg width="140" height="70" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" class="moving-truck-svg">
@@ -335,15 +337,9 @@
         <div id="ers-view" class="view-section">
             <div class="view-title">
                 <span style="font-weight: 700;">ERS Queue</span>
-                <div class="date-controls">
-                    <label>Date Range:</label>
-                    <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
-                    <span style="font-weight:bold; color:#666;">-</span>
-                    <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
-                    <select class="filter-select ers-customer-filter-select" onchange="setErsCustomerFilter(this.value)" style="margin-left: 10px;">
-                        <option value="ALL">All Customers</option>
-                    </select>
-                </div>
+                <select class="filter-select ers-customer-filter-select" onchange="setErsCustomerFilter(this.value)">
+                    <option value="ALL">All Customers</option>
+                </select>
             </div>
             <div class="kpi-grid" id="ers-kpi-container"></div>
         </div>
@@ -435,7 +431,7 @@
             </div>
 
             <div class="drilldown-container" style="margin-bottom: 24px;">
-                <details>
+                <details id="ers-ticket-drilldown-toggle">
                     <summary style="font-size: 16px; color: var(--gold); margin-bottom: 0;">Ticket Details</summary>
                     <div class="table-wrapper" style="margin-top: 15px;">
                         <table>
@@ -466,6 +462,43 @@
                     </div>
                 </div>
                 <div id="ers-ro-drilldown-body"></div>
+            </div>
+        </div>
+
+        <div id="reassign-view" class="view-section">
+            <h2 class="view-title">Assign / Transfer Orders 🔒</h2>
+            <div style="background:#fff; padding: 20px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 20px; display:flex; gap:20px; align-items: flex-end; flex-wrap: wrap;">
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px; color:#555;">Filter by Current Owner:</label>
+                    <select id="reassign-filter-owner" class="filter-select" onchange="renderReassignTable()">
+                        <option value="ALL">All Open Orders</option>
+                    </select>
+                </div>
+                <div style="flex-grow:1;"></div>
+                <div style="background: #f9fafc; padding: 15px; border-radius: 4px; border: 1px solid var(--border); display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
+                    <div>
+                        <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px; color:#555;">Assign Selected To:</label>
+                        <select id="reassign-target-owner" class="filter-select"></select>
+                    </div>
+                    <button class="btn-green" style="margin-top: 18px;" onclick="executeReassignment()">Confirm Assignment</button>
+                </div>
+            </div>
+            
+            <div class="drilldown-container table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="reassign-select-all" onclick="toggleAllReassign(this)"></th>
+                            <th>AFS RO #</th>
+                            <th>Unit No</th>
+                            <th>Priority</th>
+                            <th>Current Owner</th>
+                            <th>Status</th>
+                            <th>Task / VMRS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reassign-table-body"></tbody>
+                </table>
             </div>
         </div>
 
@@ -507,6 +540,9 @@
         let pmOwners = [];
         let vendedOwners = [];
         let ersOwners = [];
+        let allActiveOwners = []; // For Reassignment portal
+
+        let isReassignUnlocked = false; // Security Flag
 
         // ERS Specific Globals
         let rawErsData = [];
@@ -555,6 +591,7 @@
             let ownerDataAll = processedData;
             if (currentOwnerView === 'ALL_PM') ownerDataAll = processedData.filter(ro => pmOwners.includes(ro.owner));
             else if (currentOwnerView === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => vendedOwners.includes(ro.owner));
+            else if (currentOwnerView === 'ALL_ERS') ownerDataAll = processedData.filter(ro => ersOwners.includes(ro.owner));
             else ownerDataAll = processedData.filter(ro => ro.owner === String(currentOwnerView));
             
             if (currentCustomerFilter !== 'ALL') {
@@ -645,6 +682,69 @@
             else if(activeView === 'ers-detail-view') { if(currentOwnerView) loadErsDrilldown(currentOwnerView, currentParentView); }
         }
 
+        // --- SECURITY / REASSIGNMENT LOGIC ---
+        function promptPasswordAndNavigate(viewId, element) {
+            if(!isReassignUnlocked) {
+                let pass = prompt("Enter Password to access Orders Assignment:");
+                if(pass === '1234578') {
+                    isReassignUnlocked = true;
+                } else {
+                    if (pass !== null) alert("Incorrect Password.");
+                    return;
+                }
+            }
+            navigate(viewId, element);
+            if(viewId === 'reassign-view') renderReassignTable();
+        }
+
+        function renderReassignTable() {
+            let filterOwner = document.getElementById('reassign-filter-owner').value;
+            let targetData = processedData.filter(ro => ro.isOpen);
+            if (filterOwner !== 'ALL') {
+                targetData = targetData.filter(ro => ro.owner === filterOwner);
+            }
+            
+            const tbody = document.getElementById('reassign-table-body');
+            tbody.innerHTML = '';
+            targetData.forEach(ro => {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="text-align:center;"><input type="checkbox" class="ro-reassign-cb" value="${ro.roNum}"></td>
+                    <td>${ro.roNum}</td>
+                    <td><strong>${ro.unitNo}</strong></td>
+                    <td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td>
+                    <td>${ro.owner}</td>
+                    <td>${ro.status}</td>
+                    <td>${ro.vmrs}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('reassign-select-all').checked = false;
+        }
+
+        function toggleAllReassign(source) {
+            document.querySelectorAll('.ro-reassign-cb').forEach(cb => { cb.checked = source.checked; });
+        }
+
+        function executeReassignment() {
+            let newOwner = document.getElementById('reassign-target-owner').value;
+            if(!newOwner) { alert("Please select a target owner."); return; }
+            
+            let selectedRoNums = Array.from(document.querySelectorAll('.ro-reassign-cb:checked')).map(cb => cb.value);
+            if(selectedRoNums.length === 0) { alert("Please select at least one Repair Order to assign."); return; }
+            
+            let count = 0;
+            processedData.forEach(ro => {
+                if(selectedRoNums.includes(ro.roNum)) {
+                    ro.owner = newOwner;
+                    count++;
+                }
+            });
+            
+            alert(`Successfully assigned ${count} order(s) to ${newOwner}.`);
+            renderReassignTable();
+        }
+
         // --- AUTO-FETCH LOGIC ---
         window.onload = async () => {
             const statusEl = document.getElementById('upload-status');
@@ -664,7 +764,7 @@
                     const firstRow = sheetData[0];
                     const keys = Object.keys(firstRow).map(k => String(k).toLowerCase().trim());
                     
-                    if (String(sheetName).toUpperCase() === 'ERS') {
+                    if (sheetName.toUpperCase() === 'ERS') {
                         ersTabRaw = sheetData;
                     } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
                         resourceRaw = resourceRaw.concat(sheetData);
@@ -704,7 +804,7 @@
                         const firstRow = sheetData[0];
                         const keys = Object.keys(firstRow).map(k => String(k).toLowerCase().trim());
                         
-                        if (String(sheetName).toUpperCase() === 'ERS') {
+                        if (sheetName.toUpperCase() === 'ERS') {
                             ersTabRaw = sheetData;
                         } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
                             resourceRaw = resourceRaw.concat(sheetData);
@@ -766,8 +866,8 @@
 
         function cleanErsRow(row, ownerMap) {
             let rawOwner = getCol(row, ['Assignee name', 'Coordinator', 'Created By']);
-            let finalOwner = String(rawOwner || '').trim();
-            let normOwner = finalOwner.toLowerCase();
+            let finalOwner = rawOwner;
+            let normOwner = (rawOwner || '').toLowerCase().trim();
             
             if (normOwner.includes('sydney') || normOwner.includes('wooten')) finalOwner = 'Sydney Wooten';
             else if (normOwner.includes('damian') || normOwner.includes('damien') || normOwner.includes('nicholson')) finalOwner = 'Damian Nicholson';
@@ -958,6 +1058,22 @@
             pmOwners = Array.from(activePM);
             vendedOwners = Array.from(activeVended);
             ersOwners = Array.from(activeERS);
+            
+            // Build Assignments Array
+            allActiveOwners = Array.from(new Set([...pmOwners, ...vendedOwners, ...ersOwners])).sort();
+            
+            let filterSel = document.getElementById('reassign-filter-owner');
+            let targetSel = document.getElementById('reassign-target-owner');
+            filterSel.innerHTML = '<option value="ALL">All Open Orders</option>';
+            targetSel.innerHTML = '';
+            
+            allActiveOwners.forEach(o => {
+                let opt1 = document.createElement('option'); opt1.value = o; opt1.innerText = o;
+                let opt2 = document.createElement('option'); opt2.value = o; opt2.innerText = o;
+                filterSel.appendChild(opt1);
+                targetSel.appendChild(opt2);
+            });
+
             pmKeywords = [...new Set(pmKeywords)]; 
 
             let unitROCounts = {};
@@ -1788,7 +1904,7 @@
             }
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
-            if(viewId !== 'search-view' && viewId !== 'person-view' && viewId !== 'ers-detail-view') lastActiveView = viewId;
+            if(viewId !== 'search-view' && viewId !== 'person-view' && viewId !== 'ers-detail-view' && viewId !== 'reassign-view') lastActiveView = viewId;
             if(menuElement) {
                 document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
                 menuElement.classList.add('active');
