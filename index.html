@@ -99,7 +99,7 @@
 
         /* General KPI Tiles Grid */
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
-        .kpi-tile { background: #fff; padding: 25px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); cursor: pointer; border-top: 4px solid var(--gold); transition: transform 0.2s; display: flex; flex-direction: column;}
+        .kpi-tile { background: #fff; padding: 25px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); cursor: pointer; border-top: 4px solid var(--gold); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column;}
         .kpi-tile:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
         .kpi-name { font-size: 20px; font-weight: 800; margin-bottom: 15px; color: #333; }
         
@@ -111,8 +111,8 @@
         
         .home-kpi-container { display: flex; gap: 15px; flex-wrap: nowrap; width: 100%; overflow-x: auto; padding-bottom: 15px; }
         
-        .home-master-tile { flex: 1; min-width: 360px; padding: 20px; cursor: pointer; border-top: 4px solid #333 !important; }
-        .home-master-tile:hover { transform: none; box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-top-color: var(--gold) !important; }
+        .home-master-tile { flex: 1; min-width: 360px; padding: 20px; cursor: pointer; border-top: 4px solid #333 !important; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;}
+        .home-master-tile:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-top-color: var(--gold) !important; }
         .home-master-tile .kpi-name { font-size: 18px; margin-bottom: 15px; }
 
         /* KPI Layout - PM/Vended Master Highlight Boxes (SHRUNK) */
@@ -133,6 +133,7 @@
         .stat-box .num.urgent { color: var(--urgent-red); }
         .stat-box .num.good { color: var(--low-green); }
 
+        /* Master Dashboard Inline Stats */
         .home-master-tile .stat-box { padding: 10px 5px; }
         .home-master-tile .stat-box .title { font-size: 11px; }
         .home-master-tile .stat-box .num { font-size: 18px; }
@@ -141,6 +142,8 @@
         .view-title { font-size: 24px; margin-bottom: 15px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
         .controls-group button { padding: 8px 15px; margin-left: 10px; cursor: pointer; background: #666; color: #fff; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
         .controls-group button:hover { background: #444; }
+        .btn-export { background: #5cb85c !important; } 
+        .btn-export:hover { background: #449d44 !important; }
         
         .drilldown-container { background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 20px; margin-top: 10px; }
         details { margin-bottom: 10px; }
@@ -430,7 +433,7 @@
             </div>
 
             <div class="drilldown-container" style="margin-bottom: 24px;">
-                <details>
+                <details id="ers-ticket-drilldown-toggle">
                     <summary style="font-size: 16px; color: var(--gold); margin-bottom: 0;">Ticket Details</summary>
                     <div class="table-wrapper" style="margin-top: 15px;">
                         <table>
@@ -764,7 +767,6 @@
             let finalOwner = rawOwner;
             let normOwner = (rawOwner || '').toLowerCase().trim();
             
-            // FUZZY MATCH SAFETY NET FOR TAB 4 SPELLING DISCREPANCIES
             if (normOwner.includes('sydney') || normOwner.includes('wooten')) finalOwner = 'Sydney Wooten';
             else if (normOwner.includes('damian') || normOwner.includes('damien') || normOwner.includes('nicholson')) finalOwner = 'Damian Nicholson';
             else if (ownerMap[normOwner]) finalOwner = ownerMap[normOwner].name;
@@ -1104,7 +1106,6 @@
                 }
             }
 
-            // Dynamically populate general customer dropdowns
             let sortedAllCust = Array.from(allCustSet).sort();
             document.querySelectorAll('.customer-filter-select').forEach(dd => {
                 dd.innerHTML = '<option value="ALL">All Customers</option>';
@@ -1116,7 +1117,6 @@
                 });
             });
 
-            // Dynamically populate purely ERS customer dropdowns
             let sortedErsCust = Array.from(ersCustSet).sort();
             document.querySelectorAll('.ers-customer-filter-select').forEach(dd => {
                 dd.innerHTML = '<option value="ALL">All Customers</option>';
@@ -1390,13 +1390,83 @@
             });
         }
 
-        // Generate the RO Drilldown HTML
+        // --- STANDARD DRILLDOWN ---
+        function loadPersonDrilldown(owner, parentViewId) {
+            navigate('person-view', null, true); 
+            currentOwnerView = owner; currentParentView = parentViewId;
+            
+            let titleText = `RO Hierarchy: ${owner}`;
+            if (owner === 'ALL_PM') titleText = 'Overall PM Details';
+            if (owner === 'ALL_VENDED') titleText = 'Overall Vended Repair Details';
+
+            document.getElementById('person-name-title').innerText = titleText;
+            document.getElementById('dynamic-back-btn').onclick = () => navigate(parentViewId, null, true);
+            const container = document.getElementById('drilldown-body'); container.innerHTML = '';
+            
+            let ownerDataAll = processedData;
+            if (owner === 'ALL_PM') ownerDataAll = processedData.filter(ro => pmOwners.includes(ro.owner));
+            else if (owner === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => vendedOwners.includes(ro.owner));
+            else ownerDataAll = processedData.filter(ro => ro.owner === owner);
+            
+            if (currentCustomerFilter !== 'ALL') {
+                ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
+            }
+
+            let targetData = ownerDataAll.filter(ro => ro.isOpen);
+            if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
+            else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
+            else if(currentFilter === 'LOW') targetData = targetData.filter(ro => ro.priority === 'LOW');
+            else if(currentFilter === 'OOS') targetData = targetData.filter(ro => ro.isOOS);
+            
+            if(targetData.length === 0) { container.innerHTML = `<p>No records for ${owner.replace('ALL_', 'Overall ')} under the current filters.</p>`; return; }
+            
+            let hierarchy = {};
+            targetData.forEach(ro => {
+                if(!hierarchy[ro.drillTopLevel]) hierarchy[ro.drillTopLevel] = {};
+                if(!hierarchy[ro.drillTopLevel][ro.subregion]) hierarchy[ro.drillTopLevel][ro.subregion] = {};
+                if(!hierarchy[ro.drillTopLevel][ro.subregion][ro.branch]) hierarchy[ro.drillTopLevel][ro.subregion][ro.branch] = [];
+                hierarchy[ro.drillTopLevel][ro.subregion][ro.branch].push(ro);
+            });
+            for(let topLvl in hierarchy) {
+                const regDetails = document.createElement('details'); regDetails.innerHTML = `<summary>${topLvl}</summary>`; 
+                for(let sub in hierarchy[topLvl]) {
+                    const subDetails = document.createElement('details'); subDetails.innerHTML = `<summary>${sub}</summary>`;
+                    for(let branch in hierarchy[topLvl][sub]) {
+                        const branchDetails = document.createElement('details');
+                        let branchROs = hierarchy[topLvl][sub][branch];
+                        branchROs.sort((a,b) => { 
+                            const ord = {'URGENT':1,'MEDIUM':2,'LOW':3};
+                            if(ord[a.priority] !== ord[b.priority]) return ord[a.priority] - ord[b.priority];
+                            return (b.isOOS - a.isOOS);
+                        });
+                        branchDetails.innerHTML = `<summary>${branch} (${branchROs.length} ROs)</summary>`;
+                        let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:12%;"><col style="width:10%;"><col style="width:8%;"><col style="width:8%;"><col style="width:6%;"><col style="width:14%;"><col style="width:10%;"><col style="width:32%;"></colgroup><thead><tr><th>AFS RO #</th><th>Unit No</th><th>Priority</th><th>OOS Status</th><th>Total Unit ROs</th><th>Status</th><th>ECD</th><th>Task / VMRS</th></tr></thead><tbody>`;
+                        branchROs.forEach(ro => {
+                            let ecdCell = '';
+                            if (ro.ecdState === 'missing') ecdCell = `<span class="badge-ecd-missing">${ro.ecdFormatted}</span>`;
+                            else if (ro.ecdState === 'red') ecdCell = `<span class="ecd-red">${ro.ecdFormatted}</span>`;
+                            else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
+                            
+                            let isGarda = ro.custKey === 'Garda';
+                            let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
+
+                            tableHTML += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
+                        });
+                        tableHTML += `</tbody></table></div>`; branchDetails.innerHTML += tableHTML; subDetails.appendChild(branchDetails);
+                    }
+                    regDetails.appendChild(subDetails);
+                }
+                container.appendChild(regDetails);
+            }
+        }
+
+        // --- ERS SPECIFIC DRILLDOWN ---
         function generateErsRoDrilldownHtml(owner) {
             let ownerDataAll = processedData;
-            if (owner === 'ALL') {
-                ownerDataAll = processedData.filter(ro => ersOwners.includes(ro.owner));
-            } else {
+            if (owner !== 'ALL') {
                 ownerDataAll = processedData.filter(ro => ro.owner === owner);
+            } else {
+                ownerDataAll = processedData.filter(ro => ersOwners.includes(ro.owner));
             }
 
             if (currentErsCustomerFilter !== 'ALL') {
@@ -1516,7 +1586,6 @@
                 });
             }
 
-            // Top Banner KPIs (5 Separate White Tiles)
             let filteredOpenROs = fRoData.filter(ro => ro.isOpen).length;
             let totalDowntimeHours = 0, validDowntimeCount = 0;
             let totalSOSMins = 0, validSOSCount = 0;
