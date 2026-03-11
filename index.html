@@ -134,7 +134,7 @@
         .stat-box .num.urgent { color: var(--urgent-red); }
         .stat-box .num.good { color: var(--low-green); }
 
-        /* Master Dashboard Inline Stats (Spans full width now) */
+        /* Master Dashboard Inline Stats */
         .home-master-tile .stat-box { padding: 15px 10px; }
         .home-master-tile .stat-box .title { font-size: 13px; }
         .home-master-tile .stat-box .num { font-size: 26px; }
@@ -686,7 +686,7 @@
                     const firstRow = sheetData[0];
                     const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
                     
-                    if (sheetName.toUpperCase().includes('ERS')) {
+                    if (sheetName.toUpperCase() === 'ERS') {
                         ersTabRaw = sheetData;
                     } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
                         resourceRaw = resourceRaw.concat(sheetData);
@@ -726,7 +726,7 @@
                         const firstRow = sheetData[0];
                         const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
                         
-                        if (sheetName.toUpperCase().includes('ERS')) {
+                        if (sheetName.toUpperCase() === 'ERS') {
                             ersTabRaw = sheetData;
                         } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
                             resourceRaw = resourceRaw.concat(sheetData);
@@ -794,7 +794,6 @@
         }
 
         function cleanErsRow(row, ownerMap) {
-            // FIXED COLUMN MAPPING FOR ERS TAB
             let rawOwner = getCol(row, ['Assignee name', 'Coordinator', 'Created By']);
             let finalOwner = rawOwner;
             if (rawOwner && ownerMap[rawOwner.toLowerCase().trim()]) {
@@ -803,8 +802,12 @@
             
             let customer = getCol(row, ['Customer', 'Customer Name']);
             let priorityStr = getCol(row, ['OSC - Priority', 'Priority', 'Call Type']).toUpperCase();
+            
+            // EXCLUDE NON-ERS TICKETS (SCHEDULED / CANCELED) ENTIRELY
+            if (priorityStr !== 'ERS') return null;
+
             let inDate = getCol(row, ['Intake Date - Date', 'Intake Date', 'Date']);
-            let inTime = getCol(row, ['Intake Time', 'Time']);
+            let inTime = getCol(row, ['Intake Time ', 'Intake Time', 'Time']);
             let vETA = getCol(row, ['Vendor Estimated Arrival Time', 'Vendor ETA', 'ETA']);
             let aDate = getCol(row, ['Actual Arrival Date - Date', 'Arrive Date', 'Arrival Date']);
             let aTime = getCol(row, ['Actual Arrival Time', 'Arrive Time', 'Arrival Time']);
@@ -825,15 +828,24 @@
             let dt = parseDateStringLocal(inDate);
             if (!dt || p.isMissing) metric.errIntake = true;
 
-            let intakeDT = null;
-            if (dt && !p.isMissing) {
-                let h = p.h, m = p.m;
-                if (p.ampm === 'pm' && h < 12) h += 12;
-                if (p.ampm === 'am' && h === 12) h = 0;
-                if (!p.ampm && h === 24) h = 0;
-                dt.setHours(h, m, 0, 0);
-                intakeDT = dt;
+            // EXCLUSION LOGIC: IF ANY REQUIRED FIELD IS BLANK/MISSING, DISCARD FROM DRILLDOWN
+            let isMissingRequired = (!inDate || !inTime || !vETA || !aDate || !aTime || !cDate || !cTime);
+
+            if (isMissingRequired || !dt || p.isMissing) {
+                metric.isGood = false;
+                if (!vETA) metric.errETA = true;
+                if (!aDate && !aTime) metric.errArrival = true;
+                if (!cDate && !cTime) metric.errResolution = true;
+                return { cleaned: null, metric: metric };
             }
+
+            let intakeDT = null;
+            let h = p.h, m = p.m;
+            if (p.ampm === 'pm' && h < 12) h += 12;
+            if (p.ampm === 'am' && h === 12) h = 0;
+            if (!p.ampm && h === 24) h = 0;
+            dt.setHours(h, m, 0, 0);
+            intakeDT = dt;
 
             function processEvent(dateStr, timeStr, minDT, maxDT) {
                 if(!minDT) return { dt: null, hasError: true };
@@ -871,22 +883,14 @@
                 return { dt: bestDT, hasError: hasError };
             }
 
-            let resETA = { dt: null, hasError: !vETA };
-            let resArr = { dt: null, hasError: !(aDate || aTime) };
-            let resComp = { dt: null, hasError: !(cDate || cTime) };
+            let maxAllowedDT = new Date(intakeDT.getTime());
+            if (intakeDT.getHours() >= 16) maxAllowedDT.setDate(maxAllowedDT.getDate() + 1);
+            maxAllowedDT.setHours(23, 59, 59, 999);
 
-            if (intakeDT) {
-                let maxAllowedDT = new Date(intakeDT.getTime());
-                if (priorityStr === 'ERS') {
-                    if (intakeDT.getHours() >= 16) maxAllowedDT.setDate(maxAllowedDT.getDate() + 1);
-                } else maxAllowedDT.setDate(maxAllowedDT.getDate() + 14); 
-                maxAllowedDT.setHours(23, 59, 59, 999);
-
-                resETA = processEvent(inDate, vETA, intakeDT, maxAllowedDT);
-                resArr = processEvent(aDate, aTime, intakeDT, maxAllowedDT);
-                resComp = processEvent(cDate, cTime, intakeDT, maxAllowedDT);
-            }
-
+            let resETA = processEvent(inDate, vETA, intakeDT, maxAllowedDT);
+            let resArr = processEvent(aDate, aTime, intakeDT, maxAllowedDT);
+            let resComp = processEvent(cDate, cTime, intakeDT, maxAllowedDT);
+            
             if (resETA.hasError) metric.errETA = true;
             if (resArr.hasError) metric.errArrival = true;
             if (resComp.hasError) metric.errResolution = true;
@@ -917,7 +921,6 @@
             row.sosMins = sosMins;
             row.vendorOnTime = vendorOnTime;
 
-            // Always return the cleaned row so it shows up in Open tickets!
             return { cleaned: row, metric: metric };
         }
 
@@ -961,7 +964,6 @@
                 if (createdBy) {
                     let key = createdBy.toLowerCase().trim();
                     let finalName = name || createdBy;
-                    // Dual indexing so Emails from tab1 AND Names from tab4 match correctly
                     ownerMap[key] = { name: finalName, status: status, team: team };
                     if (name) ownerMap[name.toLowerCase().trim()] = { name: finalName, status: status, team: team };
                     
@@ -1095,15 +1097,17 @@
                 return { roNum, customer, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, priority: priorityStr, priorityClass, ecdState, ecdFormatted, openedDT };
             }).filter(ro => ro.roNum !== '');
 
-            // 5. Process ERS Data through correctly bound cleaner function
+            // Process ERS logic
             rawErsData = [];
             masterErsMetrics = [];
             if (ersTabRaw && ersTabRaw.length > 0) {
                 for (let i = 0; i < ersTabRaw.length; i++) {
                     let result = cleanErsRow(ersTabRaw[i], ownerMap);
-                    if (result && result.cleaned) {
-                        masterErsMetrics.push(result.metric);
-                        rawErsData.push(result.cleaned);
+                    if (result) {
+                        masterErsMetrics.push(result.metric); // Scorecard data
+                        if (result.cleaned) {
+                            rawErsData.push(result.cleaned); // Good data for metrics/drilldown
+                        }
                     }
                 }
             }
