@@ -101,8 +101,10 @@
         .kpi-name { font-size: 20px; font-weight: 800; margin-bottom: 15px; color: #333; }
         
         /* Master Dashboard Container & Layout */
-        .home-dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
-        .filter-select { padding: 8px 15px; border-radius: 4px; border: 1px solid #ccc; font-weight: 700; font-size: 14px; }
+        .home-dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); flex-wrap: wrap; gap: 15px;}
+        .filter-select { padding: 8px 15px; border-radius: 4px; border: 1px solid #ccc; font-weight: 700; font-size: 14px; background: #fff;}
+        .date-controls { display: flex; gap: 10px; align-items: center; }
+        .date-controls label { font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase;}
         
         .home-kpi-container { 
             display: flex; gap: 15px; flex-wrap: nowrap; width: 100%; overflow-x: auto; padding-bottom: 15px;
@@ -138,7 +140,7 @@
         .home-master-tile .stat-box .num { font-size: 26px; }
 
         /* Data Table & Drilldown Elements */
-        .view-title { font-size: 24px; margin-bottom: 15px; color: #333; display: flex; justify-content: space-between; align-items: center;}
+        .view-title { font-size: 24px; margin-bottom: 15px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
         .controls-group button { padding: 8px 15px; margin-left: 10px; cursor: pointer; background: #666; color: #fff; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
         .controls-group button:hover { background: #444; }
         .btn-export { background: #5cb85c !important; } 
@@ -278,9 +280,14 @@
             </div>
             <div id="home-dashboard" style="display:none;">
                 <div class="home-dashboard-header">
-                    <div style="display:flex; align-items:center; gap: 20px;">
-                        <h2 style="margin:0;">Aggregate Performance Overview</h2>
-                        <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
+                    <h2 style="margin:0;">Aggregate Performance Overview</h2>
+                    <div class="date-controls">
+                        <label>Date Range:</label>
+                        <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
+                        <span style="font-weight:bold; color:#666;">-</span>
+                        <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
+                        
+                        <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)" style="margin-left: 10px;">
                             <option value="ALL">All Customers</option>
                             <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
                             <option value="BRINKS">Brinks</option>
@@ -299,9 +306,13 @@
 
         <div id="pm-view" class="view-section">
             <div class="view-title">
-                <div style="display:flex; align-items:center; gap: 20px;">
-                    <span style="font-weight: 700;">PM Queue</span>
-                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
+                <span style="font-weight: 700;">PM Queue</span>
+                <div class="date-controls">
+                    <label>Date Range:</label>
+                    <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
+                    <span style="font-weight:bold; color:#666;">-</span>
+                    <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
+                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)" style="margin-left: 10px;">
                         <option value="ALL">All Customers</option>
                         <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
                         <option value="BRINKS">Brinks</option>
@@ -326,9 +337,13 @@
 
         <div id="vended-view" class="view-section">
             <div class="view-title">
-                <div style="display:flex; align-items:center; gap: 20px;">
-                    <span style="font-weight: 700;">Vended Repair Queue</span>
-                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
+                <span style="font-weight: 700;">Vended Repair Queue</span>
+                <div class="date-controls">
+                    <label>Date Range:</label>
+                    <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
+                    <span style="font-weight:bold; color:#666;">-</span>
+                    <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
+                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)" style="margin-left: 10px;">
                         <option value="ALL">All Customers</option>
                         <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
                         <option value="BRINKS">Brinks</option>
@@ -353,9 +368,13 @@
 
         <div id="ers-view" class="view-section">
             <div class="view-title">
-                <div style="display:flex; align-items:center; gap: 20px;">
-                    <span style="font-weight: 700;">ERS Queue</span>
-                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
+                <span style="font-weight: 700;">ERS Queue</span>
+                <div class="date-controls">
+                    <label>Date Range:</label>
+                    <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
+                    <span style="font-weight:bold; color:#666;">-</span>
+                    <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
+                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)" style="margin-left: 10px;">
                         <option value="ALL">All Customers</option>
                         <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
                         <option value="BRINKS">Brinks</option>
@@ -514,6 +533,8 @@
         let processedData = []; 
         let currentFilter = 'ALL';
         let currentCustomerFilter = 'ALL';
+        let currentStartDate = '';
+        let currentEndDate = '';
         let currentOwnerView = '';
         let currentParentView = '';
         let globalChartInstances = {}; 
@@ -548,6 +569,180 @@
             }
             return '';
         }
+
+        // --- EXPORT LOGIC ---
+        function exportDrilldownToExcel() {
+            if (!currentOwnerView || processedData.length === 0) return;
+            let ownerDataAll = processedData.filter(ro => ro.owner === currentOwnerView);
+            
+            if (currentCustomerFilter !== 'ALL') {
+                ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+            }
+
+            let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
+            let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
+            if (sDate || eDate) {
+                ownerDataAll = ownerDataAll.filter(ro => {
+                    if (!ro.openedDT) return false;
+                    if (sDate && ro.openedDT < sDate) return false;
+                    if (eDate && ro.openedDT > eDate) return false;
+                    return true;
+                });
+            }
+
+            let targetData = ownerDataAll.filter(ro => ro.isOpen);
+            if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
+            else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
+            else if(currentFilter === 'LOW') targetData = targetData.filter(ro => ro.priority === 'LOW');
+            else if(currentFilter === 'OOS') targetData = targetData.filter(ro => ro.isOOS);
+
+            if (targetData.length === 0) { alert("No data available to export."); return; }
+
+            const excelRows = targetData.map(ro => ({
+                "AFS RO #": ro.roNum, "Unit No": ro.unitNo, "Priority": ro.priority,
+                "OOS Status": (ro.customer.toUpperCase().includes('GARDA') && ro.isOOS) ? "OOS" : "",
+                "Total Unit ROs": ro.roCount, "Status": ro.status, "ECD": ro.ecdFormatted,
+                "Task / VMRS": ro.vmrs, "Customer Group": ro.drillTopLevel, "Subregion": ro.subregion, "Branch": ro.branch
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered ROs");
+            XLSX.writeFile(workbook, `workflow_export_${currentOwnerView.replace(/\s+/g, '_')}_${currentFilter.toLowerCase()}.xlsx`);
+        }
+
+        function exportErsDrilldownToExcel() {
+            if (currentErsViewData.length === 0) { alert("No ERS data to export."); return; }
+            
+            const excelRows = currentErsViewData.map(ro => ({
+                "Ticket ID": ro.ticketId,
+                "Customer": ro.customer,
+                "Coordinator": ro.coordinator,
+                "Date / Time": formatDateTimeShort(ro.intakeDT),
+                "Call Type": ro.priority,
+                "Event Status": ro.eventStatus,
+                "SOS Time (Mins)": ro.sosMins >= 0 ? Math.round(ro.sosMins) : 'N/A',
+                "Downtime (Hrs)": ro.downtimeHours >= 0 ? ro.downtimeHours.toFixed(2) : 'N/A'
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "ERS Tickets");
+            XLSX.writeFile(workbook, `ers_export_${currentOwnerView.replace(/\s+/g, '_')}.xlsx`);
+        }
+
+        // --- FILTER & CUSTOMER & DATE DROPDOWN LOGIC ---
+        function setFilter(val) {
+            currentFilter = val;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.filter === val) { btn.classList.add('active'); btn.style.background = 'var(--gold)'; } 
+                else { btn.classList.remove('active'); btn.style.background = '#e0e0e0'; }
+            });
+            triggerViewUpdate();
+        }
+
+        function setCustomerFilter(val) {
+            currentCustomerFilter = val;
+            document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = val; });
+            triggerViewUpdate();
+        }
+
+        function setDateFilter(type, val) {
+            if (type === 'start') {
+                currentStartDate = val;
+                document.querySelectorAll('.date-filter-start').forEach(el => el.value = val);
+            } else {
+                currentEndDate = val;
+                document.querySelectorAll('.date-filter-end').forEach(el => el.value = val);
+            }
+            triggerViewUpdate();
+        }
+
+        function triggerViewUpdate() {
+            if(lastActiveView === 'home-view') renderHomeDashboard();
+            else if(lastActiveView === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
+            else if(lastActiveView === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
+            else if(lastActiveView === 'ers-view') renderErsTiles();
+            else if(lastActiveView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView); }
+            else if(lastActiveView === 'ers-detail-view') { if(currentOwnerView) loadErsDrilldown(currentOwnerView, currentParentView); }
+        }
+
+        // --- AUTO-FETCH LOGIC ---
+        window.onload = async () => {
+            const statusEl = document.getElementById('upload-status');
+            try {
+                const response = await fetch('master_workFLOW.xlsx');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                statusEl.innerText = "File found! Processing data...";
+                const data = await response.arrayBuffer();
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                let vroRaw = [], resourceRaw = [], oosRaw = [], ersTabRaw = [];
+                
+                workbook.SheetNames.forEach(sheetName => {
+                    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: ''});
+                    if(sheetData.length === 0) return;
+                    
+                    const firstRow = sheetData[0];
+                    const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
+                    
+                    if (sheetName.toUpperCase() === 'ERS') {
+                        ersTabRaw = sheetData;
+                    } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
+                        resourceRaw = resourceRaw.concat(sheetData);
+                    } else if (keys.includes('garda region') || keys.includes('oos flag')) {
+                        oosRaw = oosRaw.concat(sheetData);
+                    } else {
+                        vroRaw = vroRaw.concat(sheetData);
+                    }
+                });
+                processExcelData(vroRaw, resourceRaw, oosRaw, ersTabRaw);
+            } catch (error) {
+                console.error("Auto-fetch failed:", error);
+                statusEl.innerText = "Auto-load failed. Use manual upload.";
+                statusEl.style.color = "red";
+                document.getElementById('manual-upload-section').style.display = 'block';
+            }
+        };
+
+        // --- MANUAL UPLOAD FALLBACK ---
+        document.getElementById('excelFileInput').addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            const statusEl = document.getElementById('upload-status');
+            statusEl.innerText = "Reading manual upload...";
+            
+            let vroRaw = [], resourceRaw = [], oosRaw = [], ersTabRaw = [];
+            
+            try {
+                for(let file of files) {
+                    const data = await file.arrayBuffer();
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    workbook.SheetNames.forEach(sheetName => {
+                        const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: ''});
+                        if(sheetData.length === 0) return;
+                        
+                        const firstRow = sheetData[0];
+                        const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
+                        
+                        if (sheetName.toUpperCase() === 'ERS') {
+                            ersTabRaw = sheetData;
+                        } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
+                            resourceRaw = resourceRaw.concat(sheetData);
+                        } else if (keys.includes('garda region') || keys.includes('oos flag')) {
+                            oosRaw = oosRaw.concat(sheetData);
+                        } else {
+                            vroRaw = vroRaw.concat(sheetData);
+                        }
+                    });
+                }
+                processExcelData(vroRaw, resourceRaw, oosRaw, ersTabRaw);
+            } catch (error) { 
+                console.error(error); 
+                statusEl.innerText = "Error parsing files."; 
+            }
+        });
 
         // --- ERS CLEANER FUNCTIONS ---
         function extractTimeParts(str) {
@@ -601,6 +796,7 @@
         function cleanErsRow(row, ownerMap) {
             let rawOwner = getCol(row, ['Coordinator', 'Created By']);
             let finalOwner = rawOwner;
+            // ERS Tab uses Names, but ownerMap is indexed by both Email and Name.
             if (rawOwner && ownerMap[rawOwner.toLowerCase().trim()]) {
                 finalOwner = ownerMap[rawOwner.toLowerCase().trim()].name;
             }
@@ -731,158 +927,7 @@
             return { cleaned: row, metric: metric };
         }
 
-        // --- EXPORT LOGIC ---
-        function exportDrilldownToExcel() {
-            if (!currentOwnerView || processedData.length === 0) return;
-            let ownerDataAll = processedData.filter(ro => ro.owner === currentOwnerView);
-            
-            if (currentCustomerFilter !== 'ALL') {
-                ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
-            }
-
-            let targetData = ownerDataAll.filter(ro => ro.isOpen);
-            if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
-            else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
-            else if(currentFilter === 'LOW') targetData = targetData.filter(ro => ro.priority === 'LOW');
-            else if(currentFilter === 'OOS') targetData = targetData.filter(ro => ro.isOOS);
-
-            if (targetData.length === 0) { alert("No data available to export."); return; }
-
-            const excelRows = targetData.map(ro => ({
-                "AFS RO #": ro.roNum, "Unit No": ro.unitNo, "Priority": ro.priority,
-                "OOS Status": (ro.customer.toUpperCase().includes('GARDA') && ro.isOOS) ? "OOS" : "",
-                "Total Unit ROs": ro.roCount, "Status": ro.status, "ECD": ro.ecdFormatted,
-                "Task / VMRS": ro.vmrs, "Customer Group": ro.drillTopLevel, "Subregion": ro.subregion, "Branch": ro.branch
-            }));
-
-            const worksheet = XLSX.utils.json_to_sheet(excelRows);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered ROs");
-            XLSX.writeFile(workbook, `workflow_export_${currentOwnerView.replace(/\s+/g, '_')}_${currentFilter.toLowerCase()}.xlsx`);
-        }
-
-        function exportErsDrilldownToExcel() {
-            if (currentErsViewData.length === 0) { alert("No ERS data to export."); return; }
-            
-            const excelRows = currentErsViewData.map(ro => ({
-                "Ticket ID": ro.ticketId,
-                "Customer": ro.customer,
-                "Coordinator": ro.coordinator,
-                "Date / Time": formatDateTimeShort(ro.intakeDT),
-                "Call Type": ro.priority,
-                "Event Status": ro.eventStatus,
-                "SOS Time (Mins)": ro.sosMins >= 0 ? Math.round(ro.sosMins) : 'N/A',
-                "Downtime (Hrs)": ro.downtimeHours >= 0 ? ro.downtimeHours.toFixed(2) : 'N/A'
-            }));
-
-            const worksheet = XLSX.utils.json_to_sheet(excelRows);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "ERS Tickets");
-            XLSX.writeFile(workbook, `ers_export_${currentOwnerView.replace(/\s+/g, '_')}.xlsx`);
-        }
-
-        // --- FILTER & CUSTOMER DROPDOWN LOGIC ---
-        function setFilter(val) {
-            currentFilter = val;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                if(btn.dataset.filter === val) { btn.classList.add('active'); btn.style.background = 'var(--gold)'; } 
-                else { btn.classList.remove('active'); btn.style.background = '#e0e0e0'; }
-            });
-            triggerViewUpdate();
-        }
-
-        function setCustomerFilter(val) {
-            currentCustomerFilter = val;
-            document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = val; });
-            triggerViewUpdate();
-        }
-
-        function triggerViewUpdate() {
-            if(lastActiveView === 'home-view') renderHomeDashboard();
-            else if(lastActiveView === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
-            else if(lastActiveView === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
-            else if(lastActiveView === 'ers-view') renderErsTiles();
-            else if(lastActiveView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView); }
-            else if(lastActiveView === 'ers-detail-view') { if(currentOwnerView) loadErsDrilldown(currentOwnerView, currentParentView); }
-        }
-
-        // --- AUTO-FETCH LOGIC ---
-        window.onload = async () => {
-            const statusEl = document.getElementById('upload-status');
-            try {
-                const response = await fetch('master_workFLOW.xlsx');
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                statusEl.innerText = "File found! Processing data...";
-                const data = await response.arrayBuffer();
-                const workbook = XLSX.read(data, {type: 'array'});
-                
-                let vroRaw = [], resourceRaw = [], oosRaw = [], ersTabRaw = [];
-                
-                workbook.SheetNames.forEach(sheetName => {
-                    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: ''});
-                    if(sheetData.length === 0) return;
-                    
-                    const firstRow = sheetData[0];
-                    const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
-                    
-                    if (sheetName.toUpperCase().includes('ERS')) {
-                        ersTabRaw = sheetData;
-                    } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
-                        resourceRaw = resourceRaw.concat(sheetData);
-                    } else if (keys.includes('garda region') || keys.includes('oos flag')) {
-                        oosRaw = oosRaw.concat(sheetData);
-                    } else {
-                        vroRaw = vroRaw.concat(sheetData);
-                    }
-                });
-                processExcelData(vroRaw, resourceRaw, oosRaw, ersTabRaw);
-            } catch (error) {
-                console.error("Auto-fetch failed:", error);
-                statusEl.innerText = "Auto-load failed. Use manual upload.";
-                statusEl.style.color = "red";
-                document.getElementById('manual-upload-section').style.display = 'block';
-            }
-        };
-
-        // --- MANUAL UPLOAD FALLBACK ---
-        document.getElementById('excelFileInput').addEventListener('change', async function(e) {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
-            const statusEl = document.getElementById('upload-status');
-            statusEl.innerText = "Reading manual upload...";
-            
-            let vroRaw = [], resourceRaw = [], oosRaw = [], ersTabRaw = [];
-            
-            try {
-                for(let file of files) {
-                    const data = await file.arrayBuffer();
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    workbook.SheetNames.forEach(sheetName => {
-                        const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: ''});
-                        if(sheetData.length === 0) return;
-                        
-                        const firstRow = sheetData[0];
-                        const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
-                        
-                        if (sheetName.toUpperCase().includes('ERS')) {
-                            ersTabRaw = sheetData;
-                        } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
-                            resourceRaw = resourceRaw.concat(sheetData);
-                        } else if (keys.includes('garda region') || keys.includes('oos flag')) {
-                            oosRaw = oosRaw.concat(sheetData);
-                        } else {
-                            vroRaw = vroRaw.concat(sheetData);
-                        }
-                    });
-                }
-                processExcelData(vroRaw, resourceRaw, oosRaw, ersTabRaw);
-            } catch (error) { 
-                console.error(error); 
-                statusEl.innerText = "Error parsing files."; 
-            }
-        });
-
+        // --- PROCESS DATA ---
         function processExcelData(vroRaw, resourceRaw, oosRaw, ersTabRaw) {
             const today = new Date(); today.setHours(0, 0, 0, 0);
             
@@ -922,7 +967,9 @@
                 if (createdBy) {
                     let key = createdBy.toLowerCase().trim();
                     let finalName = name || createdBy;
+                    // Double index map by Email AND Name so ERS tab works flawlessly
                     ownerMap[key] = { name: finalName, status: status, team: team };
+                    if (name) ownerMap[name.toLowerCase().trim()] = { name: finalName, status: status, team: team };
                     
                     if (status === 'ACTIVE') {
                         if (team === 'PM') activePM.add(finalName);
@@ -961,6 +1008,9 @@
                 let finalOwner = rawOwner;
                 let ownerLookup = ownerMap[rawOwner.toLowerCase().trim()];
                 if (ownerLookup) finalOwner = ownerLookup.name;
+
+                let openedDate = new Date(openedRaw);
+                let openedDT = isNaN(openedDate.getTime()) ? null : openedDate;
 
                 let taskStr = vmrs.toLowerCase();
                 let isPMOrder = false;
@@ -1019,7 +1069,6 @@
                             else if (diffDays <= 10) { priorityStr = 'MEDIUM'; priorityClass = 'badge-medium'; }
                         }
                     } else {
-                        let openedDate = new Date(openedRaw);
                         if (!isNaN(openedDate.getTime())) {
                             let diffDays = Math.floor((today - openedDate) / (1000 * 60 * 60 * 24));
                             if (diffDays > 7 || isOOS) { priorityStr = 'URGENT'; priorityClass = 'badge-urgent'; }
@@ -1049,10 +1098,10 @@
                     } else isCompletedKPI = false;
                 }
                 
-                return { roNum, customer, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, priority: priorityStr, priorityClass, ecdState, ecdFormatted };
+                return { roNum, customer, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, priority: priorityStr, priorityClass, ecdState, ecdFormatted, openedDT };
             }).filter(ro => ro.roNum !== '');
 
-            // Process ERS logic
+            // Process ERS logic (Now successfully bound!)
             rawErsData = [];
             masterErsMetrics = [];
             if (ersTabRaw && ersTabRaw.length > 0) {
@@ -1130,6 +1179,7 @@
             return innerHtml;
         }
 
+        // --- NEW ERS KPI TILE ---
         function generateErsTileHTML(name, metricsArray, dataArray) {
             let totalDowntimeHours = 0, validDowntimeCount = 0;
             let totalSOSMins = 0, validSOSCount = 0;
@@ -1153,26 +1203,55 @@
             return `
                 <div class="kpi-name">${name}</div>
                 <div class="kpi-top-metrics">
-                    <div class="highlight-box" style="border-color:#8b5cf6;">
-                        <div class="title">Call Volume</div>
-                        <div class="num" style="color:#8b5cf6;">${vol}</div>
+                    <div class="highlight-box" style="border-color:#ef4444;">
+                        <div class="title">Avg Downtime</div>
+                        <div class="num" style="color:#ef4444;">${avgDowntime}h</div>
                     </div>
-                    <div class="highlight-box" style="border-color:#10b981;">
-                        <div class="title">Vendor On-Time</div>
-                        <div class="num" style="color:#10b981;">${onTimePct}%</div>
+                    <div class="highlight-box" style="border-color:#f59e0b;">
+                        <div class="title">Avg SOS Time</div>
+                        <div class="num" style="color:#f59e0b;">${sosStr}</div>
                     </div>
                 </div>
                 <div class="kpi-stats-grid" style="grid-template-columns: 1fr 1fr;">
                     <div class="stat-box">
-                        <div class="title">Avg Downtime</div>
-                        <div class="num">${avgDowntime} hrs</div>
+                        <div class="title">Call Volume</div>
+                        <div class="num">${vol}</div>
                     </div>
                     <div class="stat-box">
-                        <div class="title">Avg SOS Time</div>
-                        <div class="num">${sosStr}</div>
+                        <div class="title">Vendor On-Time</div>
+                        <div class="num good">${onTimePct}%</div>
                     </div>
                 </div>
             `;
+        }
+
+        Chart.register({
+            id: 'centerText',
+            beforeDraw: function(chart) {
+                if (chart.config.options.elements.center) {
+                    var ctx = chart.ctx; var centerConfig = chart.config.options.elements.center;
+                    var txt = centerConfig.text;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    var centerX = ((chart.chartArea.left + chart.chartArea.right) / 2);
+                    var centerY = ((chart.chartArea.top + chart.chartArea.bottom) / 2);
+                    ctx.font = "bold 24px Raleway"; ctx.fillStyle = centerConfig.color || '#333';
+                    ctx.fillText(txt, centerX, centerY);
+                }
+            }
+        });
+
+        function initChart(chartId) {
+            const canvas = document.getElementById(chartId); if(!canvas) return;
+            const comp = parseInt(canvas.getAttribute('data-comp')) || 0;
+            const late = parseInt(canvas.getAttribute('data-late')) || 0;
+            let chartData = [comp, late]; let bgColors = ['#5cb85c', '#d9534f'];
+            if (comp === 0 && late === 0) { chartData = [1]; bgColors = ['#e0e0e0']; }
+            if(globalChartInstances[chartId]) globalChartInstances[chartId].destroy();
+            globalChartInstances[chartId] = new Chart(canvas.getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: ['On-Time', 'Late'], datasets: [{ data: chartData, backgroundColor: bgColors, borderWidth: 0 }] },
+                options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } }, elements: { center: { text: comp + '%' } } }
+            });
         }
 
         function renderHomeDashboard() {
@@ -1182,12 +1261,38 @@
             let aggErsMetrics = masterErsMetrics;
             let aggErsData = rawErsData;
 
+            // Apply Customer Filter
             if (currentCustomerFilter !== 'ALL') {
                 aggData = aggData.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
                 aggErsMetrics = aggErsMetrics.filter(m => m.customer.toUpperCase().includes(currentCustomerFilter));
                 aggErsData = aggErsData.filter(ro => ro.customerStr.toUpperCase().includes(currentCustomerFilter));
             }
             
+            // Apply Global Date Filter
+            let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
+            let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
+            if (sDate || eDate) {
+                aggData = aggData.filter(ro => {
+                    if (!ro.openedDT) return false;
+                    if (sDate && ro.openedDT < sDate) return false;
+                    if (eDate && ro.openedDT > eDate) return false;
+                    return true;
+                });
+                aggErsData = aggErsData.filter(ro => {
+                    if (!ro.intakeDT) return false;
+                    if (sDate && ro.intakeDT < sDate) return false;
+                    if (eDate && ro.intakeDT > eDate) return false;
+                    return true;
+                });
+                aggErsMetrics = aggErsMetrics.filter(m => {
+                    let idt = parseDateStringLocal(m.intakeDateRaw);
+                    if (!idt) return false;
+                    if (sDate && idt < sDate) return false;
+                    if (eDate && idt > eDate) return false;
+                    return true;
+                });
+            }
+
             let pmData = aggData.filter(ro => pmOwners.includes(ro.owner));
             let vendedData = aggData.filter(ro => vendedOwners.includes(ro.owner));
 
@@ -1217,6 +1322,17 @@
                     ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
                 }
 
+                let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
+                let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
+                if (sDate || eDate) {
+                    ownerDataAll = ownerDataAll.filter(ro => {
+                        if (!ro.openedDT) return false;
+                        if (sDate && ro.openedDT < sDate) return false;
+                        if (eDate && ro.openedDT > eDate) return false;
+                        return true;
+                    });
+                }
+
                 let targetData = ownerDataAll.filter(ro => ro.isOpen);
                 if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
                 else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
@@ -1237,12 +1353,30 @@
             if(rawErsData.length === 0) return;
 
             ersOwners.forEach(owner => {
-                let metrics = masterErsMetrics.filter(m => m.coordinator === owner);
-                let data = rawErsData.filter(d => d.finalOwner === owner);
+                let metrics = masterErsMetrics.filter(m => m.coordinator.toLowerCase().trim() === owner.toLowerCase().trim());
+                let data = rawErsData.filter(d => d.finalOwner.toLowerCase().trim() === owner.toLowerCase().trim());
 
                 if (currentCustomerFilter !== 'ALL') {
                     metrics = metrics.filter(m => m.customer.toUpperCase().includes(currentCustomerFilter));
                     data = data.filter(d => d.customerStr.toUpperCase().includes(currentCustomerFilter));
+                }
+
+                let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
+                let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
+                if (sDate || eDate) {
+                    data = data.filter(ro => {
+                        if (!ro.intakeDT) return false;
+                        if (sDate && ro.intakeDT < sDate) return false;
+                        if (eDate && ro.intakeDT > eDate) return false;
+                        return true;
+                    });
+                    metrics = metrics.filter(m => {
+                        let idt = parseDateStringLocal(m.intakeDateRaw);
+                        if (!idt) return false;
+                        if (sDate && idt < sDate) return false;
+                        if (eDate && idt > eDate) return false;
+                        return true;
+                    });
                 }
 
                 if (currentFilter !== 'ALL') {
@@ -1271,6 +1405,17 @@
             
             if (currentCustomerFilter !== 'ALL') {
                 ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+            }
+
+            let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
+            let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
+            if (sDate || eDate) {
+                ownerDataAll = ownerDataAll.filter(ro => {
+                    if (!ro.openedDT) return false;
+                    if (sDate && ro.openedDT < sDate) return false;
+                    if (eDate && ro.openedDT > eDate) return false;
+                    return true;
+                });
             }
 
             let targetData = ownerDataAll.filter(ro => ro.isOpen);
@@ -1331,13 +1476,31 @@
             let fData = rawErsData;
 
             if (owner !== 'ALL') {
-                fMetrics = fMetrics.filter(m => m.coordinator === owner);
-                fData = fData.filter(d => d.finalOwner === owner);
+                fMetrics = fMetrics.filter(m => m.coordinator.toLowerCase().trim() === owner.toLowerCase().trim());
+                fData = fData.filter(d => d.finalOwner.toLowerCase().trim() === owner.toLowerCase().trim());
             }
 
             if (currentCustomerFilter !== 'ALL') {
                 fMetrics = fMetrics.filter(m => m.customer.toUpperCase().includes(currentCustomerFilter));
                 fData = fData.filter(d => d.customerStr.toUpperCase().includes(currentCustomerFilter));
+            }
+
+            let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
+            let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
+            if (sDate || eDate) {
+                fData = fData.filter(ro => {
+                    if (!ro.intakeDT) return false;
+                    if (sDate && ro.intakeDT < sDate) return false;
+                    if (eDate && ro.intakeDT > eDate) return false;
+                    return true;
+                });
+                fMetrics = fMetrics.filter(m => {
+                    let idt = parseDateStringLocal(m.intakeDateRaw);
+                    if (!idt) return false;
+                    if (sDate && idt < sDate) return false;
+                    if (eDate && idt > eDate) return false;
+                    return true;
+                });
             }
 
             if (currentFilter !== 'ALL') {
@@ -1543,7 +1706,11 @@
         function navigate(viewId, menuElement = null, preserveCustomerFilter = false) {
             if (!preserveCustomerFilter) {
                 currentCustomerFilter = 'ALL';
+                currentStartDate = '';
+                currentEndDate = '';
                 document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = 'ALL'; });
+                document.querySelectorAll('.date-filter-start').forEach(el => { el.value = ''; });
+                document.querySelectorAll('.date-filter-end').forEach(el => { el.value = ''; });
             }
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
