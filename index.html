@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>workFLOW + | Workflow Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Global Styles & Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Raleway', sans-serif; }
+        body { display: flex; height: 100vh; background-color: #f4f6f9; color: #333; overflow: hidden; }
+        a { text-decoration: none; }
+        
+        /* Variables */
+        :root {
+            --sidebar-bg: #3a3b40;
+            --sidebar-hover: #4a4b50;
+            --gold: #dfb122;
+            --gold-hover: #c49a1d;
+            --urgent-red: #d9534f;
+            --medium-yellow: #f0ad4e;
+            --low-green: #5cb85c;
+            --text-light: #f1f1f1;
+            --border: #e0e0e0;
+        }
+
+        /* Sidebar */
+        .sidebar { width: 280px; background-color: var(--sidebar-bg); color: var(--text-light); display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 20px; font-size: 24px; font-weight: bold; display: flex; align-items: center; border-bottom: 1px solid #2a2b30; color: var(--gold); }
+        .sidebar-header .logo-text { color: white; margin-left: 8px; font-weight: 800; letter-spacing: 0.5px; }
+        .sidebar-header .logo-plus { color: var(--gold); font-size: 34px; font-weight: 800; margin-left: 3px; line-height: 1; }
+        
+        .menu-item { padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #4a4b50; font-size: 14px; font-weight: 600; transition: 0.2s;}
+        .menu-item:hover, .menu-item.active { background-color: var(--sidebar-hover); color: var(--gold); }
+        
+        /* Sidebar Truck Graphic */
+        .sidebar-truck { margin-top: auto; padding: 30px; text-align: center; border-top: 1px solid #4a4b50; background: #2a2b30; }
+
+        /* Animations CSS */
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes bump { 
+            0%, 100% { transform: translateY(0); } 
+            50% { transform: translateY(-1.5px); } 
+        }
+        @keyframes moveRoad {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: 15; }
+        }
+        .logo-spin { animation: spin 4s linear infinite; transform-origin: center; display: inline-block; }
+        .moving-truck-svg { overflow: visible; }
+        .truck-body { animation: bump 0.4s ease-in-out infinite; }
+        .wheel { animation: spin 0.8s linear infinite; }
+        .road-line { animation: moveRoad 0.4s linear infinite; }
+
+        /* Main Content Area */
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+        
+        /* Top Navigation Bar */
+        .top-bar { background: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; flex-shrink: 0; }
+        .search-container input { padding: 10px 15px; width: 300px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; }
+        .top-actions { display: flex; gap: 15px; }
+        .btn-action { background-color: var(--gold); color: #fff; padding: 10px 20px; border-radius: 4px; font-weight: bold; transition: 0.2s; border: none; }
+        .btn-action:hover { background-color: var(--gold-hover); }
+
+        /* Views */
+        .view-section { padding: 30px; display: none; }
+        .view-section.active { display: block; }
+
+        /* Home View & File Upload */
+        .home-title { font-size: 36px; font-weight: 300; margin-bottom: 5px; color: #444; }
+        .home-subtitle { font-size: 16px; color: #777; margin-bottom: 30px; }
+        
+        .upload-container { background: #fff; padding: 30px; border-radius: 8px; border: 2px dashed #ccc; text-align: center; max-width: 500px; margin-top: 20px; transition: 0.2s; }
+        .upload-container:hover { border-color: var(--gold); background: #fdfdfd; }
+        .upload-container h3 { margin-bottom: 15px; color: #444; }
+        .upload-container input[type="file"] { display: none; }
+        .upload-btn { background-color: #444; color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-block; transition: 0.2s; font-size: 13px;}
+        .upload-btn:hover { background-color: #222; }
+        #upload-status { margin-top: 15px; font-size: 14px; font-weight: bold; color: #2e7d32; }
+
+        /* Filter Tabs */
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+        .filter-btn { 
+            padding: 10px 20px; 
+            border: none; 
+            background-color: #e0e0e0; 
+            color: #333; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 13px; 
+            transition: 0.2s; 
+        }
+        .filter-btn:hover { background-color: #d0d0d0; }
+        .filter-btn.active { background-color: var(--gold); color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .filter-btn.active:hover { background-color: var(--gold-hover); }
+
+        /* General KPI Tiles Grid */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+        .kpi-tile { background: #fff; padding: 25px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); cursor: pointer; border-top: 4px solid var(--gold); transition: transform 0.2s; display: flex; flex-direction: column;}
+        .kpi-tile:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        .kpi-name { font-size: 20px; font-weight: 800; margin-bottom: 15px; color: #333; }
+        
+        /* Master Dashboard Container & Tiles */
+        .home-dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+        .filter-select { padding: 8px 15px; border-radius: 4px; border: 1px solid #ccc; font-weight: 700; font-size: 14px; }
+        
+        .home-kpi-container { 
+            display: flex; 
+            gap: 30px; 
+            flex-wrap: nowrap; 
+            width: 100%; 
+            overflow-x: auto; 
+            padding-bottom: 15px;
+        }
+        
+        .home-master-tile { 
+            flex: 1; 
+            min-width: 650px; 
+            padding: 30px; 
+            cursor: default; 
+            border-top: 4px solid #333 !important; 
+        }
+        .home-master-tile:hover { transform: none; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .home-master-tile .kpi-name { font-size: 26px; margin-bottom: 20px; }
+        
+        .flex-tile { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
+        .flex-tile-left { flex: 1; min-width: 0; }
+        .flex-tile-right { width: 220px; height: 220px; flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: center; }
+
+        /* Highlight Boxes */
+        .kpi-top-metrics { display: flex; gap: 15px; margin-bottom: 15px; }
+        .highlight-box { flex: 1; background: #fffaf0; border: 1px solid var(--gold); border-radius: 6px; padding: 15px 20px; display: flex; flex-direction: column; justify-content: center;}
+        .highlight-box.urgent-box { background: #fff0f0; border-color: var(--urgent-red); }
+        .highlight-box .title { font-size: 18px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 10px; text-align: left; }
+        .highlight-box .num { font-size: 46px; font-weight: 800; color: var(--gold); line-height: 1; text-align: right; }
+        .highlight-box.urgent-box .num { color: var(--urgent-red); }
+
+        .home-master-tile .highlight-box .title { font-size: 20px; }
+        .home-master-tile .highlight-box .num { font-size: 56px; }
+
+        /* Advanced KPI Layout */
+        .kpi-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; flex-grow: 1;}
+        .stat-box { background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center; }
+        .stat-box .title { font-size: 12px; color: #666; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
+        .stat-box .num { font-size: 20px; font-weight: 700; color: #444; }
+        .stat-box .num.urgent { color: var(--urgent-red); }
+        .stat-box .num.good { color: var(--low-green); }
+
+        .home-master-tile .kpi-stats-grid { 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 15px; 
+            padding-top: 20px;
+        }
+        .home-master-tile .stat-box { padding: 15px 10px; }
+        .home-master-tile .stat-box .title { font-size: 13px; }
+        .home-master-tile .stat-box .num { font-size: 26px; }
+
+        /* Data Table & Drilldown */
+        .view-title { font-size: 24px; margin-bottom: 15px; color: #333; display: flex; justify-content: space-between; align-items: center;}
+        
+        .controls-group button { padding: 8px 15px; margin-left: 10px; cursor: pointer; background: #666; color: #fff; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
+        .controls-group button:hover { background: #444; }
+        .btn-export { background: #5cb85c !important; } 
+        .btn-export:hover { background: #449d44 !important; }
+        
+        .drilldown-container { background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 20px; margin-top: 10px; }
+        
+        details { margin-bottom: 10px; }
+        summary { font-weight: 700; padding: 10px; background-color: #f9fafc; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; user-select: none; }
+        summary:hover { background-color: #f1f3f6; }
+        details details { margin-left: 20px; margin-top: 5px; }
+        details details summary { background-color: #fff; color: #555; border-left: 3px solid var(--gold); }
+        details details details { margin-left: 20px; }
+        details details details summary { border-left: 3px solid #666; font-weight: 700; }
+
+        .table-wrapper { overflow-x: auto; margin-top: 10px; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 13px; table-layout: fixed; }
+        th { background: #f4f6f9; padding: 12px; text-align: left; color: #555; text-transform: uppercase; font-size: 11px; border-bottom: 2px solid var(--border); font-weight: 700;}
+        td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; font-weight: 500; word-wrap: break-word;}
+        tr:hover td { background-color: #fcfcfc; }
+        
+        .ro-link { color: #0066cc; font-weight: 700; }
+        .ro-link:hover { text-decoration: underline; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-block;}
+        .badge-oos { background-color: var(--urgent-red); color: white; }
+        .badge-active { background-color: var(--low-green); color: white; }
+        .badge-urgent { background-color: var(--urgent-red); color: white; }
+        .badge-medium { background-color: var(--medium-yellow); color: white; text-shadow: 0px 1px 1px rgba(0,0,0,0.2); }
+        .badge-low { background-color: var(--low-green); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <svg class="logo-spin" width="30" height="30" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--gold)" stroke-width="10"/>
+                <circle cx="50" cy="50" r="10" fill="var(--gold)"/>
+                <g stroke="var(--gold)" stroke-width="10" stroke-linecap="round">
+                    <line x1="50" y1="50" x2="50" y2="15" />
+                    <line x1="50" y1="50" x2="83" y2="39" />
+                    <line x1="50" y1="50" x2="70" y2="78" />
+                    <line x1="50" y1="50" x2="30" y2="78" />
+                    <line x1="50" y1="50" x2="17" y2="39" />
+                </g>
+            </svg>
+            <span class="logo-text">workFLOW</span>
+            <span class="logo-plus">+</span>
+        </div>
+        <div class="menu-item active" id="menu-home" onclick="navigate('home-view', this)">Home Dashboard</div>
+        <div class="menu-item" id="menu-pm" onclick="navigate('pm-view', this)">PM Queue</div>
+        <div class="menu-item" id="menu-vended" onclick="navigate('vended-view', this)">Vended Repair Queue</div>
+        <div class="menu-item" id="menu-ers" onclick="navigate('ers-view', this)">ERS Queue</div>
+        
+        <div class="sidebar-truck">
+            <svg width="140" height="70" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" class="moving-truck-svg">
+                <line class="road-line" x1="0" y1="57" x2="120" y2="57" stroke="#4a4b50" stroke-width="2" stroke-dasharray="10 5"/>
+                <g class="truck-body">
+                    <rect x="5" y="15" width="70" height="35" fill="var(--gold)" rx="3"/>
+                    <path d="M78 25 H 92 L 105 35 V 50 H 78 Z" fill="var(--gold)"/>
+                    <path d="M78 50 H 105" stroke="var(--gold)" stroke-width="2"/>
+                    <path d="M82 28 H 90 L 98 35 H 82 Z" fill="#2a2b30"/>
+                    <rect x="75" y="42" width="3" height="4" fill="#888"/>
+                    <line x1="15" y1="25" x2="65" y2="25" stroke="#c49a1d" stroke-width="1.5"/>
+                </g>
+                <g class="wheel" style="transform-origin: 25px 50px;">
+                    <circle cx="25" cy="50" r="7" fill="#111" stroke="#888" stroke-width="1.5"/>
+                    <circle cx="25" cy="50" r="2" fill="#888"/>
+                    <line x1="25" y1="43" x2="25" y2="57" stroke="#888" stroke-width="1"/>
+                    <line x1="18" y1="50" x2="32" y2="50" stroke="#888" stroke-width="1"/>
+                </g>
+                <g class="wheel" style="transform-origin: 60px 50px;">
+                    <circle cx="60" cy="50" r="7" fill="#111" stroke="#888" stroke-width="1.5"/>
+                    <circle cx="60" cy="50" r="2" fill="#888"/>
+                    <line x1="60" y1="43" x2="60" y2="57" stroke="#888" stroke-width="1"/>
+                    <line x1="53" y1="50" x2="67" y2="50" stroke="#888" stroke-width="1"/>
+                </g>
+                <g class="wheel" style="transform-origin: 92px 50px;">
+                    <circle cx="92" cy="50" r="7" fill="#111" stroke="#888" stroke-width="1.5"/>
+                    <circle cx="92" cy="50" r="2" fill="#888"/>
+                    <line x1="92" y1="43" x2="92" y2="57" stroke="#888" stroke-width="1"/>
+                    <line x1="85" y1="50" x2="99" y2="50" stroke="#888" stroke-width="1"/>
+                </g>
+            </svg>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="search-container">
+                <input type="text" id="global-search" placeholder="Search by Unit No..." onkeyup="handleSearch()">
+            </div>
+            <div class="top-actions">
+                <a href="https://app.mapline.com/map/map_282c81fe/TWZ2TzJHRGcrd3BjaG1QMDNPekVGYUhxNThJd080SUZTK2MwZG" target="_blank" class="btn-action">GARDA MAP</a>
+                <a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/CreateVRO" target="_blank" class="btn-action">CREATE A VRO</a>
+            </div>
+        </div>
+
+        <div id="home-view" class="view-section active">
+            <h1 class="home-title">Welcome to workFLOW +</h1>
+            <div class="upload-container" id="upload-box">
+                <h3>Loading Dashboard Data</h3>
+                <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Attempting to automatically fetch <b>master_workFLOW.xlsx</b> from the repository...</p>
+                <div id="upload-status" style="font-size: 15px; font-weight: bold; color: #888;">Initializing...</div>
+                <div id="manual-upload-section" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ccc;">
+                    <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Fallback: File not found. Upload manually below.</p>
+                    <label for="excelFileInput" class="upload-btn">Browse Files</label>
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" multiple />
+                </div>
+            </div>
+            <div id="home-dashboard" style="display:none;">
+                <div class="home-dashboard-header">
+                    <div style="display:flex; align-items:center; gap: 20px;">
+                        <h2 style="margin:0;">Aggregate Performance Overview</h2>
+                        <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
+                            <option value="ALL">All Customers</option>
+                            <option value="GARDA">Garda Only</option>
+                            <option value="FERGUSON">Ferguson Only</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="home-kpi-container" id="home-kpi-container"></div>
+            </div>
+        </div>
+
+        <div id="pm-view" class="view-section">
+            <div class="view-title">
+                <div style="display:flex; align-items:center; gap: 20px;">
+                    <span style="font-weight: 700;">PM Queue</span>
+                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
+                        <option value="ALL">All Customers</option>
+                        <option value="GARDA">Garda Only</option>
+                        <option value="FERGUSON">Ferguson Only</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Active</button>
+                <button class="filter-btn" data-filter="URGENT" onclick="setFilter('URGENT')">Urgent</button>
+                <button class="filter-btn" data-filter="MEDIUM" onclick="setFilter('MEDIUM')">Medium</button>
+                <button class="filter-btn" data-filter="LOW" onclick="setFilter('LOW')">Low</button>
+                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">OOS Only</button>
+            </div>
+            <div class="kpi-grid" id="pm-kpi-container"></div>
+        </div>
+
+        <div id="vended-view" class="view-section">
+            <div class="view-title">
+                <div style="display:flex; align-items:center; gap: 20px;">
+                    <span style="font-weight: 700;">Vended Repair Queue</span>
+                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
+                        <option value="ALL">All Customers</option>
+                        <option value="GARDA">Garda Only</option>
+                        <option value="FERGUSON">Ferguson Only</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Active</button>
+                <button class="filter-btn" data-filter="URGENT" onclick="setFilter('URGENT')">Urgent</button>
+                <button class="filter-btn" data-filter="MEDIUM" onclick="setFilter('MEDIUM')">Medium</button>
+                <button class="filter-btn" data-filter="LOW" onclick="setFilter('LOW')">Low</button>
+                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">OOS Only</button>
+            </div>
+            <div class="kpi-grid" id="vended-kpi-container"></div>
+        </div>
+
+        <div id="ers-view" class="view-section">
+            <div class="view-title">
+                <div style="display:flex; align-items:center; gap: 20px;">
+                    <span style="font-weight: 700;">ERS Queue</span>
+                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
+                        <option value="ALL">All Customers</option>
+                        <option value="GARDA">Garda Only</option>
+                        <option value="FERGUSON">Ferguson Only</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Active</button>
+                <button class="filter-btn" data-filter="URGENT" onclick="setFilter('URGENT')">Urgent</button>
+                <button class="filter-btn" data-filter="MEDIUM" onclick="setFilter('MEDIUM')">Medium</button>
+                <button class="filter-btn" data-filter="LOW" onclick="setFilter('LOW')">Low</button>
+                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">OOS Only</button>
+            </div>
+            <div class="kpi-grid" id="ers-kpi-container"></div>
+        </div>
+
+        <div id="person-view" class="view-section">
+            <div class="view-title">
+                <div style="display:flex; align-items:center; gap: 20px;">
+                    <span id="person-name-title" style="font-weight: 700;">Owner Details</span>
+                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
+                        <option value="ALL">All Customers</option>
+                        <option value="GARDA">Garda Only</option>
+                        <option value="FERGUSON">Ferguson Only</option>
+                    </select>
+                </div>
+                <div class="controls-group">
+                    <button class="btn-export" onclick="exportDrilldownToExcel()">Export to XLSX</button>
+                    <button onclick="toggleAllDetails(true)">Expand All</button>
+                    <button onclick="toggleAllDetails(false)">Collapse All</button>
+                    <button id="dynamic-back-btn">&larr; Back</button>
+                </div>
+            </div>
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Active</button>
+                <button class="filter-btn" data-filter="URGENT" onclick="setFilter('URGENT')">Urgent</button>
+                <button class="filter-btn" data-filter="MEDIUM" onclick="setFilter('MEDIUM')">Medium</button>
+                <button class="filter-btn" data-filter="LOW" onclick="setFilter('LOW')">Low</button>
+                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">OOS Only</button>
+            </div>
+            <div class="drilldown-container" id="drilldown-body"></div>
+        </div>
+
+        <div id="search-view" class="view-section">
+            <h2 class="view-title">Search Results: <span id="search-term-display"></span></h2>
+            <div class="drilldown-container table-wrapper">
+                <table>
+                    <colgroup>
+                        <col style="width: 13%;"><col style="width: 11%;"><col style="width: 9%;">
+                        <col style="width: 8%;"><col style="width: 9%;"><col style="width: 12%;">
+                        <col style="width: 13%;"><col style="width: 25%;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>AFS RO #</th><th>Unit No</th><th>Priority</th>
+                            <th>OOS Status</th><th>Total Unit ROs</th><th>Owner</th>
+                            <th>Status</th><th>Task / VMRS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="search-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- GLOBAL DATA ---
+        let processedData = []; 
+        let currentFilter = 'ALL';
+        let currentCustomerFilter = 'ALL';
+        let currentOwnerView = '';
+        let currentParentView = '';
+        let globalChartInstances = {}; 
+        let searchTimeout = null;
+
+        // Dynamic Owner Arrays
+        let pmOwners = [];
+        let vendedOwners = [];
+        let ersOwners = [];
+
+        const excludedStatuses = ['COMPLETED', 'FINAL CHARGES SUBMITTED', 'CREDIT VROS'];
+        let lastActiveView = 'home-view';
+
+        // --- PRECISE DATA PARSER ---
+        function getCol(row, possibleNames) {
+            const rowKeys = Object.keys(row);
+            for (let name of possibleNames) {
+                const target = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const foundKey = rowKeys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === target);
+                if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null) return String(row[foundKey]).trim();
+            }
+            return '';
+        }
+
+        // --- EXPORT LOGIC ---
+        function exportDrilldownToExcel() {
+            if (!currentOwnerView || processedData.length === 0) return;
+            let ownerDataAll = processedData.filter(ro => ro.owner === currentOwnerView);
+            
+            if (currentCustomerFilter !== 'ALL') {
+                ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+            }
+
+            let targetData = ownerDataAll.filter(ro => ro.isOpen);
+            if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
+            else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
+            else if(currentFilter === 'LOW') targetData = targetData.filter(ro => ro.priority === 'LOW');
+            else if(currentFilter === 'OOS') targetData = targetData.filter(ro => ro.isOOS);
+
+            if (targetData.length === 0) {
+                alert("No data available to export for the current filter.");
+                return;
+            }
+
+            const excelRows = targetData.map(ro => ({
+                "AFS RO #": ro.roNum,
+                "Unit No": ro.unitNo,
+                "Priority": ro.priority,
+                "OOS Status": ro.isOOS ? "OOS" : "Active",
+                "Total Unit ROs": ro.roCount,
+                "Status": ro.status,
+                "Task / VMRS": ro.vmrs,
+                "Customer Group": ro.drillTopLevel,
+                "Subregion": ro.subregion,
+                "Branch": ro.branch
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered ROs");
+
+            const fileName = `workflow_export_${currentOwnerView.replace(/\s+/g, '_')}_${currentFilter.toLowerCase()}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+        }
+
+        // --- FILTER & CUSTOMER DROPDOWN LOGIC ---
+        function setFilter(val) {
+            currentFilter = val;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.filter === val) {
+                    btn.classList.add('active');
+                    btn.style.background = 'var(--gold)';
+                } else {
+                    btn.classList.remove('active');
+                    btn.style.background = '#e0e0e0';
+                }
+            });
+            triggerViewUpdate();
+        }
+
+        function setCustomerFilter(val) {
+            currentCustomerFilter = val;
+            document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = val; });
+            triggerViewUpdate();
+        }
+
+        function triggerViewUpdate() {
+            if(lastActiveView === 'home-view') renderHomeDashboard();
+            else if(lastActiveView === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
+            else if(lastActiveView === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
+            else if(lastActiveView === 'ers-view') renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
+            else if(lastActiveView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView); }
+        }
+
+        // --- AUTO-FETCH LOGIC ---
+        window.onload = async () => {
+            const statusEl = document.getElementById('upload-status');
+            try {
+                const response = await fetch('master_workFLOW.xlsx');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                statusEl.innerText = "File found! Processing data...";
+                const data = await response.arrayBuffer();
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                let vroRaw = [], resourceRaw = [], oosRaw = [];
+                
+                workbook.SheetNames.forEach(sheetName => {
+                    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: ''});
+                    if(sheetData.length === 0) return;
+                    
+                    const firstRow = sheetData[0];
+                    const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
+                    
+                    if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
+                        resourceRaw = resourceRaw.concat(sheetData);
+                    } else if (keys.includes('garda region') || keys.includes('oos flag')) {
+                        oosRaw = oosRaw.concat(sheetData);
+                    } else {
+                        vroRaw = vroRaw.concat(sheetData);
+                    }
+                });
+                processExcelData(vroRaw, resourceRaw, oosRaw);
+            } catch (error) {
+                console.error("Auto-fetch failed:", error);
+                statusEl.innerText = "Auto-load failed. Use manual upload.";
+                statusEl.style.color = "red";
+                document.getElementById('manual-upload-section').style.display = 'block';
+            }
+        };
+
+        // --- MANUAL UPLOAD FALLBACK ---
+        document.getElementById('excelFileInput').addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            const statusEl = document.getElementById('upload-status');
+            statusEl.innerText = "Reading manual upload...";
+            
+            let vroRaw = [], resourceRaw = [], oosRaw = [];
+            
+            try {
+                for(let file of files) {
+                    const data = await file.arrayBuffer();
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    workbook.SheetNames.forEach(sheetName => {
+                        const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: ''});
+                        if(sheetData.length === 0) return;
+                        
+                        const firstRow = sheetData[0];
+                        const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
+                        
+                        if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
+                            resourceRaw = resourceRaw.concat(sheetData);
+                        } else if (keys.includes('garda region') || keys.includes('oos flag')) {
+                            oosRaw = oosRaw.concat(sheetData);
+                        } else {
+                            vroRaw = vroRaw.concat(sheetData);
+                        }
+                    });
+                }
+                processExcelData(vroRaw, resourceRaw, oosRaw);
+            } catch (error) { 
+                console.error(error); 
+                statusEl.innerText = "Error parsing files."; 
+            }
+        });
+
+        function processExcelData(vroRaw, resourceRaw, oosRaw) {
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            
+            // 1. Build OOS Set & Location Maps
+            let oosSet = new Set();
+            let unitToLocation = {};
+            oosRaw.forEach(row => {
+                let unit = getCol(row, ['UNITNUMBER', 'Unit No', 'Vehicle']);
+                let oosFlag = getCol(row, ['OOS Flag', 'Open RO Category']);
+                let region = getCol(row, ['GARDA REGION']);
+                let subregion = getCol(row, ['GARDA SUBREGION']);
+                let branch = getCol(row, ['Branch']);
+                
+                if(unit) {
+                    let u = unit.toUpperCase();
+                    if (oosFlag.toUpperCase() === 'OOS' || oosFlag === '') oosSet.add(u);
+                    unitToLocation[u] = { 
+                        region: region || 'Unspecified Region', 
+                        subregion: subregion || 'Unspecified Subregion', 
+                        branch: branch || 'Unspecified Branch' 
+                    };
+                }
+            });
+
+            // 2. Build Resource Table Maps & Queues
+            let ownerMap = {};
+            let pmKeywords = [];
+            let activePM = new Set();
+            let activeVended = new Set();
+            let activeERS = new Set();
+
+            resourceRaw.forEach(row => {
+                let createdBy = getCol(row, ['CREATEDBY']);
+                let name = getCol(row, ['Name']);
+                let status = getCol(row, ['Status']).toUpperCase();
+                let team = getCol(row, ['Team']).toUpperCase();
+                let pmComp = getCol(row, ['PM Comp:']);
+                
+                if (createdBy) {
+                    let key = createdBy.toLowerCase().trim();
+                    let finalName = name || createdBy;
+                    ownerMap[key] = { name: finalName, status: status, team: team };
+                    
+                    if (status === 'ACTIVE') {
+                        if (team === 'PM') activePM.add(finalName);
+                        else if (team === 'VENDED REPAIR') activeVended.add(finalName);
+                        else if (team === 'ERS') activeERS.add(finalName);
+                    }
+                }
+                
+                if (pmComp && pmComp.toUpperCase() !== 'PM COMP:' && pmComp.trim() !== '') {
+                    pmKeywords.push(pmComp.toLowerCase().trim());
+                }
+            });
+
+            pmOwners = Array.from(activePM);
+            vendedOwners = Array.from(activeVended);
+            ersOwners = Array.from(activeERS);
+            pmKeywords = [...new Set(pmKeywords)]; // Deduplicate keywords
+
+            // 3. Track RO counts
+            let unitROCounts = {};
+            vroRaw.forEach(row => {
+                let unit = getCol(row, ['Unit No', 'UNITNUMBER', 'Vehicle']).toUpperCase();
+                if(unit) unitROCounts[unit] = (unitROCounts[unit] || 0) + 1;
+            });
+
+            // 4. Process Main VRO Data
+            processedData = vroRaw.map(row => {
+                let roNum = getCol(row, ['Order', 'RO Number', 'RONum', 'AFS RO #']);
+                let customer = getCol(row, ['Customer', 'CUSTOMERNAME', 'Customer Name']); 
+                let rawOwner = getCol(row, ['Owner', 'Created By']); 
+                let unit = getCol(row, ['Unit No', 'UNITNUMBER', 'Vehicle']).toUpperCase();
+                let status = getCol(row, ['Status']);
+                let vmrs = getCol(row, ['Task', 'DESCRIP', 'VMRS Description']);
+                let openedRaw = getCol(row, ['Opened', 'ROOpenedDate']);
+                let dueRaw = getCol(row, ['Unit Due Date', 'Estimate Due Date', 'Due Date', 'L']);
+                let compRaw = getCol(row, ['Completed Date', 'Completed', 'P']);
+                
+                // Map Email -> Full Name dynamically
+                let finalOwner = rawOwner;
+                let ownerLookup = ownerMap[rawOwner.toLowerCase().trim()];
+                if (ownerLookup) {
+                    finalOwner = ownerLookup.name;
+                }
+
+                // PM Keyword Scanning in Task description
+                let taskStr = vmrs.toLowerCase();
+                let isPMOrder = false;
+                for (let kw of pmKeywords) {
+                    if (kw && taskStr.includes(kw)) {
+                        isPMOrder = true;
+                        break;
+                    }
+                }
+
+                // Locations
+                let loc = unitToLocation[unit] || { region: 'Unknown Region', subregion: 'Unknown Subregion', branch: 'Unknown Branch' };
+                let drillTopLevel = 'Uncategorized';
+                let fallbackLoc = { region: 'Unknown Region', subregion: 'Unknown Subregion', branch: customer.trim() };
+                
+                if(customer.includes('-')) {
+                    let locPart = customer.substring(customer.lastIndexOf('-') + 1).trim(); 
+                    let stateName = 'Unknown State'; let cityName = 'Unknown City';
+                    if(locPart.includes(',')) {
+                        let splitComma = locPart.split(','); cityName = splitComma[0].trim();
+                        let stateZip = splitComma[1].trim().split(' ').filter(s => s.trim() !== ''); 
+                        if(stateZip.length > 0) stateName = stateZip[0].trim();
+                    } else {
+                        let parts = locPart.split(' ').filter(s => s.trim() !== '');
+                        if (parts.length >= 2) { let stateIdx = parts.length - 2; stateName = parts[stateIdx].trim(); cityName = parts.slice(0, stateIdx).join(' ').trim(); }
+                        else cityName = locPart;
+                    }
+                    fallbackLoc = { region: stateName, subregion: cityName, branch: customer.trim() };
+                }
+
+                if(customer.toLowerCase().includes('ferguson')) {
+                    loc = fallbackLoc;
+                    drillTopLevel = 'Ferguson ' + loc.region;
+                } else if(customer.toLowerCase().includes('garda')) {
+                    if(loc.region === 'Unknown Region' || loc.region === 'Unspecified Region') loc = fallbackLoc;
+                    drillTopLevel = 'Garda ' + loc.region;
+                } else {
+                    if(loc.region === 'Unknown Region' || loc.region === 'Unspecified Region') loc = fallbackLoc;
+                    drillTopLevel = customer || 'Unknown Customer';
+                }
+
+                // SLA logic (Based purely on Order type now, NOT owner mapping)
+                let isOOS = oosSet.has(unit); 
+                let isOpen = !excludedStatuses.includes(status.toUpperCase());
+                let priorityStr = 'LOW'; let priorityClass = 'badge-low'; 
+
+                if (isOpen) {
+                    if (isPMOrder) {
+                        let dueDate = new Date(dueRaw);
+                        if (!isNaN(dueDate.getTime())) {
+                            let diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                            if (diffDays <= 0) { priorityStr = 'URGENT'; priorityClass = 'badge-urgent'; }
+                            else if (diffDays <= 10) { priorityStr = 'MEDIUM'; priorityClass = 'badge-medium'; }
+                        }
+                    } else {
+                        let openedDate = new Date(openedRaw);
+                        if (!isNaN(openedDate.getTime())) {
+                            let diffDays = Math.floor((today - openedDate) / (1000 * 60 * 60 * 24));
+                            if (diffDays > 7 || isOOS) { priorityStr = 'URGENT'; priorityClass = 'badge-urgent'; }
+                            else if (diffDays > 3) { priorityStr = 'MEDIUM'; priorityClass = 'badge-medium'; }
+                        } else if (isOOS) { priorityStr = 'URGENT'; priorityClass = 'badge-urgent'; }
+                    }
+                } else { priorityStr = 'COMPLETED'; priorityClass = 'badge-active'; }
+
+                // Compliance logic
+                let isCompletedKPI = false; let isOnTimeKPI = false; let isLateKPI = false;
+                if (['COMPLETED', 'FINAL CHARGES SUBMITTED'].includes(status.toUpperCase()) && compRaw !== '') {
+                    isCompletedKPI = true; let cDate = new Date(compRaw);
+                    if (!isNaN(cDate.getTime())) {
+                        let dDate = new Date(dueRaw);
+                        if (!isNaN(dDate.getTime()) && cDate <= dDate) isOnTimeKPI = true;
+                        else if (!isNaN(dDate.getTime())) isLateKPI = true;
+                        else isOnTimeKPI = true;
+                    } else isCompletedKPI = false;
+                }
+                
+                return { roNum, customer, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, priority: priorityStr, priorityClass };
+            }).filter(ro => ro.roNum !== '');
+
+            document.getElementById('upload-box').style.display = 'none';
+            document.getElementById('home-dashboard').style.display = 'block';
+            renderHomeDashboard();
+            renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
+            renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
+            renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
+        }
+
+        // --- HIERARCHY / KPI GENERATORS ---
+        function generateTileHTML(name, dataSet, chartId = null) {
+            let filteredOpen = dataSet.filter(ro => ro.isOpen);
+            if(currentFilter === 'URGENT') filteredOpen = filteredOpen.filter(ro => ro.priority === 'URGENT');
+            else if(currentFilter === 'MEDIUM') filteredOpen = filteredOpen.filter(ro => ro.priority === 'MEDIUM');
+            else if(currentFilter === 'LOW') filteredOpen = filteredOpen.filter(ro => ro.priority === 'LOW');
+            else if(currentFilter === 'OOS') filteredOpen = filteredOpen.filter(ro => ro.isOOS);
+            
+            let urgentCount = filteredOpen.filter(ro => ro.priority === 'URGENT').length;
+            let completedOrders = dataSet.filter(ro => ro.isCompletedKPI);
+            let compCount = completedOrders.length;
+            let onTimeCount = completedOrders.filter(ro => ro.isOnTimeKPI).length;
+            let lateCount = completedOrders.filter(ro => ro.isLateKPI).length;
+            let compPct = compCount > 0 ? Math.round((onTimeCount / compCount) * 100) : 0;
+            let latePct = compCount > 0 ? Math.round((lateCount / compCount) * 100) : 0;
+            let filterLabel = currentFilter === 'ALL' ? 'Open ROs' : `${currentFilter} ROs`;
+
+            let innerHtml = `<div class="kpi-name">${name}</div><div class="kpi-top-metrics"><div class="highlight-box"><div class="title">${filterLabel}</div><div class="num">${filteredOpen.length}</div></div><div class="highlight-box urgent-box"><div class="title">Urgent</div><div class="num">${urgentCount}</div></div></div><div class="kpi-stats-grid"><div class="stat-box"><div class="title">Completed</div><div class="num">${compCount}</div></div><div class="stat-box"><div class="title">On-Time</div><div class="num">${onTimeCount}</div></div><div class="stat-box"><div class="title">% Compliance</div><div class="num good">${compPct}%</div></div><div class="stat-box"><div class="title">% Late</div><div class="num urgent">${latePct}%</div></div></div>`;
+            if (chartId) return `<div class="flex-tile"><div class="flex-tile-left">${innerHtml}</div><div class="flex-tile-right"><canvas id="${chartId}" data-comp="${compPct}" data-late="${latePct}"></canvas></div></div>`;
+            return innerHtml;
+        }
+
+        Chart.register({
+            id: 'centerText',
+            beforeDraw: function(chart) {
+                if (chart.config.options.elements.center) {
+                    var ctx = chart.ctx; var centerConfig = chart.config.options.elements.center;
+                    var txt = centerConfig.text;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    var centerX = ((chart.chartArea.left + chart.chartArea.right) / 2);
+                    var centerY = ((chart.chartArea.top + chart.chartArea.bottom) / 2);
+                    ctx.font = "bold 34px Raleway"; ctx.fillStyle = centerConfig.color || '#333';
+                    ctx.fillText(txt, centerX, centerY);
+                }
+            }
+        });
+
+        function initChart(chartId) {
+            const canvas = document.getElementById(chartId); if(!canvas) return;
+            const comp = parseInt(canvas.getAttribute('data-comp')) || 0;
+            const late = parseInt(canvas.getAttribute('data-late')) || 0;
+            let chartData = [comp, late]; let bgColors = ['#5cb85c', '#d9534f'];
+            if (comp === 0 && late === 0) { chartData = [1]; bgColors = ['#e0e0e0']; }
+            if(globalChartInstances[chartId]) globalChartInstances[chartId].destroy();
+            globalChartInstances[chartId] = new Chart(canvas.getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: ['On-Time', 'Late'], datasets: [{ data: chartData, backgroundColor: bgColors, borderWidth: 0 }] },
+                options: { cutout: '75%', plugins: { legend: { display: false } }, elements: { center: { text: comp + '%' } } }
+            });
+        }
+
+        function renderHomeDashboard() {
+            const container = document.getElementById('home-kpi-container'); container.innerHTML = '';
+            
+            let aggData = processedData;
+            if (currentCustomerFilter !== 'ALL') aggData = aggData.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+            
+            let pmData = aggData.filter(ro => pmOwners.includes(ro.owner));
+            let vendedData = aggData.filter(ro => vendedOwners.includes(ro.owner));
+
+            const pmTile = document.createElement('div'); pmTile.className = 'kpi-tile home-master-tile'; pmTile.innerHTML = generateTileHTML('Total PM Dashboard', pmData, 'chart-pm');
+            container.appendChild(pmTile);
+            const vendedTile = document.createElement('div'); vendedTile.className = 'kpi-tile home-master-tile'; vendedTile.innerHTML = generateTileHTML('Total Vended Repair Dashboard', vendedData, 'chart-vended');
+            container.appendChild(vendedTile);
+            initChart('chart-pm'); initChart('chart-vended');
+        }
+
+        function renderKPITiles(ownersList, containerId, parentViewId) {
+            const container = document.getElementById(containerId); container.innerHTML = ''; 
+            ownersList.forEach(owner => {
+                let ownerDataAll = processedData.filter(ro => ro.owner === owner);
+                
+                // Apply global customer filter to owner tiles
+                if (currentCustomerFilter !== 'ALL') {
+                    ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+                }
+
+                const tile = document.createElement('div'); tile.className = 'kpi-tile';
+                tile.onclick = () => loadPersonDrilldown(owner, parentViewId);
+                tile.innerHTML = generateTileHTML(owner, ownerDataAll);
+                container.appendChild(tile);
+            });
+        }
+
+        function loadPersonDrilldown(owner, parentViewId) {
+            navigate('person-view'); currentOwnerView = owner; currentParentView = parentViewId;
+            document.getElementById('person-name-title').innerText = `RO Hierarchy: ${owner}`;
+            document.getElementById('dynamic-back-btn').onclick = () => navigate(parentViewId);
+            const container = document.getElementById('drilldown-body'); container.innerHTML = '';
+            
+            let ownerDataAll = processedData.filter(ro => ro.owner === owner);
+            
+            // Apply global customer filter to drilldown
+            if (currentCustomerFilter !== 'ALL') {
+                ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+            }
+
+            let targetData = ownerDataAll.filter(ro => ro.isOpen);
+            if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
+            else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
+            else if(currentFilter === 'LOW') targetData = targetData.filter(ro => ro.priority === 'LOW');
+            else if(currentFilter === 'OOS') targetData = targetData.filter(ro => ro.isOOS);
+            
+            if(targetData.length === 0) { container.innerHTML = `<p>No records for ${owner} under the current filter.</p>`; return; }
+            
+            let hierarchy = {};
+            targetData.forEach(ro => {
+                if(!hierarchy[ro.drillTopLevel]) hierarchy[ro.drillTopLevel] = {};
+                if(!hierarchy[ro.drillTopLevel][ro.subregion]) hierarchy[ro.drillTopLevel][ro.subregion] = {};
+                if(!hierarchy[ro.drillTopLevel][ro.subregion][ro.branch]) hierarchy[ro.drillTopLevel][ro.subregion][ro.branch] = [];
+                hierarchy[ro.drillTopLevel][ro.subregion][ro.branch].push(ro);
+            });
+            for(let topLvl in hierarchy) {
+                const regDetails = document.createElement('details'); regDetails.innerHTML = `<summary>${topLvl}</summary>`; 
+                for(let sub in hierarchy[topLvl]) {
+                    const subDetails = document.createElement('details'); subDetails.innerHTML = `<summary>${sub}</summary>`;
+                    for(let branch in hierarchy[topLvl][sub]) {
+                        const branchDetails = document.createElement('details');
+                        let branchROs = hierarchy[topLvl][sub][branch];
+                        branchROs.sort((a,b) => { 
+                            const ord = {'URGENT':1,'MEDIUM':2,'LOW':3};
+                            if(ord[a.priority] !== ord[b.priority]) return ord[a.priority] - ord[b.priority];
+                            return (b.isOOS - a.isOOS);
+                        });
+                        branchDetails.innerHTML = `<summary>${branch} (${branchROs.length} ROs)</summary>`;
+                        let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:13%"><col style="width:11%"><col style="width:9%"><col style="width:8%"><col style="width:9%"><col style="width:15%"><col style="width:35%"></colgroup><thead><tr><th>AFS RO #</th><th>Unit No</th><th>Priority</th><th>OOS Status</th><th>Total Unit ROs</th><th>Status</th><th>Task / VMRS</th></tr></thead><tbody>`;
+                        branchROs.forEach(ro => {
+                            tableHTML += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td><span class="badge ${ro.isOOS ? 'badge-oos':'badge-active'}">${ro.isOOS ? 'OOS':'ACTIVE'}</span></td><td>${ro.roCount}</td><td>${ro.status}</td><td>${ro.vmrs}</td></tr>`;
+                        });
+                        tableHTML += `</tbody></table></div>`; branchDetails.innerHTML += tableHTML; subDetails.appendChild(branchDetails);
+                    }
+                    regDetails.appendChild(subDetails);
+                }
+                container.appendChild(regDetails);
+            }
+        }
+
+        function toggleAllDetails(expand) { document.querySelectorAll('#drilldown-body details').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); }); }
+
+        function handleSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = document.getElementById('global-search').value.toLowerCase();
+                if(searchTerm.length === 0) { navigate(lastActiveView); return; }
+                navigate('search-view');
+                document.getElementById('search-term-display').innerText = searchTerm;
+                const results = processedData.filter(ro => ro.unitNo.toLowerCase().includes(searchTerm));
+                let searchHtml = '';
+                if(results.length === 0) searchHtml = '<tr><td colspan="8" style="text-align:center;">No matching units.</td></tr>';
+                else {
+                    results.forEach(ro => {
+                        searchHtml += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td><span class="badge ${ro.isOOS ? 'badge-oos':'badge-active'}">${ro.isOOS ? 'OOS':'ACTIVE'}</span></td><td>${ro.roCount}</td><td>${ro.owner}</td><td>${ro.status}</td><td>${ro.vmrs}</td></tr>`;
+                    });
+                }
+                document.getElementById('search-table-body').innerHTML = searchHtml;
+            }, 300);
+        }
+
+        function navigate(viewId, menuElement = null) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            if(viewId !== 'search-view') lastActiveView = viewId;
+            if(menuElement) {
+                document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+                menuElement.classList.add('active');
+            }
+            if(viewId === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
+            else if (viewId === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
+            else if (viewId === 'ers-view') renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
+        }
+    </script>
+</body>
+</html>
