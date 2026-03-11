@@ -172,17 +172,6 @@
         .ecd-green { color: #5cb85c; font-weight: 800; }
         .badge-ecd-missing { background-color: #fff3cd; color: #d9534f; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; border: 1px solid #d9534f; white-space: nowrap; display: inline-block; }
 
-        /* ERS Specific Styles */
-        .side-by-side-container { display: flex; gap: 20px; align-items: stretch; margin-bottom: 30px; flex-wrap: wrap; }
-        .side-table { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; padding: 15px; min-width: 400px; background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-        .side-table .table-wrapper { flex: 1; overflow-x: auto; margin-top: 0; }
-        .side-table table { min-width: 100%; table-layout: auto; } 
-        .side-table th, .side-table td { padding: 10px 8px; } 
-        
-        .outlier-red { color: var(--urgent-red); font-weight: 700; background-color: #fee2e2; padding: 2px 6px; border-radius: 4px; }
-        .error-marker { color: var(--urgent-red); font-weight: bold; }
-        .good-marker { color: var(--low-green); font-weight: bold; }
-        
         /* Reassign Styles */
         input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--gold); }
     </style>
@@ -342,15 +331,18 @@
             <div class="view-title">
                 <span style="font-weight: 700;">ERS Queue</span>
                 <div class="date-controls">
-                    <label>Date Range:</label>
-                    <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
-                    <span style="font-weight:bold; color:#666;">-</span>
-                    <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
-                    <select class="filter-select ers-customer-filter-select" onchange="setErsCustomerFilter(this.value)" style="margin-left: 10px;">
+                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
                         <option value="ALL">All Customers</option>
                     </select>
                     <button class="btn-green" onclick="fetchData()" style="margin-left: 10px;">↻ Refresh</button>
                 </div>
+            </div>
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Active</button>
+                <button class="filter-btn" data-filter="URGENT" onclick="setFilter('URGENT')">Urgent</button>
+                <button class="filter-btn" data-filter="MEDIUM" onclick="setFilter('MEDIUM')">Medium</button>
+                <button class="filter-btn" data-filter="LOW" onclick="setFilter('LOW')">Low</button>
+                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">OOS Only</button>
             </div>
             <div class="kpi-grid" id="ers-kpi-container"></div>
         </div>
@@ -364,7 +356,11 @@
                     </select>
                 </div>
                 <div class="controls-group" style="display: flex; align-items: center;">
-                    <button class="btn-green" onclick="fetchData()">↻ Refresh</button>
+                    <div class="date-controls" style="margin-right: 15px;">
+                        <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
+                        <span style="font-weight:bold; color:#666;">-</span>
+                        <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
+                    </div>
                     <button class="btn-green" onclick="exportDrilldownToExcel()">Export to XLSX</button>
                     <button onclick="toggleAllDetails(true)">Expand All</button>
                     <button onclick="toggleAllDetails(false)">Collapse All</button>
@@ -379,103 +375,6 @@
                 <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">OOS Only</button>
             </div>
             <div class="drilldown-container" id="drilldown-body"></div>
-        </div>
-
-        <div id="ers-detail-view" class="view-section">
-            <div class="view-title">
-                <span id="ers-name-title" style="font-weight: 700;">Overall ERS Details</span>
-                <div class="date-controls">
-                    <label>Date Range:</label>
-                    <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
-                    <span style="font-weight:bold; color:#666;">-</span>
-                    <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
-                    
-                    <select class="filter-select ers-customer-filter-select" onchange="setErsCustomerFilter(this.value)" style="margin-left: 10px;">
-                        <option value="ALL">All Customers</option>
-                    </select>
-
-                    <button class="btn-green" onclick="fetchData()" style="margin-left: 10px;">↻ Refresh</button>
-                    <button class="btn-green" style="margin-left: 10px;" onclick="exportErsDrilldownToExcel()">Export to XLSX</button>
-                    <button id="ers-dynamic-back-btn" class="btn-action" style="margin-left: 10px; background:#666;">&larr; Back</button>
-                </div>
-            </div>
-
-            <div id="ers-master-kpis" style="margin-bottom: 30px;"></div>
-
-            <div class="side-by-side-container">
-                <div class="side-table">
-                    <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 14px; color: var(--gold);">Performance Summary</h3>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th data-sort-summary="name" onclick="handleSortSummary('name', this)">Coordinator <span class="sort-icon">↕</span></th>
-                                    <th data-sort-summary="volume" onclick="handleSortSummary('volume', this)">Calls <span class="sort-icon">▼</span></th>
-                                    <th data-sort-summary="avgSOS" onclick="handleSortSummary('avgSOS', this)">Avg SOS <span class="sort-icon">↕</span></th>
-                                    <th data-sort-summary="avgDT" onclick="handleSortSummary('avgDT', this)">Avg DT <span class="sort-icon">↕</span></th>
-                                    <th data-sort-summary="sosOver90" onclick="handleSortSummary('sosOver90', this)">SOS > 90m <span class="sort-icon">↕</span></th>
-                                    <th data-sort-summary="dtOver3" onclick="handleSortSummary('dtOver3', this)">DT > 3h <span class="sort-icon">↕</span></th>
-                                </tr>
-                            </thead>
-                            <tbody id="ers-summary-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="side-table">
-                    <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 14px; color: var(--gold);">Data Entry Scorecard</h3>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th data-sort-sc="name" onclick="handleSortScorecard('name', this)">Coordinator <span class="sort-icon">↕</span></th>
-                                    <th data-sort-sc="good" onclick="handleSortScorecard('good', this)">Clean <span class="sort-icon">↕</span></th>
-                                    <th data-sort-sc="intake" onclick="handleSortScorecard('intake', this)">Intake Err <span class="sort-icon">↕</span></th>
-                                    <th data-sort-sc="eta" onclick="handleSortScorecard('eta', this)">ETA Err <span class="sort-icon">↕</span></th>
-                                    <th data-sort-sc="arrival" onclick="handleSortScorecard('arrival', this)">Arrive Err <span class="sort-icon">↕</span></th>
-                                    <th data-sort-sc="resolution" onclick="handleSortScorecard('resolution', this)">Res Err <span class="sort-icon">↕</span></th>
-                                    <th data-sort-sc="pctClean" onclick="handleSortScorecard('pctClean', this)">% Clean <span class="sort-icon">▼</span></th>
-                                </tr>
-                            </thead>
-                            <tbody id="ers-scorecard-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="drilldown-container" style="margin-bottom: 24px;">
-                <details id="ers-ticket-drilldown-toggle">
-                    <summary style="font-size: 16px; color: var(--gold); margin-bottom: 0;">Ticket Details</summary>
-                    <div class="table-wrapper" style="margin-top: 15px;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th data-sort-ers="customer" onclick="handleSortErs('customer', this)">Customer <span class="sort-icon">↕</span></th>
-                                    <th data-sort-ers="coordinator" onclick="handleSortErs('coordinator', this)">Coordinator <span class="sort-icon">↕</span></th>
-                                    <th data-sort-ers="intakeDT" onclick="handleSortErs('intakeDT', this)">Date / Time <span class="sort-icon">↕</span></th>
-                                    <th data-sort-ers="priority" onclick="handleSortErs('priority', this)">Call Type <span class="sort-icon">↕</span></th>
-                                    <th data-sort-ers="eventStatus" onclick="handleSortErs('eventStatus', this)">Status <span class="sort-icon">↕</span></th>
-                                    <th data-sort-ers="sosMins" onclick="handleSortErs('sosMins', this)">SOS Time <span class="sort-icon">↕</span></th>
-                                    <th data-sort-ers="downtimeHours" onclick="handleSortErs('downtimeHours', this)">Downtime <span class="sort-icon">↕</span></th>
-                                    <th data-sort-ers="ticketId" onclick="handleSortErs('ticketId', this)">Ticket ID <span class="sort-icon">↕</span></th>
-                                </tr>
-                            </thead>
-                            <tbody id="ers-drilldown-table-body"></tbody>
-                        </table>
-                    </div>
-                </details>
-            </div>
-
-            <div class="drilldown-container" style="margin-top: 0;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                    <h3 style="margin:0; font-size: 16px; color: var(--gold);">Repair Orders</h3>
-                    <div class="controls-group">
-                        <button onclick="toggleErsRODetails(true)">Expand All</button>
-                        <button onclick="toggleErsRODetails(false)">Collapse All</button>
-                    </div>
-                </div>
-                <div id="ers-ro-drilldown-body"></div>
-            </div>
         </div>
 
         <div id="reassign-view" class="view-section">
@@ -542,7 +441,6 @@
         let processedData = []; 
         let currentFilter = 'ALL';
         let currentCustomerFilter = 'ALL';
-        let currentErsCustomerFilter = 'ALL';
         let currentStartDate = '';
         let currentEndDate = '';
         let currentOwnerView = '';
@@ -556,17 +454,6 @@
         let allActiveOwners = []; 
 
         let isReassignUnlocked = false; 
-
-        // ERS Specific Globals
-        let rawErsData = [];
-        let masterErsMetrics = [];
-        let currentErsViewData = [];
-        let currentErsSummaryData = [];
-        let currentErsScorecardData = [];
-        
-        let sortColErs = null; let sortAscErs = true;
-        let sortColSum = 'volume'; let sortAscSum = false;
-        let sortColSc = 'pctClean'; let sortAscSc = false;
 
         const excludedStatuses = ['COMPLETED', 'FINAL CHARGES SUBMITTED', 'CREDIT VROS'];
         let lastActiveView = 'home-view';
@@ -584,7 +471,7 @@
             document.getElementById('manual-upload-section').style.display = 'none';
 
             const baseId = '1TY8z9tIdmBorN_1vKTCmjIS-WdhrhRMa';
-            const sheets = ['VRO Export', 'Resource Table', 'OOS GARDA', 'ERS'];
+            const sheets = ['VRO Export', 'Resource Table', 'OOS GARDA'];
             
             try {
                 const fetchPromises = sheets.map(sheet => 
@@ -595,12 +482,11 @@
                         })
                 );
 
-                const [vroCsv, resourceCsv, oosCsv, ersCsv] = await Promise.all(fetchPromises);
+                const [vroCsv, resourceCsv, oosCsv] = await Promise.all(fetchPromises);
 
                 const vroRaw = Papa.parse(vroCsv, { header: true, skipEmptyLines: true }).data;
                 const resourceRaw = Papa.parse(resourceCsv, { header: true, skipEmptyLines: true }).data;
                 const oosRaw = Papa.parse(oosCsv, { header: true, skipEmptyLines: true }).data;
-                const ersTabRaw = Papa.parse(ersCsv, { header: true, skipEmptyLines: true }).data;
 
                 const cleanKeys = (data) => data.map(row => {
                     let cleanRow = {};
@@ -608,7 +494,7 @@
                     return cleanRow;
                 });
 
-                processExcelData(cleanKeys(vroRaw), cleanKeys(resourceRaw), cleanKeys(oosRaw), cleanKeys(ersTabRaw));
+                processExcelData(cleanKeys(vroRaw), cleanKeys(resourceRaw), cleanKeys(oosRaw));
 
             } catch (error) {
                 console.error("Fetch failed:", error);
@@ -617,8 +503,6 @@
                 document.getElementById('manual-upload-section').style.display = 'block';
             }
         }
-
-        window.onload = fetchData;
 
         // Auto Refresh every 3 hours (10,800,000 ms)
         setInterval(() => {
@@ -697,26 +581,6 @@
             XLSX.writeFile(workbook, `workflow_export_${String(currentOwnerView).replace(/\s+/g, '_')}_${currentFilter.toLowerCase()}.xlsx`);
         }
 
-        function exportErsDrilldownToExcel() {
-            if (currentErsViewData.length === 0) { alert("No ERS data to export."); return; }
-            
-            const excelRows = currentErsViewData.map(ro => ({
-                "Ticket ID": ro.ticketId,
-                "Customer": ro.customer,
-                "Coordinator": ro.coordinator,
-                "Date / Time": formatDateTimeShort(ro.intakeDT),
-                "Call Type": ro.priority,
-                "Event Status": ro.eventStatus,
-                "SOS Time (Mins)": ro.sosMins >= 0 ? Math.round(ro.sosMins) : 'N/A',
-                "Downtime (Hrs)": ro.downtimeHours >= 0 ? ro.downtimeHours.toFixed(2) : 'N/A'
-            }));
-
-            const worksheet = XLSX.utils.json_to_sheet(excelRows);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "ERS Tickets");
-            XLSX.writeFile(workbook, `ers_export_${String(currentOwnerView).replace(/\s+/g, '_')}.xlsx`);
-        }
-
         // --- FILTER & CUSTOMER & DATE DROPDOWN LOGIC ---
         function setFilter(val) {
             currentFilter = val;
@@ -730,12 +594,6 @@
         function setCustomerFilter(val) {
             currentCustomerFilter = val;
             document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = val; });
-            triggerViewUpdate();
-        }
-
-        function setErsCustomerFilter(val) {
-            currentErsCustomerFilter = val;
-            document.querySelectorAll('.ers-customer-filter-select').forEach(sel => { sel.value = val; });
             triggerViewUpdate();
         }
 
@@ -755,9 +613,8 @@
             if(activeView === 'home-view') renderHomeDashboard();
             else if(activeView === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
             else if(activeView === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
-            else if(activeView === 'ers-view') renderErsTiles();
+            else if(activeView === 'ers-view') renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
             else if(activeView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView); }
-            else if(activeView === 'ers-detail-view') { if(currentOwnerView) loadErsDrilldown(currentOwnerView, currentParentView); }
         }
 
         // --- SECURITY / REASSIGNMENT LOGIC ---
@@ -823,225 +680,8 @@
             renderReassignTable();
         }
 
-        // --- MANUAL UPLOAD FALLBACK ---
-        document.getElementById('excelFileInput').addEventListener('change', async function(e) {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
-            const statusEl = document.getElementById('upload-status');
-            statusEl.innerText = "Reading manual upload...";
-            
-            let vroRaw = [], resourceRaw = [], oosRaw = [], ersTabRaw = [];
-            
-            try {
-                for(let file of files) {
-                    const data = await file.arrayBuffer();
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    workbook.SheetNames.forEach(sheetName => {
-                        const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: ''});
-                        if(sheetData.length === 0) return;
-                        
-                        const firstRow = sheetData[0];
-                        const keys = Object.keys(firstRow).map(k => String(k).toLowerCase().trim());
-                        
-                        if (String(sheetName).toUpperCase() === 'ERS') {
-                            ersTabRaw = sheetData;
-                        } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
-                            resourceRaw = resourceRaw.concat(sheetData);
-                        } else if (keys.includes('garda region') || keys.includes('oos flag')) {
-                            oosRaw = oosRaw.concat(sheetData);
-                        } else if (!keys.includes('assignee name') && !keys.includes('ticket id')) {
-                            vroRaw = vroRaw.concat(sheetData);
-                        }
-                    });
-                }
-                processExcelData(vroRaw, resourceRaw, oosRaw, ersTabRaw);
-            } catch (error) { 
-                console.error(error); 
-                statusEl.innerText = "Error parsing files."; 
-            }
-        });
-
-        // --- ERS CLEANER FUNCTIONS ---
-        function extractTimeParts(str) {
-            if (!str || String(str).trim() === "") return { isMissing: true };
-            let orig = String(str).trim().toLowerCase();
-            let hasValidAMPM = orig.includes('am') || orig.includes('pm') || orig.includes('a') || orig.includes('p');
-            let hasColon = orig.includes(':');
-            let isShorthand = !hasColon || !hasValidAMPM; 
-            let digitsOnly = orig.replace(/[^\d:]/g, ''); 
-            if (!digitsOnly) return { isMissing: true };
-            let h, m;
-            if (digitsOnly.includes(':')) {
-                let parts = digitsOnly.split(':');
-                h = parseInt(parts[0], 10); m = parseInt(parts[1] || '0', 10);
-            } else {
-                if (digitsOnly.length <= 2) { h = parseInt(digitsOnly, 10); m = 0; }
-                else if (digitsOnly.length === 3) { h = parseInt(digitsOnly.substring(0, 1), 10); m = parseInt(digitsOnly.substring(1), 10); }
-                else { h = parseInt(digitsOnly.substring(0, 2), 10); m = parseInt(digitsOnly.substring(2, 4), 10); }
-            }
-            let ampm = orig.includes('p') ? 'pm' : (orig.includes('a') ? 'am' : null);
-            return { h, m, ampm, isMissing: false, requiredInference: isShorthand };
-        }
-
-        function parseDateStringLocal(dateStr) {
-            if (!dateStr) return null;
-            let str = String(dateStr).trim();
-            if (str.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                let [y, m, d] = str.split('-'); return new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
-            }
-            let dt = new Date(str);
-            if (isNaN(dt.getTime())) return null;
-            return dt;
-        }
-
-        function formatDateTimeShort(dt) {
-            if(!dt) return 'N/A';
-            let m = dt.getMonth() + 1; let d = dt.getDate();
-            let h = dt.getHours(); let min = String(dt.getMinutes()).padStart(2, '0');
-            let ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12; h = h ? h : 12;
-            return `${m}/${d} ${h}:${min} ${ampm}`;
-        }
-
-        function cleanErsRow(row, ownerMap) {
-            let rawOwner = getCol(row, ['Assignee name', 'Coordinator', 'Created By']);
-            let finalOwner = rawOwner;
-            let normOwner = (rawOwner || '').toLowerCase().trim();
-            
-            if (normOwner.includes('sydney') || normOwner.includes('wooten')) finalOwner = 'Sydney Wooten';
-            else if (normOwner.includes('damian') || normOwner.includes('damien') || normOwner.includes('nicholson')) finalOwner = 'Damian Nicholson';
-            else if (ownerMap[normOwner]) finalOwner = ownerMap[normOwner].name;
-            
-            let rawCustomer = getCol(row, ['Customer', 'Customer Name']);
-            let custKey = getCustKey(rawCustomer);
-            let priorityStr = getCol(row, ['OSC - Priority', 'Priority', 'Call Type']).toUpperCase();
-            
-            if (priorityStr !== 'ERS') return null;
-
-            let inDate = getCol(row, ['Intake Date - Date', 'Intake Date', 'Date']);
-            let inTime = getCol(row, ['Intake Time ', 'Intake Time', 'Time']);
-            let vETA = getCol(row, ['Vendor Estimated Arrival Time', 'Vendor ETA', 'ETA']);
-            let aDate = getCol(row, ['Actual Arrival Date - Date', 'Arrive Date', 'Arrival Date']);
-            let aTime = getCol(row, ['Actual Arrival Time', 'Arrive Time', 'Arrival Time']);
-            let cDate = getCol(row, ['Actual Completion Date - Date', 'Completion Date', 'Complete Date']);
-            let cTime = getCol(row, ['Actual Completion Time', 'Completion Time', 'Complete Time']);
-            let ticketId = getCol(row, ['Ticket ID', 'Ticket']);
-
-            let metric = {
-                coordinator: finalOwner,
-                customer: rawCustomer,
-                custKey: custKey,
-                priority: priorityStr,
-                intakeDateRaw: inDate,
-                errIntake: false, errETA: false, errArrival: false, errResolution: false, isGood: false
-            };
-
-            let p = extractTimeParts(inTime);
-            if (p.isMissing || p.requiredInference) metric.errIntake = true;
-            let dt = parseDateStringLocal(inDate);
-            if (!dt || p.isMissing) metric.errIntake = true;
-
-            let isMissingRequired = (!inDate || !inTime || !vETA || !aDate || !aTime || !cDate || !cTime);
-
-            if (isMissingRequired || !dt || p.isMissing) {
-                metric.isGood = false;
-                if (!vETA) metric.errETA = true;
-                if (!aDate && !aTime) metric.errArrival = true;
-                if (!cDate && !cTime) metric.errResolution = true;
-                return { cleaned: null, metric: metric };
-            }
-
-            let intakeDT = null;
-            let h = p.h, m = p.m;
-            if (p.ampm === 'pm' && h < 12) h += 12;
-            if (p.ampm === 'am' && h === 12) h = 0;
-            if (!p.ampm && h === 24) h = 0;
-            dt.setHours(h, m, 0, 0);
-            intakeDT = dt;
-
-            metric.intakeDT = intakeDT;
-
-            function processEvent(dateStr, timeStr, minDT, maxDT) {
-                if(!minDT) return { dt: null, hasError: true };
-                let ep = extractTimeParts(timeStr);
-                let hasError = ep.isMissing || ep.requiredInference;
-                if (ep.isMissing) return { dt: null, hasError: true };
-
-                let baseDT = parseDateStringLocal(dateStr) || new Date(minDT.getTime());
-                baseDT.setHours(0,0,0,0);
-
-                let candidates = [];
-                let makeDT = (hour24) => { let d = new Date(baseDT.getTime()); d.setHours(hour24, ep.m, 0, 0); return d; };
-
-                if (ep.ampm === 'pm') candidates.push(makeDT(ep.h === 12 ? 12 : (ep.h % 12) + 12));
-                else if (ep.ampm === 'am') candidates.push(makeDT(ep.h === 12 ? 0 : (ep.h % 12)));
-                else { candidates.push(makeDT(ep.h === 12 ? 0 : (ep.h % 12))); candidates.push(makeDT(ep.h === 12 ? 12 : (ep.h % 12) + 12)); }
-
-                let expanded = [];
-                for (let c of candidates) {
-                    expanded.push(new Date(c.getTime())); 
-                    let c1 = new Date(c.getTime()); c1.setDate(c1.getDate() + 1); expanded.push(c1); 
-                }
-
-                let valid = expanded.filter(c => c.getTime() >= minDT.getTime() && c.getTime() <= maxDT.getTime());
-                if (valid.length === 0) return { dt: new Date(minDT.getTime()), hasError: true }; 
-
-                valid.sort((a,b) => a.getTime() - b.getTime());
-                let bestDT = valid[0];
-                
-                let ogDate = new Date(baseDT.getTime());
-                let finalDate = new Date(bestDT.getTime());
-                finalDate.setHours(0,0,0,0);
-                if (finalDate.getTime() !== ogDate.getTime()) hasError = true;
-
-                return { dt: bestDT, hasError: hasError };
-            }
-
-            let maxAllowedDT = new Date(intakeDT.getTime());
-            if (intakeDT.getHours() >= 16) maxAllowedDT.setDate(maxAllowedDT.getDate() + 1);
-            maxAllowedDT.setHours(23, 59, 59, 999);
-
-            let resETA = processEvent(inDate, vETA, intakeDT, maxAllowedDT);
-            let resArr = processEvent(aDate, aTime, intakeDT, maxAllowedDT);
-            let resComp = processEvent(cDate, cTime, intakeDT, maxAllowedDT);
-            
-            if (resETA.hasError) metric.errETA = true;
-            if (resArr.hasError) metric.errArrival = true;
-            if (resComp.hasError) metric.errResolution = true;
-
-            metric.isGood = !(metric.errIntake || metric.errETA || metric.errArrival || metric.errResolution);
-
-            row.intakeDT = intakeDT;
-            row.etaDT = resETA.dt;
-            row.arriveDT = resArr.dt;
-            row.completeDT = resComp.dt;
-            row.finalOwner = finalOwner;
-            row.priorityStr = priorityStr;
-            row.customerStr = rawCustomer;
-            row.custKey = custKey;
-            row.ticketId = ticketId;
-
-            let downtimeHours = -1;
-            if (intakeDT && resComp.dt) downtimeHours = (resComp.dt - intakeDT) / (1000 * 60 * 60);
-
-            let sosMins = -1;
-            if (intakeDT && resArr.dt) sosMins = (resArr.dt - intakeDT) / (1000 * 60);
-
-            let vendorOnTime = null;
-            if (resArr.dt && resETA.dt) {
-                vendorOnTime = resArr.dt <= resETA.dt;
-            }
-            
-            row.downtimeHours = downtimeHours;
-            row.sosMins = sosMins;
-            row.vendorOnTime = vendorOnTime;
-
-            return { cleaned: row, metric: metric };
-        }
-
         // --- PROCESS DATA ---
-        function processExcelData(vroRaw, resourceRaw, oosRaw, ersTabRaw) {
+        function processExcelData(vroRaw, resourceRaw, oosRaw) {
             const today = new Date(); today.setHours(0, 0, 0, 0);
             
             let oosSet = new Set();
@@ -1099,6 +739,7 @@
             vendedOwners = Array.from(activeVended);
             ersOwners = Array.from(activeERS);
             
+            // Build Assignments Array for dropdowns
             allActiveOwners = Array.from(new Set([...pmOwners, ...vendedOwners, ...ersOwners])).sort();
             
             let filterSel = document.getElementById('reassign-filter-owner');
@@ -1246,23 +887,6 @@
                 return { roNum, customer, custKey, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, priority: priorityStr, priorityClass, ecdState, ecdFormatted, openedDT };
             }).filter(ro => ro.roNum !== '');
 
-            rawErsData = [];
-            masterErsMetrics = [];
-            let ersCustSet = new Set();
-
-            if (ersTabRaw && ersTabRaw.length > 0) {
-                for (let i = 0; i < ersTabRaw.length; i++) {
-                    let result = cleanErsRow(ersTabRaw[i], ownerMap);
-                    if (result) {
-                        masterErsMetrics.push(result.metric);
-                        if (result.metric.custKey) ersCustSet.add(result.metric.custKey);
-                        if (result.cleaned) {
-                            rawErsData.push(result.cleaned); 
-                        }
-                    }
-                }
-            }
-
             let sortedAllCust = Array.from(allCustSet).sort();
             document.querySelectorAll('.customer-filter-select').forEach(dd => {
                 dd.innerHTML = '<option value="ALL">All Customers</option>';
@@ -1274,23 +898,26 @@
                 });
             });
 
-            let sortedErsCust = Array.from(ersCustSet).sort();
-            document.querySelectorAll('.ers-customer-filter-select').forEach(dd => {
-                dd.innerHTML = '<option value="ALL">All Customers</option>';
-                sortedErsCust.forEach(c => {
-                    let opt = document.createElement('option');
-                    opt.value = c;
-                    opt.innerText = c.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-                    dd.appendChild(opt);
-                });
-            });
-
             document.getElementById('upload-box').style.display = 'none';
             document.getElementById('home-dashboard').style.display = 'block';
+            
             renderHomeDashboard();
             renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
             renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
-            renderErsTiles();
+            renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
+            
+            // Re-render assignment dropdowns if they are populated but we want the newest list
+            let filterSel = document.getElementById('reassign-filter-owner');
+            let targetSel = document.getElementById('reassign-target-owner');
+            filterSel.innerHTML = '<option value="ALL">All Open Orders</option>';
+            targetSel.innerHTML = '';
+            
+            allActiveOwners.forEach(o => {
+                let opt1 = document.createElement('option'); opt1.value = o; opt1.innerText = o;
+                let opt2 = document.createElement('option'); opt2.value = o; opt2.innerText = o;
+                filterSel.appendChild(opt1);
+                targetSel.appendChild(opt2);
+            });
         }
 
         // --- HIERARCHY / KPI GENERATORS ---
@@ -1350,61 +977,6 @@
             return innerHtml;
         }
 
-        // --- NEW ERS HYBRID TILE (Shows Orders & Tickets) ---
-        function generateErsTileHTML(name, roDataArray, ersDataArray) {
-            let filteredOpen = roDataArray.filter(ro => ro.isOpen).length;
-
-            let totalDowntimeHours = 0, validDowntimeCount = 0;
-            let totalSOSMins = 0, validSOSCount = 0;
-            let onTimeCountErs = 0, validVendorCount = 0;
-
-            ersDataArray.forEach(row => {
-                let dtH = row.downtimeHours; let sosM = row.sosMins; let onTime = row.vendorOnTime;
-                if (dtH >= 0) { totalDowntimeHours += dtH; validDowntimeCount++; }
-                if (sosM >= 0) { totalSOSMins += sosM; validSOSCount++; }
-                if (onTime !== null && sosM >= 0) { validVendorCount++; if(onTime) onTimeCountErs++; }
-            });
-
-            let avgDowntime = validDowntimeCount > 0 ? (totalDowntimeHours / validDowntimeCount) : 0;
-            let dtColor = 'var(--gold)'; 
-            if (validDowntimeCount > 0) {
-                if (avgDowntime < 2.5) { dtColor = '#10b981'; } 
-                else if (avgDowntime < 3.0) { dtColor = '#f59e0b'; } 
-                else { dtColor = '#ef4444'; } 
-            }
-            let dtStr = validDowntimeCount > 0 ? avgDowntime.toFixed(2) : "0.00";
-
-            let avgSOS = validSOSCount > 0 ? (totalSOSMins / validSOSCount) : 0;
-            let sosColor = 'var(--gold)'; 
-            if (validSOSCount > 0) {
-                if (avgSOS < 85) { sosColor = '#10b981'; } 
-                else if (avgSOS <= 90) { sosColor = '#f59e0b'; } 
-                else { sosColor = '#ef4444'; } 
-            }
-            let sosStr = validSOSCount > 0 ? Math.round(avgSOS) : "0";
-            let onTimePctErs = validVendorCount > 0 ? Math.round((onTimeCountErs / validVendorCount) * 100) : 0;
-            let vol = ersDataArray.length;
-
-            return `
-                <div class="kpi-name">${name}</div>
-                <div class="kpi-top-metrics">
-                    <div class="highlight-box">
-                        <div class="title" style="font-size:11px;">AVG Downtime (Hours)</div>
-                        <div class="num" style="color:${dtColor};">${dtStr}</div>
-                    </div>
-                    <div class="highlight-box">
-                        <div class="title" style="font-size:11px;">AVG SOS Time (Minutes)</div>
-                        <div class="num" style="color:${sosColor};">${sosStr}</div>
-                    </div>
-                </div>
-                <div class="kpi-stats-grid" style="grid-template-columns: repeat(3, 1fr);">
-                    <div class="stat-box"><div class="title">Open ROs</div><div class="num">${filteredOpen}</div></div>
-                    <div class="stat-box"><div class="title">Call Volume</div><div class="num">${vol}</div></div>
-                    <div class="stat-box"><div class="title">Vendor On-Time</div><div class="num good">${onTimePctErs}%</div></div>
-                </div>
-            `;
-        }
-
         Chart.register({
             id: 'centerText',
             beforeDraw: function(chart) {
@@ -1438,11 +1010,9 @@
             const container = document.getElementById('home-kpi-container'); container.innerHTML = '';
             
             let aggData = processedData;
-            let aggErsData = rawErsData;
 
             if (currentCustomerFilter !== 'ALL') {
                 aggData = aggData.filter(ro => ro.custKey === currentCustomerFilter);
-                aggErsData = aggErsData.filter(ro => ro.custKey === currentCustomerFilter);
             }
             
             let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
@@ -1452,12 +1022,6 @@
                     if (!ro.openedDT) return false;
                     if (sDate && ro.openedDT < sDate) return false;
                     if (eDate && ro.openedDT > eDate) return false;
-                    return true;
-                });
-                aggErsData = aggErsData.filter(ro => {
-                    if (!ro.intakeDT) return false;
-                    if (sDate && ro.intakeDT < sDate) return false;
-                    if (eDate && ro.intakeDT > eDate) return false;
                     return true;
                 });
             }
@@ -1475,11 +1039,11 @@
             container.appendChild(vendedTile);
             
             const ersTile = document.createElement('div'); ersTile.className = 'kpi-tile home-master-tile'; 
-            ersTile.innerHTML = generateErsTileHTML('ERS Dashboard', ersRoData, aggErsData);
-            ersTile.onclick = () => loadErsDrilldown('ALL', 'home-view');
+            ersTile.innerHTML = generateTileHTML('ERS Dashboard', ersRoData, 'chart-ers');
+            ersTile.onclick = () => loadPersonDrilldown('ALL_ERS', 'home-view');
             container.appendChild(ersTile);
 
-            initChart('chart-pm'); initChart('chart-vended');
+            initChart('chart-pm'); initChart('chart-vended'); initChart('chart-ers');
         }
 
         function renderKPITiles(ownersList, containerId, parentViewId) {
@@ -1515,45 +1079,6 @@
                 const tile = document.createElement('div'); tile.className = 'kpi-tile';
                 tile.onclick = () => loadPersonDrilldown(owner, parentViewId);
                 tile.innerHTML = generateTileHTML(owner, ownerDataAll);
-                container.appendChild(tile);
-            });
-        }
-
-        function renderErsTiles() {
-            const container = document.getElementById('ers-kpi-container'); container.innerHTML = ''; 
-            
-            ersOwners.forEach(owner => {
-                let ownerDataAll = processedData.filter(ro => ro.owner === owner);
-                let data = rawErsData.filter(d => d.finalOwner.toLowerCase().trim() === owner.toLowerCase().trim());
-
-                if (currentErsCustomerFilter !== 'ALL') {
-                    ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentErsCustomerFilter);
-                    data = data.filter(d => d.custKey === currentErsCustomerFilter);
-                }
-
-                let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
-                let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
-                if (sDate || eDate) {
-                    ownerDataAll = ownerDataAll.filter(ro => {
-                        if (!ro.openedDT) return false;
-                        if (sDate && ro.openedDT < sDate) return false;
-                        if (eDate && ro.openedDT > eDate) return false;
-                        return true;
-                    });
-                    data = data.filter(ro => {
-                        if (!ro.intakeDT) return false;
-                        if (sDate && ro.intakeDT < sDate) return false;
-                        if (eDate && ro.intakeDT > eDate) return false;
-                        return true;
-                    });
-                }
-
-                let targetData = ownerDataAll.filter(ro => ro.isOpen);
-                if (targetData.length === 0 && data.length === 0) return;
-
-                const tile = document.createElement('div'); tile.className = 'kpi-tile';
-                tile.onclick = () => loadErsDrilldown(owner, 'ers-view');
-                tile.innerHTML = generateErsTileHTML(owner, ownerDataAll, data);
                 container.appendChild(tile);
             });
         }
@@ -1653,279 +1178,6 @@
         function toggleAllDetails(expand) { 
             document.querySelectorAll('.ro-detail-node').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); }); 
         }
-        function toggleErsRODetails(expand) {
-            document.querySelectorAll('#ers-ro-drilldown-body details').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); });
-        }
-        function toggleErsTicketDetails(expand) {
-            document.querySelectorAll('#ers-ticket-drilldown-toggle').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); });
-        }
-
-        function loadErsDrilldown(owner, parentViewId) {
-            navigate('ers-detail-view', null, true); 
-            currentOwnerView = owner; currentParentView = parentViewId;
-            let titleText = owner === 'ALL' ? 'Overall ERS Details' : `ERS Coordinator: ${owner}`;
-            document.getElementById('ers-name-title').innerText = titleText;
-            document.getElementById('ers-dynamic-back-btn').onclick = () => navigate(parentViewId, null, true);
-            
-            let fMetrics = masterErsMetrics;
-            let fData = rawErsData;
-            let fRoData = processedData;
-
-            if (owner !== 'ALL') {
-                fMetrics = fMetrics.filter(m => m.coordinator.toLowerCase().trim() === String(owner).toLowerCase().trim());
-                fData = fData.filter(d => d.finalOwner.toLowerCase().trim() === String(owner).toLowerCase().trim());
-                fRoData = fRoData.filter(r => r.owner.toLowerCase().trim() === String(owner).toLowerCase().trim());
-            } else {
-                fRoData = fRoData.filter(r => ersOwners.includes(r.owner));
-            }
-
-            if (currentErsCustomerFilter !== 'ALL') {
-                fMetrics = fMetrics.filter(m => m.custKey === currentErsCustomerFilter);
-                fData = fData.filter(d => d.custKey === currentErsCustomerFilter);
-                fRoData = fRoData.filter(r => r.custKey === currentErsCustomerFilter);
-            }
-
-            let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
-            let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
-            if (sDate || eDate) {
-                fData = fData.filter(ro => {
-                    if (!ro.intakeDT) return false;
-                    if (sDate && ro.intakeDT < sDate) return false;
-                    if (eDate && ro.intakeDT > eDate) return false;
-                    return true;
-                });
-                fMetrics = fMetrics.filter(m => {
-                    if (!m.intakeDT) return false;
-                    if (sDate && m.intakeDT < sDate) return false;
-                    if (eDate && m.intakeDT > eDate) return false;
-                    return true;
-                });
-                fRoData = fRoData.filter(ro => {
-                    if (!ro.openedDT) return false;
-                    if (sDate && ro.openedDT < sDate) return false;
-                    if (eDate && ro.openedDT > eDate) return false;
-                    return true;
-                });
-            }
-
-            // Top Banner KPIs (5 Separate White Tiles)
-            let filteredOpenROs = fRoData.filter(ro => ro.isOpen).length;
-            let totalDowntimeHours = 0, validDowntimeCount = 0;
-            let totalSOSMins = 0, validSOSCount = 0;
-            let onTimeCountErs = 0, validVendorCount = 0;
-
-            fData.forEach(row => {
-                let dtH = row.downtimeHours; let sosM = row.sosMins; let onTime = row.vendorOnTime;
-                if (dtH >= 0) { totalDowntimeHours += dtH; validDowntimeCount++; }
-                if (sosM >= 0) { totalSOSMins += sosM; validSOSCount++; }
-                if (onTime !== null && sosM >= 0) { validVendorCount++; if(onTime) onTimeCountErs++; }
-            });
-
-            let avgDowntime = validDowntimeCount > 0 ? (totalDowntimeHours / validDowntimeCount) : 0;
-            let dtColor = 'var(--gold)'; 
-            if (validDowntimeCount > 0) {
-                if (avgDowntime < 2.5) dtColor = '#10b981'; else if (avgDowntime < 3.0) dtColor = '#f59e0b'; else dtColor = '#ef4444';
-            }
-            let dtStr = validDowntimeCount > 0 ? avgDowntime.toFixed(2) : "0.00";
-
-            let avgSOS = validSOSCount > 0 ? (totalSOSMins / validSOSCount) : 0;
-            let sosColor = 'var(--gold)'; 
-            if (validSOSCount > 0) {
-                if (avgSOS < 85) sosColor = '#10b981'; else if (avgSOS <= 90) sosColor = '#f59e0b'; else sosColor = '#ef4444';
-            }
-            let sosStr = validSOSCount > 0 ? Math.round(avgSOS) : "0";
-            let onTimePctErs = validVendorCount > 0 ? Math.round((onTimeCountErs / validVendorCount) * 100) : 0;
-            let vol = fData.length;
-
-            document.getElementById('ers-master-kpis').innerHTML = `
-                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold); cursor: default; transform: none;">
-                        <div style="font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase;">AVG Downtime (Hours)</div>
-                        <div style="font-size: 32px; font-weight: 800; color: ${dtColor}; margin-top: 10px;">${dtStr}</div>
-                    </div>
-                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold); cursor: default; transform: none;">
-                        <div style="font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase;">AVG SOS Time (Minutes)</div>
-                        <div style="font-size: 32px; font-weight: 800; color: ${sosColor}; margin-top: 10px;">${sosStr}</div>
-                    </div>
-                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold); cursor: default; transform: none;">
-                        <div style="font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase;">Open ROs</div>
-                        <div style="font-size: 32px; font-weight: 800; color: var(--gold); margin-top: 10px;">${filteredOpenROs}</div>
-                    </div>
-                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold); cursor: default; transform: none;">
-                        <div style="font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase;">Call Volume</div>
-                        <div style="font-size: 32px; font-weight: 800; color: var(--gold); margin-top: 10px;">${vol}</div>
-                    </div>
-                    <div class="kpi-tile" style="flex: 1; min-width: 160px; padding: 20px; border-top: 4px solid var(--gold); cursor: default; transform: none;">
-                        <div style="font-size: 11px; color: #555; font-weight: 800; text-transform: uppercase;">Vendor On-Time</div>
-                        <div style="font-size: 32px; font-weight: 800; color: var(--gold); margin-top: 10px;">${onTimePctErs}%</div>
-                    </div>
-                </div>
-            `;
-
-            let scStats = {}; let coordStats = {};
-            fMetrics.forEach(m => {
-                let cName = String(m.coordinator || '').trim();
-                if (cName === '' || cName.toLowerCase() === 'unknown') return; 
-                if (!scStats[cName]) scStats[cName] = { name: cName, total: 0, good: 0, intake: 0, eta: 0, arrival: 0, resolution: 0, pctClean: 0 };
-                let st = scStats[cName]; st.total++;
-                if (m.isGood) st.good++; if (m.errIntake) st.intake++; if (m.errETA) st.eta++; if (m.errArrival) st.arrival++; if (m.errResolution) st.resolution++;
-            });
-
-            currentErsViewData = [];
-            fData.forEach(row => {
-                let cName = String(row.finalOwner || '').trim();
-                if (cName !== '' && cName.toLowerCase() !== 'unknown') {
-                    if (!coordStats[cName]) coordStats[cName] = { validDT: 0, totalDT: 0, validSOS: 0, totalSOS: 0, sosOver90: 0, dtOver3: 0 };
-                }
-                
-                let dtH = row.downtimeHours; let sosM = row.sosMins;
-                if (dtH >= 0) {
-                    if (cName !== '' && cName.toLowerCase() !== 'unknown') {
-                        coordStats[cName].totalDT += dtH; coordStats[cName].validDT++;
-                        if (dtH > 3.0) coordStats[cName].dtOver3++;
-                    }
-                }
-                if (sosM >= 0) {
-                    if (cName !== '' && cName.toLowerCase() !== 'unknown') {
-                        coordStats[cName].totalSOS += sosM; coordStats[cName].validSOS++;
-                        if (sosM > 90) coordStats[cName].sosOver90++;
-                    }
-                }
-                
-                let eStatus = "Open";
-                if (row.completeDT) eStatus = "Completed"; else if (row.arriveDT) eStatus = "On Site"; else if (row.etaDT) eStatus = "Dispatched";
-
-                if (dtH >= 0 || sosM >= 0 || row.ticketId) {
-                    currentErsViewData.push({
-                        ticketId: row.ticketId, coordinator: cName, customer: row.customerStr,
-                        priority: row.priorityStr, eventStatus: eStatus, intakeDT: row.intakeDT, sosMins: sosM, downtimeHours: dtH
-                    });
-                }
-            });
-
-            currentErsSummaryData = []; currentErsScorecardData = [];
-            Object.keys(scStats).forEach(cName => {
-                let sc = scStats[cName]; let cs = coordStats[cName] || { validDT: 0, totalDT: 0, validSOS: 0, totalSOS: 0, sosOver90: 0, dtOver3: 0 };
-                sc.pctClean = sc.total > 0 ? (sc.good / sc.total) * 100 : 0;
-                currentErsSummaryData.push({ name: cName, volume: sc.total, avgSOS: cs.validSOS > 0 ? (cs.totalSOS / cs.validSOS) : -1, avgDT: cs.validDT > 0 ? (cs.totalDT / cs.validDT) : -1, sosOver90: cs.sosOver90, dtOver3: cs.dtOver3 });
-                currentErsScorecardData.push(sc);
-            });
-
-            sortSummaryData(sortColSum, sortAscSum); renderSummaryTable();
-            sortScorecardData(sortColSc, sortAscSc); renderScorecardTable();
-            if (sortColErs) sortErsViewData(sortColErs, sortAscErs); renderErsTable();
-
-            document.getElementById('ers-ro-drilldown-body').innerHTML = generateRoDrilldownHtml(fRoData);
-        }
-
-        // --- ERS SPECIFIC TABLE RENDERING & SORTING ---
-        function handleSortSummary(colName, thElement) {
-            if (sortColSum === colName) sortAscSum = !sortAscSum; else { sortColSum = colName; sortAscSum = true; }
-            document.querySelectorAll('th[data-sort-summary]').forEach(th => { th.classList.remove('asc', 'desc'); th.querySelector('.sort-icon').innerText = '↕'; });
-            thElement.classList.add(sortAscSum ? 'asc' : 'desc'); thElement.querySelector('.sort-icon').innerText = sortAscSum ? '▲' : '▼';
-            sortSummaryData(sortColSum, sortAscSum); renderSummaryTable();
-        }
-        function sortSummaryData(colName, isAsc) {
-            currentErsSummaryData.sort((a, b) => {
-                let valA = a[colName]; let valB = b[colName];
-                if (typeof valA === 'string') valA = valA.toLowerCase(); if (typeof valB === 'string') valB = valB.toLowerCase();
-                if (valA < valB) return isAsc ? -1 : 1; if (valA > valB) return isAsc ? 1 : -1; return 0;
-            });
-        }
-        function renderSummaryTable() {
-            const tbody = document.getElementById('ers-summary-body'); tbody.innerHTML = '';
-            currentErsSummaryData.forEach(item => {
-                let sosClass = ''; let dtClass = '';
-                if (item.avgSOS >= 0) { if (item.avgSOS > 90) sosClass = 'status-red'; else if (item.avgSOS >= 85) sosClass = 'status-yellow'; else sosClass = 'status-green'; }
-                if (item.avgDT >= 0) { if (item.avgDT >= 3.0) dtClass = 'status-red'; else if (item.avgDT >= 2.5) dtClass = 'status-yellow'; else dtClass = 'status-green'; }
-                
-                let fmtSos = item.avgSOS < 0 ? 'N/A' : Math.round(item.avgSOS);
-                let fmtDt = item.avgDT < 0 ? 'N/A' : item.avgDT.toFixed(2);
-
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight: 500;">${item.name}</td>
-                    <td style="font-weight: 600;">${item.volume}</td>
-                    <td><span class="badge ${sosClass}">${fmtSos}</span></td>
-                    <td><span class="badge ${dtClass}">${fmtDt}</span></td>
-                    <td>${item.sosOver90 > 0 ? `<span class="outlier-red">${item.sosOver90}</span>` : item.sosOver90}</td>
-                    <td>${item.dtOver3 > 0 ? `<span class="outlier-red">${item.dtOver3}</span>` : item.dtOver3}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function handleSortScorecard(colName, thElement) {
-            if (sortColSc === colName) sortAscSc = !sortAscSc; else { sortColSc = colName; sortAscSc = true; }
-            document.querySelectorAll('th[data-sort-sc]').forEach(th => { th.classList.remove('asc', 'desc'); th.querySelector('.sort-icon').innerText = '↕'; });
-            thElement.classList.add(sortAscSc ? 'asc' : 'desc'); thElement.querySelector('.sort-icon').innerText = sortAscSc ? '▲' : '▼';
-            sortScorecardData(sortColSc, sortAscSc); renderScorecardTable();
-        }
-        function sortScorecardData(colName, isAsc) {
-            currentErsScorecardData.sort((a, b) => {
-                let valA = a[colName]; let valB = b[colName];
-                if (typeof valA === 'string') valA = valA.toLowerCase(); if (typeof valB === 'string') valB = valB.toLowerCase();
-                if (valA < valB) return isAsc ? -1 : 1; if (valA > valB) return isAsc ? 1 : -1; return 0;
-            });
-        }
-        function renderScorecardTable() {
-            const tbody = document.getElementById('ers-scorecard-body'); tbody.innerHTML = '';
-            currentErsScorecardData.forEach(item => {
-                let pctVal = Math.round(item.pctClean);
-                let pctClass = 'status-red'; if (pctVal >= 90) pctClass = 'status-green'; else if (pctVal >= 85) pctClass = 'status-yellow';
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight: 500;">${item.name}</td>
-                    <td class="${item.good > 0 ? 'good-marker' : ''}">${item.good}</td>
-                    <td class="${item.intake > 0 ? 'error-marker' : ''}">${item.intake}</td>
-                    <td class="${item.eta > 0 ? 'error-marker' : ''}">${item.eta}</td>
-                    <td class="${item.arrival > 0 ? 'error-marker' : ''}">${item.arrival}</td>
-                    <td class="${item.resolution > 0 ? 'error-marker' : ''}">${item.resolution}</td>
-                    <td><span class="badge ${pctClass}">${pctVal}%</span></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function handleSortErs(colName, thElement) {
-            if (sortColErs === colName) sortAscErs = !sortAscErs; else { sortColErs = colName; sortAscErs = true; }
-            document.querySelectorAll('th[data-sort-ers]').forEach(th => { th.classList.remove('asc', 'desc'); th.querySelector('.sort-icon').innerText = '↕'; });
-            thElement.classList.add(sortAscErs ? 'asc' : 'desc'); thElement.querySelector('.sort-icon').innerText = sortAscErs ? '▲' : '▼';
-            sortErsViewData(sortColErs, sortAscErs); renderErsTable();
-        }
-        function sortErsViewData(colName, isAsc) {
-            currentErsViewData.sort((a, b) => {
-                let valA = a[colName]; let valB = b[colName];
-                if (valA === null || valA === undefined || valA === -1 || valA === '') return 1;
-                if (valB === null || valB === undefined || valB === -1 || valB === '') return -1;
-                if (typeof valA === 'string') valA = valA.toLowerCase(); if (typeof valB === 'string') valB = valB.toLowerCase();
-                if (valA < valB) return isAsc ? -1 : 1; if (valA > valB) return isAsc ? 1 : -1; return 0;
-            });
-        }
-        function renderErsTable() {
-            const tbody = document.getElementById('ers-drilldown-table-body'); tbody.innerHTML = '';
-            currentErsViewData.forEach(item => {
-                let tr = document.createElement('tr');
-                let sosDisplay = 'N/A';
-                if (item.sosMins >= 0) {
-                    let fmt = Math.round(item.sosMins);
-                    sosDisplay = item.sosMins > 90 ? `<span class="outlier-red">${fmt}</span>` : `<span class="badge status-green">${fmt}</span>`;
-                }
-                let downDisplay = 'N/A';
-                if (item.downtimeHours >= 0) {
-                    let fmt = item.downtimeHours.toFixed(2);
-                    downDisplay = item.downtimeHours >= 3.0 ? `<span class="outlier-red">${fmt}</span>` : `<span class="badge status-green">${fmt}</span>`;
-                }
-                let statusBadge = item.eventStatus === 'Completed' ? 'status-green' : 'status-yellow';
-                tr.innerHTML = `
-                    <td>${item.customer}</td><td style="font-weight: 500;">${item.coordinator}</td>
-                    <td>${formatDateTimeShort(item.intakeDT)}</td><td>${item.priority}</td>
-                    <td><span class="badge ${statusBadge}">${item.eventStatus}</span></td>
-                    <td>${sosDisplay}</td><td>${downDisplay}</td><td>${item.ticketId}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
 
         function handleSearch() {
             clearTimeout(searchTimeout);
@@ -1957,24 +1209,22 @@
         function navigate(viewId, menuElement = null, preserveCustomerFilter = false) {
             if (!preserveCustomerFilter) {
                 currentCustomerFilter = 'ALL';
-                currentErsCustomerFilter = 'ALL';
                 currentStartDate = '';
                 currentEndDate = '';
                 document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = 'ALL'; });
-                document.querySelectorAll('.ers-customer-filter-select').forEach(sel => { sel.value = 'ALL'; });
                 document.querySelectorAll('.date-filter-start').forEach(el => { el.value = ''; });
                 document.querySelectorAll('.date-filter-end').forEach(el => { el.value = ''; });
             }
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
-            if(viewId !== 'search-view' && viewId !== 'person-view' && viewId !== 'ers-detail-view' && viewId !== 'reassign-view') lastActiveView = viewId;
+            if(viewId !== 'search-view' && viewId !== 'person-view' && viewId !== 'reassign-view') lastActiveView = viewId;
             if(menuElement) {
                 document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
                 menuElement.classList.add('active');
             }
             if(viewId === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
             else if (viewId === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
-            else if (viewId === 'ers-view') renderErsTiles();
+            else if (viewId === 'ers-view') renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
             else if (viewId === 'home-view') renderHomeDashboard();
         }
     </script>
