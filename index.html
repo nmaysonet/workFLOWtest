@@ -58,12 +58,25 @@
         /* Main Content Area */
         .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
         
-        /* Top Navigation Bar */
+        /* Top Navigation Bar & Dropdowns */
         .top-bar { background: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; flex-shrink: 0; }
         .search-container input { padding: 10px 15px; width: 300px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; }
-        .top-actions { display: flex; gap: 15px; }
-        .btn-action { background-color: var(--gold); color: #fff; padding: 10px 20px; border-radius: 4px; font-weight: bold; transition: 0.2s; border: none; }
+        .top-actions { display: flex; gap: 15px; align-items: center; }
+        
+        .btn-action { background-color: var(--gold); color: #fff; padding: 10px 20px; border-radius: 4px; font-weight: bold; transition: 0.2s; border: none; cursor: pointer; font-size: 13px;}
         .btn-action:hover { background-color: var(--gold-hover); }
+
+        /* Vendor Maps Dropdown Styling */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { 
+            display: none; position: absolute; right: 0; background-color: #fff; 
+            min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.15); 
+            z-index: 20; border-radius: 4px; overflow: hidden; border: 1px solid var(--border);
+            margin-top: 5px;
+        }
+        .dropdown-content a { color: #333; padding: 12px 16px; text-decoration: none; display: block; font-size: 13px; font-weight: 600; border-bottom: 1px solid #f4f6f9; }
+        .dropdown-content a:hover { background-color: #f9f9f9; color: var(--gold); }
+        .dropdown:hover .dropdown-content { display: block; }
 
         /* Views */
         .view-section { padding: 30px; display: none; }
@@ -119,7 +132,7 @@
         
         .home-master-tile { 
             flex: 1; 
-            min-width: 650px; 
+            min-width: 550px; 
             padding: 30px; 
             cursor: default; 
             border-top: 4px solid #333 !important; 
@@ -129,7 +142,7 @@
         
         .flex-tile { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
         .flex-tile-left { flex: 1; min-width: 0; }
-        .flex-tile-right { width: 220px; height: 220px; flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: center; }
+        .flex-tile-right { width: 180px; height: 180px; flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: center; }
 
         /* Highlight Boxes */
         .kpi-top-metrics { display: flex; gap: 15px; margin-bottom: 15px; }
@@ -260,7 +273,19 @@
                 <input type="text" id="global-search" placeholder="Search by Unit No..." onkeyup="handleSearch()">
             </div>
             <div class="top-actions">
-                <a href="https://app.mapline.com/map/map_282c81fe/TWZ2TzJHRGcrd3BjaG1QMDNPekVGYUhxNThJd080SUZTK2MwZG" target="_blank" class="btn-action">GARDA MAP</a>
+                <div class="dropdown">
+                    <button class="btn-action dropbtn">VENDOR MAPS ▼</button>
+                    <div class="dropdown-content">
+                        <a href="https://app.mapline.com/map/map_282c81fe/TWZ2TzJHRGcrd3BjaG1QMDNPekVGYUhxNThJd080SUZTK2MwZG" target="_blank">Garda</a>
+                        <a href="#" target="_blank">Amerit Fleet Solutions</a>
+                        <a href="#" target="_blank">Brinks</a>
+                        <a href="#" target="_blank">Colony Hardware</a>
+                        <a href="#" target="_blank">Ferguson</a>
+                        <a href="#" target="_blank">Frontier</a>
+                        <a href="#" target="_blank">Sukut Construction</a>
+                        <a href="#" target="_blank">US Foods</a>
+                    </div>
+                </div>
                 <a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/CreateVRO" target="_blank" class="btn-action">CREATE A VRO</a>
             </div>
         </div>
@@ -483,7 +508,7 @@
                 "AFS RO #": ro.roNum,
                 "Unit No": ro.unitNo,
                 "Priority": ro.priority,
-                "OOS Status": ro.isOOS ? "OOS" : "Active",
+                "OOS Status": ro.isOOS ? "OOS" : "",
                 "Total Unit ROs": ro.roCount,
                 "Status": ro.status,
                 "ECD": ro.ecdFormatted,
@@ -735,7 +760,7 @@
                     drillTopLevel = customer || 'Unknown Customer';
                 }
 
-                // SLA logic (Based purely on Order type now)
+                // SLA logic
                 let isOOS = oosSet.has(unit); 
                 let isOpen = !excludedStatuses.includes(status.toUpperCase());
                 let priorityStr = 'LOW'; let priorityClass = 'badge-low'; 
@@ -852,12 +877,18 @@
             
             let pmData = aggData.filter(ro => pmOwners.includes(ro.owner));
             let vendedData = aggData.filter(ro => vendedOwners.includes(ro.owner));
+            let ersData = aggData.filter(ro => ersOwners.includes(ro.owner));
 
             const pmTile = document.createElement('div'); pmTile.className = 'kpi-tile home-master-tile'; pmTile.innerHTML = generateTileHTML('Total PM Dashboard', pmData, 'chart-pm');
             container.appendChild(pmTile);
+            
             const vendedTile = document.createElement('div'); vendedTile.className = 'kpi-tile home-master-tile'; vendedTile.innerHTML = generateTileHTML('Total Vended Repair Dashboard', vendedData, 'chart-vended');
             container.appendChild(vendedTile);
-            initChart('chart-pm'); initChart('chart-vended');
+            
+            const ersTile = document.createElement('div'); ersTile.className = 'kpi-tile home-master-tile'; ersTile.innerHTML = generateTileHTML('Total ERS Dashboard', ersData, 'chart-ers');
+            container.appendChild(ersTile);
+
+            initChart('chart-pm'); initChart('chart-vended'); initChart('chart-ers');
         }
 
         function renderKPITiles(ownersList, containerId, parentViewId) {
@@ -888,9 +919,10 @@
         }
 
         function loadPersonDrilldown(owner, parentViewId) {
-            navigate('person-view'); currentOwnerView = owner; currentParentView = parentViewId;
+            navigate('person-view', null, true); // Prevent resetting customer filter on drilldown
+            currentOwnerView = owner; currentParentView = parentViewId;
             document.getElementById('person-name-title').innerText = `RO Hierarchy: ${owner}`;
-            document.getElementById('dynamic-back-btn').onclick = () => navigate(parentViewId);
+            document.getElementById('dynamic-back-btn').onclick = () => navigate(parentViewId, null, true);
             const container = document.getElementById('drilldown-body'); container.innerHTML = '';
             
             let ownerDataAll = processedData.filter(ro => ro.owner === owner);
@@ -934,8 +966,11 @@
                             if (ro.ecdState === 'missing') ecdCell = `<span class="badge-ecd-missing">${ro.ecdFormatted}</span>`;
                             else if (ro.ecdState === 'red') ecdCell = `<span class="ecd-red">${ro.ecdFormatted}</span>`;
                             else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
+                            
+                            let isGarda = ro.customer.toUpperCase().includes('GARDA');
+                            let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
 
-                            tableHTML += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td><span class="badge ${ro.isOOS ? 'badge-oos':'badge-active'}">${ro.isOOS ? 'OOS':'ACTIVE'}</span></td><td>${ro.roCount}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
+                            tableHTML += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
                         });
                         tableHTML += `</tbody></table></div>`; branchDetails.innerHTML += tableHTML; subDetails.appendChild(branchDetails);
                     }
@@ -951,8 +986,8 @@
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 const searchTerm = document.getElementById('global-search').value.toLowerCase();
-                if(searchTerm.length === 0) { navigate(lastActiveView); return; }
-                navigate('search-view');
+                if(searchTerm.length === 0) { navigate(lastActiveView, null, true); return; }
+                navigate('search-view', null, true);
                 document.getElementById('search-term-display').innerText = searchTerm;
                 const results = processedData.filter(ro => ro.unitNo.toLowerCase().includes(searchTerm));
                 let searchHtml = '';
@@ -964,17 +999,26 @@
                         else if (ro.ecdState === 'red') ecdCell = `<span class="ecd-red">${ro.ecdFormatted}</span>`;
                         else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
 
-                        searchHtml += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td><span class="badge ${ro.isOOS ? 'badge-oos':'badge-active'}">${ro.isOOS ? 'OOS':'ACTIVE'}</span></td><td>${ro.roCount}</td><td>${ro.owner}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
+                        let isGarda = ro.customer.toUpperCase().includes('GARDA');
+                        let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
+
+                        searchHtml += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.owner}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
                     });
                 }
                 document.getElementById('search-table-body').innerHTML = searchHtml;
             }, 300);
         }
 
-        function navigate(viewId, menuElement = null) {
+        function navigate(viewId, menuElement = null, preserveCustomerFilter = false) {
+            // Reset customer filter when switching sidebar tabs (unless preserving for drilldown/search)
+            if (!preserveCustomerFilter) {
+                currentCustomerFilter = 'ALL';
+                document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = 'ALL'; });
+            }
+
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
-            if(viewId !== 'search-view') lastActiveView = viewId;
+            if(viewId !== 'search-view' && viewId !== 'person-view') lastActiveView = viewId;
             if(menuElement) {
                 document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
                 menuElement.classList.add('active');
@@ -982,6 +1026,7 @@
             if(viewId === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
             else if (viewId === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
             else if (viewId === 'ers-view') renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
+            else if (viewId === 'home-view') renderHomeDashboard();
         }
     </script>
 </body>
