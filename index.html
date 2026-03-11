@@ -109,7 +109,7 @@
         }
         
         .home-master-tile { 
-            flex: 1; min-width: 320px; padding: 25px 20px; cursor: default; border-top: 4px solid #333 !important; 
+            flex: 1; min-width: 480px; padding: 25px 20px; cursor: default; border-top: 4px solid #333 !important; 
         }
         .home-master-tile:hover { transform: none; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
         .home-master-tile .kpi-name { font-size: 22px; margin-bottom: 15px; }
@@ -128,9 +128,14 @@
         .kpi-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; border-top: 1px solid #eee; padding-top: 15px; width: 100%;}
         .stat-box { background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center; }
         .stat-box .title { font-size: 11px; color: #666; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
-        .stat-box .num { font-size: 18px; font-weight: 700; color: #444; }
+        .stat-box .num { font-size: 20px; font-weight: 700; color: #444; }
         .stat-box .num.urgent { color: var(--urgent-red); }
         .stat-box .num.good { color: var(--low-green); }
+
+        /* Master Dashboard Inline Stats (Spans full width now) */
+        .home-master-tile .stat-box { padding: 15px 10px; }
+        .home-master-tile .stat-box .title { font-size: 13px; }
+        .home-master-tile .stat-box .num { font-size: 26px; }
 
         /* Data Table & Drilldown Elements */
         .view-title { font-size: 24px; margin-bottom: 15px; color: #333; display: flex; justify-content: space-between; align-items: center;}
@@ -596,7 +601,9 @@
         function cleanErsRow(row, ownerMap) {
             let rawOwner = getCol(row, ['Coordinator', 'Created By']);
             let finalOwner = rawOwner;
-            if (ownerMap[rawOwner.toLowerCase().trim()]) finalOwner = ownerMap[rawOwner.toLowerCase().trim()].name;
+            if (rawOwner && ownerMap[rawOwner.toLowerCase().trim()]) {
+                finalOwner = ownerMap[rawOwner.toLowerCase().trim()].name;
+            }
             
             let metric = {
                 coordinator: finalOwner,
@@ -697,7 +704,6 @@
 
             metric.isGood = !(metric.errIntake || metric.errETA || metric.errArrival || metric.errResolution);
             
-            // Cleaned properties back onto row for easy access
             row.intakeDT = intakeDT;
             row.arriveDT = resArr.dt;
             row.etaDT = resETA.dt;
@@ -706,6 +712,21 @@
             row.priorityStr = priority;
             row.customerStr = metric.customer;
             row.ticketId = getCol(row, ['Ticket ID', 'Ticket']);
+
+            let downtimeHours = -1;
+            if (intakeDT && resComp.dt) downtimeHours = (resComp.dt - intakeDT) / (1000 * 60 * 60);
+
+            let sosMins = -1;
+            if (intakeDT && arriveDT) sosMins = (arriveDT - intakeDT) / (1000 * 60);
+
+            let vendorOnTime = null;
+            if (arriveDT && resETA.dt) {
+                vendorOnTime = arriveDT <= resETA.dt;
+            }
+            
+            row.downtimeHours = downtimeHours;
+            row.sosMins = sosMins;
+            row.vendorOnTime = vendorOnTime;
 
             return { cleaned: row, metric: metric };
         }
@@ -804,7 +825,7 @@
                     const firstRow = sheetData[0];
                     const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
                     
-                    if (sheetName.toUpperCase() === 'ERS') {
+                    if (sheetName.toUpperCase().includes('ERS')) {
                         ersTabRaw = sheetData;
                     } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
                         resourceRaw = resourceRaw.concat(sheetData);
@@ -844,7 +865,7 @@
                         const firstRow = sheetData[0];
                         const keys = Object.keys(firstRow).map(k => k.toLowerCase().trim());
                         
-                        if (sheetName.toUpperCase() === 'ERS') {
+                        if (sheetName.toUpperCase().includes('ERS')) {
                             ersTabRaw = sheetData;
                         } else if (keys.includes('createdby') || keys.includes('pm comp:') || keys.includes('team')) {
                             resourceRaw = resourceRaw.concat(sheetData);
@@ -865,7 +886,6 @@
         function processExcelData(vroRaw, resourceRaw, oosRaw, ersTabRaw) {
             const today = new Date(); today.setHours(0, 0, 0, 0);
             
-            // 1. Build OOS Set & Location Maps
             let oosSet = new Set();
             let unitToLocation = {};
             oosRaw.forEach(row => {
@@ -886,7 +906,6 @@
                 }
             });
 
-            // 2. Build Resource Table Maps & Queues
             let ownerMap = {};
             let pmKeywords = [];
             let activePM = new Set();
@@ -922,14 +941,12 @@
             ersOwners = Array.from(activeERS);
             pmKeywords = [...new Set(pmKeywords)]; 
 
-            // 3. Track RO counts
             let unitROCounts = {};
             vroRaw.forEach(row => {
                 let unit = getCol(row, ['Unit No', 'UNITNUMBER', 'Vehicle']).toUpperCase();
                 if(unit) unitROCounts[unit] = (unitROCounts[unit] || 0) + 1;
             });
 
-            // 4. Process Main VRO Data (PM & Vended)
             processedData = vroRaw.map(row => {
                 let roNum = getCol(row, ['Order', 'RO Number', 'RONum', 'AFS RO #']);
                 let customer = getCol(row, ['Customer', 'CUSTOMERNAME', 'Customer Name']); 
@@ -941,12 +958,10 @@
                 let dueRaw = getCol(row, ['Unit Due Date', 'Estimate Due Date', 'Due Date', 'L']);
                 let compRaw = getCol(row, ['Completed Date', 'Completed', 'P']);
                 
-                // Map Email -> Full Name
                 let finalOwner = rawOwner;
                 let ownerLookup = ownerMap[rawOwner.toLowerCase().trim()];
                 if (ownerLookup) finalOwner = ownerLookup.name;
 
-                // PM Keyword Scanning
                 let taskStr = vmrs.toLowerCase();
                 let isPMOrder = false;
                 for (let kw of pmKeywords) {
@@ -956,7 +971,6 @@
                     }
                 }
 
-                // Locations & Routing
                 let loc = unitToLocation[unit] || { region: 'Unknown Region', subregion: 'Unknown Subregion', branch: 'Unknown Branch' };
                 let drillTopLevel = 'Uncategorized';
                 let fallbackLoc = { region: 'Unknown Region', subregion: 'Unknown Subregion', branch: customer.trim() };
@@ -1038,14 +1052,16 @@
                 return { roNum, customer, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, priority: priorityStr, priorityClass, ecdState, ecdFormatted };
             }).filter(ro => ro.roNum !== '');
 
-            // 5. Process ERS Data through ERS Cleaner
+            // Process ERS logic
             rawErsData = [];
             masterErsMetrics = [];
-            for (let i = 0; i < ersTabRaw.length; i++) {
-                let result = cleanErsRow(ersTabRaw[i], ownerMap);
-                if (result && result.cleaned) {
-                    masterErsMetrics.push(result.metric);
-                    rawErsData.push(result.cleaned);
+            if (ersTabRaw && ersTabRaw.length > 0) {
+                for (let i = 0; i < ersTabRaw.length; i++) {
+                    let result = cleanErsRow(ersTabRaw[i], ownerMap);
+                    if (result && result.cleaned) {
+                        masterErsMetrics.push(result.metric);
+                        rawErsData.push(result.cleaned);
+                    }
                 }
             }
 
@@ -1076,15 +1092,9 @@
 
             let chartHTML = '';
             if (chartId) {
-                chartHTML = `
-                    <div class="chart-box">
-                        <canvas id="${chartId}" data-comp="${compPct}" data-late="${latePct}"></canvas>
-                    </div>
-                `;
+                chartHTML = `<div class="chart-box"><canvas id="${chartId}" data-comp="${compPct}" data-late="${latePct}"></canvas></div>`;
             }
 
-            // Top row now displays boxes AND chart side-by-side. 
-            // Bottom row (stats-grid) takes up the full width automatically.
             let innerHtml = `
                 <div class="kpi-name">${name}</div>
                 <div class="kpi-top-metrics">
@@ -1120,7 +1130,6 @@
             return innerHtml;
         }
 
-        // --- ERS KPI TILE GENERATOR ---
         function generateErsTileHTML(name, metricsArray, dataArray) {
             let totalDowntimeHours = 0, validDowntimeCount = 0;
             let totalSOSMins = 0, validSOSCount = 0;
@@ -1134,7 +1143,6 @@
             });
 
             let avgDowntime = validDowntimeCount > 0 ? (totalDowntimeHours / validDowntimeCount).toFixed(2) : "0.00";
-            
             let avgSOS = validSOSCount > 0 ? (totalSOSMins / validSOSCount) : 0;
             let sosStr = "0 mins";
             if (avgSOS > 0) sosStr = avgSOS < 60 ? Math.round(avgSOS) + " mins" : (avgSOS / 60).toFixed(2) + " hrs";
@@ -1165,35 +1173,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        Chart.register({
-            id: 'centerText',
-            beforeDraw: function(chart) {
-                if (chart.config.options.elements.center) {
-                    var ctx = chart.ctx; var centerConfig = chart.config.options.elements.center;
-                    var txt = centerConfig.text;
-                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    var centerX = ((chart.chartArea.left + chart.chartArea.right) / 2);
-                    var centerY = ((chart.chartArea.top + chart.chartArea.bottom) / 2);
-                    ctx.font = "bold 24px Raleway"; ctx.fillStyle = centerConfig.color || '#333';
-                    ctx.fillText(txt, centerX, centerY);
-                }
-            }
-        });
-
-        function initChart(chartId) {
-            const canvas = document.getElementById(chartId); if(!canvas) return;
-            const comp = parseInt(canvas.getAttribute('data-comp')) || 0;
-            const late = parseInt(canvas.getAttribute('data-late')) || 0;
-            let chartData = [comp, late]; let bgColors = ['#5cb85c', '#d9534f'];
-            if (comp === 0 && late === 0) { chartData = [1]; bgColors = ['#e0e0e0']; }
-            if(globalChartInstances[chartId]) globalChartInstances[chartId].destroy();
-            globalChartInstances[chartId] = new Chart(canvas.getContext('2d'), {
-                type: 'doughnut',
-                data: { labels: ['On-Time', 'Late'], datasets: [{ data: chartData, backgroundColor: bgColors, borderWidth: 0 }] },
-                options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } }, elements: { center: { text: comp + '%' } } }
-            });
         }
 
         function renderHomeDashboard() {
@@ -1233,7 +1212,10 @@
 
             ownersList.forEach(owner => {
                 let ownerDataAll = processedData.filter(ro => ro.owner === owner);
-                if (currentCustomerFilter !== 'ALL') ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+                
+                if (currentCustomerFilter !== 'ALL') {
+                    ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+                }
 
                 let targetData = ownerDataAll.filter(ro => ro.isOpen);
                 if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
@@ -1263,9 +1245,8 @@
                     data = data.filter(d => d.customerStr.toUpperCase().includes(currentCustomerFilter));
                 }
 
-                // Apply global ERS tab filters
                 if (currentFilter !== 'ALL') {
-                    if (currentFilter === 'OOS') return; // ERS ignores OOS filter natively
+                    if (currentFilter === 'OOS') return; 
                     data = data.filter(d => d.priorityStr === currentFilter);
                 }
 
@@ -1287,7 +1268,10 @@
             const container = document.getElementById('drilldown-body'); container.innerHTML = '';
             
             let ownerDataAll = processedData.filter(ro => ro.owner === owner);
-            if (currentCustomerFilter !== 'ALL') ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+            
+            if (currentCustomerFilter !== 'ALL') {
+                ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+            }
 
             let targetData = ownerDataAll.filter(ro => ro.isOpen);
             if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
@@ -1337,7 +1321,6 @@
             }
         }
 
-        // --- ERS SPECIFIC DRILLDOWN ---
         function loadErsDrilldown(owner, parentViewId) {
             navigate('ers-detail-view', null, true); 
             currentOwnerView = owner; currentParentView = parentViewId;
@@ -1365,7 +1348,6 @@
                 }
             }
 
-            // Calc ERS Scorecard
             let scStats = {}; let coordStats = {};
             fMetrics.forEach(m => {
                 let cName = String(m.coordinator || '').trim();
