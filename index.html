@@ -110,34 +110,31 @@
             display: flex; gap: 15px; flex-wrap: nowrap; width: 100%; overflow-x: auto; padding-bottom: 15px;
         }
         
+        /* SHRUNK MASTER TILES */
         .home-master-tile { 
-            flex: 1; min-width: 480px; padding: 25px 20px; cursor: default; border-top: 4px solid #333 !important; 
+            flex: 1; min-width: 360px; padding: 20px; cursor: default; border-top: 4px solid #333 !important; 
         }
         .home-master-tile:hover { transform: none; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
-        .home-master-tile .kpi-name { font-size: 22px; margin-bottom: 15px; }
+        .home-master-tile .kpi-name { font-size: 18px; margin-bottom: 15px; }
 
-        /* KPI Layout - PM/Vended Master Highlight Boxes */
+        /* KPI Layout - PM/Vended Master Highlight Boxes (SHRUNK) */
         .kpi-top-metrics { display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch; }
-        .highlight-box { flex: 1; background: #fffaf0; border: 1px solid var(--gold); border-radius: 6px; padding: 15px 10px; display: flex; flex-direction: column; justify-content: center;}
+        .highlight-box { flex: 1; background: #fffaf0; border: 1px solid var(--gold); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; justify-content: center;}
         .highlight-box.urgent-box { background: #fff0f0; border-color: var(--urgent-red); }
-        .highlight-box .title { font-size: 13px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 5px; text-align: left; }
-        .highlight-box .num { font-size: 34px; font-weight: 800; color: var(--gold); line-height: 1; text-align: right; }
+        .highlight-box .title { font-size: 12px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 5px; text-align: left; }
+        .highlight-box .num { font-size: 28px; font-weight: 800; color: var(--gold); line-height: 1; text-align: right; }
         .highlight-box.urgent-box .num { color: var(--urgent-red); }
 
-        .chart-box { flex: 1; min-height: 100px; position: relative; display: flex; align-items: center; justify-content: center; }
+        /* SHRUNK CHART BOX */
+        .chart-box { width: 70px; height: 70px; flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: center; margin: auto 5px; }
 
-        /* KPI Layout - Bottom Row (Full width expansion for PM/Vended) */
+        /* KPI Layout - Bottom Row */
         .kpi-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; border-top: 1px solid #eee; padding-top: 15px; width: 100%;}
-        .stat-box { background: #f9f9f9; padding: 10px; border-radius: 4px; text-align: center; }
-        .stat-box .title { font-size: 11px; color: #666; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
-        .stat-box .num { font-size: 20px; font-weight: 700; color: #444; }
+        .stat-box { background: #f9f9f9; padding: 10px 5px; border-radius: 4px; text-align: center; }
+        .stat-box .title { font-size: 10px; color: #666; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
+        .stat-box .num { font-size: 16px; font-weight: 700; color: #444; }
         .stat-box .num.urgent { color: var(--urgent-red); }
         .stat-box .num.good { color: var(--low-green); }
-
-        /* Master Dashboard Inline Stats (Spans full width now) */
-        .home-master-tile .stat-box { padding: 15px 10px; }
-        .home-master-tile .stat-box .title { font-size: 13px; }
-        .home-master-tile .stat-box .num { font-size: 26px; }
 
         /* Data Table & Drilldown Elements */
         .view-title { font-size: 24px; margin-bottom: 15px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
@@ -180,8 +177,9 @@
         .badge-ecd-missing { background-color: #fff3cd; color: #d9534f; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; border: 1px solid #d9534f; white-space: nowrap; display: inline-block; }
 
         /* ERS Specific Styles */
-        .side-by-side-container { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 24px; }
-        .side-table { flex: 1; margin-bottom: 0; padding: 15px; min-width: 0; background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .side-by-side-container { display: flex; gap: 20px; align-items: stretch; margin-bottom: 24px; }
+        .side-table { display: flex; flex-direction: column; flex: 1; margin-bottom: 0; padding: 15px; min-width: 0; background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .side-table .table-wrapper { flex: 1; overflow-y: auto; margin-top: 0; }
         .outlier-red { color: var(--urgent-red); font-weight: 700; background-color: #fee2e2; padding: 2px 6px; border-radius: 4px; }
         .error-marker { color: var(--urgent-red); font-weight: bold; }
         .good-marker { color: var(--low-green); font-weight: bold; }
@@ -306,20 +304,18 @@
 
         <div id="pm-view" class="view-section">
             <div class="view-title">
-                <div style="display:flex; align-items:center; gap: 20px;">
-                    <span style="font-weight: 700;">PM Queue</span>
-                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
-                        <option value="ALL">All Customers</option>
-                        <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
-                        <option value="BRINKS">Brinks</option>
-                        <option value="COLONY HARDWARE">Colony Hardware</option>
-                        <option value="FERGUSON">Ferguson</option>
-                        <option value="FRONTIER">Frontier</option>
-                        <option value="GARDA">Garda</option>
-                        <option value="SUKUT CONSTRUCTION">Sukut Construction</option>
-                        <option value="US FOODS">US Foods</option>
-                    </select>
-                </div>
+                <span style="font-weight: 700;">PM Queue</span>
+                <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
+                    <option value="ALL">All Customers</option>
+                    <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
+                    <option value="BRINKS">Brinks</option>
+                    <option value="COLONY HARDWARE">Colony Hardware</option>
+                    <option value="FERGUSON">Ferguson</option>
+                    <option value="FRONTIER">Frontier</option>
+                    <option value="GARDA">Garda</option>
+                    <option value="SUKUT CONSTRUCTION">Sukut Construction</option>
+                    <option value="US FOODS">US Foods</option>
+                </select>
             </div>
             <div class="filter-bar">
                 <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Active</button>
@@ -333,20 +329,18 @@
 
         <div id="vended-view" class="view-section">
             <div class="view-title">
-                <div style="display:flex; align-items:center; gap: 20px;">
-                    <span style="font-weight: 700;">Vended Repair Queue</span>
-                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
-                        <option value="ALL">All Customers</option>
-                        <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
-                        <option value="BRINKS">Brinks</option>
-                        <option value="COLONY HARDWARE">Colony Hardware</option>
-                        <option value="FERGUSON">Ferguson</option>
-                        <option value="FRONTIER">Frontier</option>
-                        <option value="GARDA">Garda</option>
-                        <option value="SUKUT CONSTRUCTION">Sukut Construction</option>
-                        <option value="US FOODS">US Foods</option>
-                    </select>
-                </div>
+                <span style="font-weight: 700;">Vended Repair Queue</span>
+                <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
+                    <option value="ALL">All Customers</option>
+                    <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
+                    <option value="BRINKS">Brinks</option>
+                    <option value="COLONY HARDWARE">Colony Hardware</option>
+                    <option value="FERGUSON">Ferguson</option>
+                    <option value="FRONTIER">Frontier</option>
+                    <option value="GARDA">Garda</option>
+                    <option value="SUKUT CONSTRUCTION">Sukut Construction</option>
+                    <option value="US FOODS">US Foods</option>
+                </select>
             </div>
             <div class="filter-bar">
                 <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Active</button>
@@ -417,36 +411,35 @@
 
         <div id="ers-detail-view" class="view-section">
             <div class="view-title">
-                <div style="display:flex; align-items:center; gap: 20px;">
-                    <span id="ers-name-title" style="font-weight: 700;">ERS Coordinator Details</span>
-                    <div class="date-controls">
-                        <label>Date Range:</label>
-                        <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
-                        <span style="font-weight:bold; color:#666;">-</span>
-                        <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
-                        
-                        <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)" style="margin-left: 10px;">
-                            <option value="ALL">All Customers</option>
-                            <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
-                            <option value="BRINKS">Brinks</option>
-                            <option value="COLONY HARDWARE">Colony Hardware</option>
-                            <option value="FERGUSON">Ferguson</option>
-                            <option value="FRONTIER">Frontier</option>
-                            <option value="GARDA">Garda</option>
-                            <option value="SUKUT CONSTRUCTION">Sukut Construction</option>
-                            <option value="US FOODS">US Foods</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="controls-group">
-                    <button class="btn-export" onclick="exportErsDrilldownToExcel()">Export to XLSX</button>
-                    <button id="ers-dynamic-back-btn">&larr; Back</button>
+                <span id="ers-name-title" style="font-weight: 700;">ERS Coordinator Details</span>
+                <div class="date-controls">
+                    <label>Date Range:</label>
+                    <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
+                    <span style="font-weight:bold; color:#666;">-</span>
+                    <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
+                    
+                    <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)" style="margin-left: 10px;">
+                        <option value="ALL">All Customers</option>
+                        <option value="AMERIT FLEET SOLUTIONS">Amerit Fleet Solutions</option>
+                        <option value="BRINKS">Brinks</option>
+                        <option value="COLONY HARDWARE">Colony Hardware</option>
+                        <option value="FERGUSON">Ferguson</option>
+                        <option value="FRONTIER">Frontier</option>
+                        <option value="GARDA">Garda</option>
+                        <option value="SUKUT CONSTRUCTION">Sukut Construction</option>
+                        <option value="US FOODS">US Foods</option>
+                    </select>
+
+                    <button class="btn-export" style="margin-left: 15px;" onclick="exportErsDrilldownToExcel()">Export to XLSX</button>
+                    <button id="ers-dynamic-back-btn" class="btn-action" style="margin-left: 10px; background:#666;">&larr; Back</button>
                 </div>
             </div>
 
+            <div id="ers-master-kpis" style="margin-bottom: 24px;"></div>
+
             <div class="side-by-side-container">
                 <div class="side-table">
-                    <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 14px; color: var(--gold);">Performance Summary</h3>
+                    <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 14px; color: var(--gold);">Performance Summary (Tab 4)</h3>
                     <div class="table-wrapper">
                         <table>
                             <thead>
@@ -465,7 +458,7 @@
                 </div>
 
                 <div class="side-table">
-                    <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 14px; color: var(--gold);">Data Entry Scorecard</h3>
+                    <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 14px; color: var(--gold);">Data Entry Scorecard (Tab 4)</h3>
                     <div class="table-wrapper">
                         <table>
                             <thead>
@@ -485,8 +478,8 @@
                 </div>
             </div>
 
-            <div class="drilldown-container table-wrapper">
-                <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 14px; color: var(--gold);">Ticket Drilldown</h3>
+            <div class="drilldown-container table-wrapper" style="margin-bottom: 24px;">
+                <h3 style="margin-top: 0; margin-bottom: 15px; font-size: 16px; color: var(--gold);">Ticket Details (Tab 4)</h3>
                 <table>
                     <thead>
                         <tr>
@@ -502,6 +495,17 @@
                     </thead>
                     <tbody id="ers-drilldown-table-body"></tbody>
                 </table>
+            </div>
+
+            <div class="drilldown-container" style="margin-top: 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                    <h3 style="margin:0; font-size: 16px; color: var(--gold);">Repair Orders (Tab 1)</h3>
+                    <div class="controls-group">
+                        <button onclick="toggleErsRODetails(true)">Expand All</button>
+                        <button onclick="toggleErsRODetails(false)">Collapse All</button>
+                    </div>
+                </div>
+                <div id="ers-ro-drilldown-body"></div>
             </div>
         </div>
 
@@ -802,6 +806,7 @@
             let customer = getCol(row, ['Customer', 'Customer Name']);
             let priorityStr = getCol(row, ['OSC - Priority', 'Priority', 'Call Type']).toUpperCase();
             
+            // STRICT ERS FILTER: Ignore "Scheduled" / "Canceled" entirely.
             if (priorityStr !== 'ERS') return null;
 
             let inDate = getCol(row, ['Intake Date - Date', 'Intake Date', 'Date']);
@@ -826,6 +831,7 @@
             let dt = parseDateStringLocal(inDate);
             if (!dt || p.isMissing) metric.errIntake = true;
 
+            // STRICT MISSING CHECK
             let isMissingRequired = (!inDate || !inTime || !vETA || !aDate || !aTime || !cDate || !cTime);
 
             if (isMissingRequired || !dt || p.isMissing) {
@@ -1173,8 +1179,75 @@
             return innerHtml;
         }
 
-        // REDESIGNED 2X2 FULL TILE ERS LAYOUT
-        function generateErsTileHTML(name, metricsArray, dataArray) {
+        // --- HYBRID ERS QUEUE TILE (Shows Orders & Tickets) ---
+        function generateErsHybridTileHTML(name, roDataArray, metricsArray, ersDataArray) {
+            let filteredOpen = roDataArray.filter(ro => ro.isOpen);
+            if(currentFilter === 'URGENT') filteredOpen = filteredOpen.filter(ro => ro.priority === 'URGENT');
+            else if(currentFilter === 'MEDIUM') filteredOpen = filteredOpen.filter(ro => ro.priority === 'MEDIUM');
+            else if(currentFilter === 'LOW') filteredOpen = filteredOpen.filter(ro => ro.priority === 'LOW');
+            else if(currentFilter === 'OOS') filteredOpen = filteredOpen.filter(ro => ro.isOOS);
+            
+            let urgentCount = filteredOpen.filter(ro => ro.priority === 'URGENT').length;
+            let completedOrders = roDataArray.filter(ro => ro.isCompletedKPI);
+            let compCount = completedOrders.length;
+            let onTimeCountRO = completedOrders.filter(ro => ro.isOnTimeKPI).length;
+            let lateCountRO = completedOrders.filter(ro => ro.isLateKPI).length;
+            let compPct = compCount > 0 ? Math.round((onTimeCountRO / compCount) * 100) : 0;
+            let latePct = compCount > 0 ? Math.round((lateCountRO / compCount) * 100) : 0;
+
+            let totalDowntimeHours = 0, validDowntimeCount = 0;
+            let totalSOSMins = 0, validSOSCount = 0;
+            let onTimeCountErs = 0, validVendorCount = 0;
+
+            ersDataArray.forEach(row => {
+                let dtH = row.downtimeHours; let sosM = row.sosMins; let onTime = row.vendorOnTime;
+                if (dtH >= 0) { totalDowntimeHours += dtH; validDowntimeCount++; }
+                if (sosM >= 0) { totalSOSMins += sosM; validSOSCount++; }
+                if (onTime !== null && sosM >= 0) { validVendorCount++; if(onTime) onTimeCountErs++; }
+            });
+
+            let avgDowntime = validDowntimeCount > 0 ? (totalDowntimeHours / validDowntimeCount) : 0;
+            let dtColor = '#444'; let dtBg = '#f9f9f9';
+            if (validDowntimeCount > 0) {
+                if (avgDowntime < 2.5) { dtColor = '#10b981'; dtBg = '#ecfdf5'; } 
+                else if (avgDowntime < 3.0) { dtColor = '#f59e0b'; dtBg = '#fffbeb'; } 
+                else { dtColor = '#ef4444'; dtBg = '#fef2f2'; } 
+            }
+            let dtStr = validDowntimeCount > 0 ? avgDowntime.toFixed(2) : "0.00";
+
+            let avgSOS = validSOSCount > 0 ? (totalSOSMins / validSOSCount) : 0;
+            let sosColor = '#444'; let sosBg = '#f9f9f9';
+            if (validSOSCount > 0) {
+                if (avgSOS < 85) { sosColor = '#10b981'; sosBg = '#ecfdf5'; } 
+                else if (avgSOS <= 90) { sosColor = '#f59e0b'; sosBg = '#fffbeb'; } 
+                else { sosColor = '#ef4444'; sosBg = '#fef2f2'; } 
+            }
+            let sosStr = validSOSCount > 0 ? Math.round(avgSOS) : "0";
+            let onTimePctErs = validVendorCount > 0 ? Math.round((onTimeCountErs / validVendorCount) * 100) : 0;
+            let vol = ersDataArray.length;
+
+            return `
+                <div class="kpi-name" style="margin-bottom: 10px;">${name}</div>
+                
+                <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 3px;">REPAIR ORDERS (TAB 1)</div>
+                <div class="kpi-stats-grid" style="grid-template-columns: repeat(4, 1fr); padding-top: 5px; margin-bottom: 15px; border-top:none; gap:5px;">
+                    <div class="stat-box" style="padding: 8px 5px;"><div class="title" style="font-size:10px;">Open</div><div class="num" style="font-size:16px;">${filteredOpen.length}</div></div>
+                    <div class="stat-box" style="padding: 8px 5px; background-color:#fff0f0; border: 1px solid var(--urgent-red)"><div class="title" style="font-size:10px;">Urgent</div><div class="num urgent" style="font-size:16px;">${urgentCount}</div></div>
+                    <div class="stat-box" style="padding: 8px 5px;"><div class="title" style="font-size:10px;">% Comp</div><div class="num good" style="font-size:16px;">${compPct}%</div></div>
+                    <div class="stat-box" style="padding: 8px 5px;"><div class="title" style="font-size:10px;">% Late</div><div class="num urgent" style="font-size:16px;">${latePct}%</div></div>
+                </div>
+
+                <div style="font-size: 11px; font-weight: 800; color: #888; margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 3px;">ERS TICKETS (TAB 4)</div>
+                <div class="kpi-stats-grid" style="grid-template-columns: repeat(4, 1fr); padding-top: 5px; border-top:none; gap:5px;">
+                    <div class="stat-box" style="padding: 8px 5px;"><div class="title" style="font-size:10px;">Calls</div><div class="num" style="font-size:16px; color:#8b5cf6;">${vol}</div></div>
+                    <div class="stat-box" style="padding: 8px 5px;"><div class="title" style="font-size:10px;">On-Time</div><div class="num good" style="font-size:16px;">${onTimePctErs}%</div></div>
+                    <div class="stat-box" style="padding: 8px 5px; background-color:${dtBg}; border: 1px solid ${dtColor}"><div class="title" style="font-size:10px; color:${dtColor};">Avg DT</div><div class="num" style="font-size:16px; color:${dtColor};">${dtStr}</div></div>
+                    <div class="stat-box" style="padding: 8px 5px; background-color:${sosBg}; border: 1px solid ${sosColor}"><div class="title" style="font-size:10px; color:${sosColor};">Avg SOS</div><div class="num" style="font-size:16px; color:${sosColor};">${sosStr}</div></div>
+                </div>
+            `;
+        }
+
+        function generateErsMasterTileHTML(name, dataArray) {
             let totalDowntimeHours = 0, validDowntimeCount = 0;
             let totalSOSMins = 0, validSOSCount = 0;
             let onTimeCount = 0, validVendorCount = 0;
@@ -1186,48 +1259,44 @@
                 if (onTime !== null && sosM >= 0) { validVendorCount++; if(onTime) onTimeCount++; }
             });
 
-            // Conditional Avg Downtime
             let avgDowntime = validDowntimeCount > 0 ? (totalDowntimeHours / validDowntimeCount) : 0;
             let dtColor = '#e0e0e0'; let dtBg = '#f9f9f9';
             if (validDowntimeCount > 0) {
-                if (avgDowntime < 2.5) { dtColor = '#10b981'; dtBg = '#ecfdf5'; } // Green
-                else if (avgDowntime < 3.0) { dtColor = '#f59e0b'; dtBg = '#fffbeb'; } // Yellow
-                else { dtColor = '#ef4444'; dtBg = '#fef2f2'; } // Red
+                if (avgDowntime < 2.5) { dtColor = '#10b981'; dtBg = '#ecfdf5'; } 
+                else if (avgDowntime < 3.0) { dtColor = '#f59e0b'; dtBg = '#fffbeb'; } 
+                else { dtColor = '#ef4444'; dtBg = '#fef2f2'; } 
             }
             let dtStr = validDowntimeCount > 0 ? avgDowntime.toFixed(2) : "0.00";
 
-            // Conditional Avg SOS
             let avgSOS = validSOSCount > 0 ? (totalSOSMins / validSOSCount) : 0;
             let sosColor = '#e0e0e0'; let sosBg = '#f9f9f9';
             if (validSOSCount > 0) {
-                if (avgSOS < 85) { sosColor = '#10b981'; sosBg = '#ecfdf5'; } // Green
-                else if (avgSOS <= 90) { sosColor = '#f59e0b'; sosBg = '#fffbeb'; } // Yellow
-                else { sosColor = '#ef4444'; sosBg = '#fef2f2'; } // Red
+                if (avgSOS < 85) { sosColor = '#10b981'; sosBg = '#ecfdf5'; } 
+                else if (avgSOS <= 90) { sosColor = '#f59e0b'; sosBg = '#fffbeb'; } 
+                else { sosColor = '#ef4444'; sosBg = '#fef2f2'; } 
             }
             let sosStr = validSOSCount > 0 ? Math.round(avgSOS) : "0";
 
-            // Static Call Volume & On-Time Colors
             let onTimePct = validVendorCount > 0 ? Math.round((onTimeCount / validVendorCount) * 100) : 0;
             let vol = dataArray.length;
 
             return `
-                <div class="kpi-name">${name}</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-grow: 1;">
                     <div class="highlight-box" style="border-color:${dtColor}; background-color:${dtBg}; margin: 0;">
-                        <div class="title" style="font-size: 13px;">AVG Downtime (Hours)</div>
-                        <div class="num" style="color:${dtColor};">${dtStr}</div>
+                        <div class="title" style="font-size: 12px; color:${dtColor};">AVG Downtime (Hours)</div>
+                        <div class="num" style="color:${dtColor}; font-size:32px;">${dtStr}</div>
                     </div>
                     <div class="highlight-box" style="border-color:${sosColor}; background-color:${sosBg}; margin: 0;">
-                        <div class="title" style="font-size: 13px;">AVG SOS Time (Minutes)</div>
-                        <div class="num" style="color:${sosColor};">${sosStr}</div>
+                        <div class="title" style="font-size: 12px; color:${sosColor};">AVG SOS Time (Minutes)</div>
+                        <div class="num" style="color:${sosColor}; font-size:32px;">${sosStr}</div>
                     </div>
                     <div class="highlight-box" style="border-color:#8b5cf6; background-color:#f5f3ff; margin: 0;">
-                        <div class="title" style="font-size: 13px;">Call Volume</div>
-                        <div class="num" style="color:#8b5cf6;">${vol}</div>
+                        <div class="title" style="font-size: 12px; color:#8b5cf6;">Call Volume</div>
+                        <div class="num" style="color:#8b5cf6; font-size:32px;">${vol}</div>
                     </div>
                     <div class="highlight-box" style="border-color:#0066cc; background-color:#eff6ff; margin: 0;">
-                        <div class="title" style="font-size: 13px;">Vendor On-Time</div>
-                        <div class="num" style="color:#0066cc;">${onTimePct}%</div>
+                        <div class="title" style="font-size: 12px; color:#0066cc;">Vendor On-Time</div>
+                        <div class="num" style="color:#0066cc; font-size:32px;">${onTimePct}%</div>
                     </div>
                 </div>
             `;
@@ -1242,7 +1311,7 @@
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                     var centerX = ((chart.chartArea.left + chart.chartArea.right) / 2);
                     var centerY = ((chart.chartArea.top + chart.chartArea.bottom) / 2);
-                    ctx.font = "bold 24px Raleway"; ctx.fillStyle = centerConfig.color || '#333';
+                    ctx.font = "bold 22px Raleway"; ctx.fillStyle = centerConfig.color || '#333';
                     ctx.fillText(txt, centerX, centerY);
                 }
             }
@@ -1258,7 +1327,7 @@
             globalChartInstances[chartId] = new Chart(canvas.getContext('2d'), {
                 type: 'doughnut',
                 data: { labels: ['On-Time', 'Late'], datasets: [{ data: chartData, backgroundColor: bgColors, borderWidth: 0 }] },
-                options: { maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } }, elements: { center: { text: comp + '%' } } }
+                options: { maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } }, elements: { center: { text: comp + '%' } } }
             });
         }
 
@@ -1302,15 +1371,15 @@
             let pmData = aggData.filter(ro => pmOwners.includes(ro.owner));
             let vendedData = aggData.filter(ro => vendedOwners.includes(ro.owner));
 
-            const pmTile = document.createElement('div'); pmTile.className = 'kpi-tile home-master-tile'; pmTile.innerHTML = generateTileHTML('Total PM Dashboard', pmData, 'chart-pm');
+            const pmTile = document.createElement('div'); pmTile.className = 'kpi-tile home-master-tile'; pmTile.innerHTML = generateTileHTML('PM Dashboard', pmData, 'chart-pm');
             container.appendChild(pmTile);
             
-            const vendedTile = document.createElement('div'); vendedTile.className = 'kpi-tile home-master-tile'; vendedTile.innerHTML = generateTileHTML('Total Vended Repair Dashboard', vendedData, 'chart-vended');
+            const vendedTile = document.createElement('div'); vendedTile.className = 'kpi-tile home-master-tile'; vendedTile.innerHTML = generateTileHTML('Vended Repair Dashboard', vendedData, 'chart-vended');
             container.appendChild(vendedTile);
             
             const ersTile = document.createElement('div'); ersTile.className = 'kpi-tile home-master-tile'; 
             ersTile.style.borderTopColor = '#8b5cf6';
-            ersTile.innerHTML = generateErsTileHTML('Total ERS Dashboard', aggErsMetrics, aggErsData);
+            ersTile.innerHTML = `<div class="kpi-name">ERS Dashboard</div>` + generateErsMasterTileHTML('ERS Dashboard', aggErsData);
             ersTile.onclick = () => loadErsDrilldown('ALL', 'home-view');
             container.appendChild(ersTile);
 
@@ -1326,17 +1395,6 @@
                 
                 if (currentCustomerFilter !== 'ALL') {
                     ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
-                }
-
-                let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
-                let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
-                if (sDate || eDate) {
-                    ownerDataAll = ownerDataAll.filter(ro => {
-                        if (!ro.openedDT) return false;
-                        if (sDate && ro.openedDT < sDate) return false;
-                        if (eDate && ro.openedDT > eDate) return false;
-                        return true;
-                    });
                 }
 
                 let targetData = ownerDataAll.filter(ro => ro.isOpen);
@@ -1356,13 +1414,14 @@
 
         function renderErsTiles() {
             const container = document.getElementById('ers-kpi-container'); container.innerHTML = ''; 
-            if(rawErsData.length === 0) return;
-
+            
             ersOwners.forEach(owner => {
+                let ownerDataAll = processedData.filter(ro => ro.owner === owner);
                 let metrics = masterErsMetrics.filter(m => m.coordinator.toLowerCase().trim() === owner.toLowerCase().trim());
                 let data = rawErsData.filter(d => d.finalOwner.toLowerCase().trim() === owner.toLowerCase().trim());
 
                 if (currentCustomerFilter !== 'ALL') {
+                    ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
                     metrics = metrics.filter(m => m.customer.toUpperCase().includes(currentCustomerFilter));
                     data = data.filter(d => d.customerStr.toUpperCase().includes(currentCustomerFilter));
                 }
@@ -1370,6 +1429,12 @@
                 let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
                 let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
                 if (sDate || eDate) {
+                    ownerDataAll = ownerDataAll.filter(ro => {
+                        if (!ro.openedDT) return false;
+                        if (sDate && ro.openedDT < sDate) return false;
+                        if (eDate && ro.openedDT > eDate) return false;
+                        return true;
+                    });
                     data = data.filter(ro => {
                         if (!ro.intakeDT) return false;
                         if (sDate && ro.intakeDT < sDate) return false;
@@ -1385,12 +1450,14 @@
                     });
                 }
 
-                if (data.length === 0) return;
+                // Hide if 0 ROs AND 0 Tickets
+                let targetData = ownerDataAll.filter(ro => ro.isOpen);
+                if (targetData.length === 0 && data.length === 0) return;
 
                 const tile = document.createElement('div'); tile.className = 'kpi-tile';
                 tile.style.borderTopColor = '#8b5cf6';
                 tile.onclick = () => loadErsDrilldown(owner, 'ers-view');
-                tile.innerHTML = generateErsTileHTML(owner, metrics, data);
+                tile.innerHTML = generateErsHybridTileHTML(owner, ownerDataAll, metrics, data);
                 container.appendChild(tile);
             });
         }
@@ -1406,17 +1473,6 @@
             
             if (currentCustomerFilter !== 'ALL') {
                 ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
-            }
-
-            let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
-            let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
-            if (sDate || eDate) {
-                ownerDataAll = ownerDataAll.filter(ro => {
-                    if (!ro.openedDT) return false;
-                    if (sDate && ro.openedDT < sDate) return false;
-                    if (eDate && ro.openedDT > eDate) return false;
-                    return true;
-                });
             }
 
             let targetData = ownerDataAll.filter(ro => ro.isOpen);
@@ -1467,6 +1523,79 @@
             }
         }
 
+        // Generate the RO Drilldown injected inside ERS
+        function generateErsRoDrilldownHtml(owner) {
+            let ownerDataAll = processedData;
+            if (owner !== 'ALL') {
+                ownerDataAll = processedData.filter(ro => ro.owner === owner);
+            }
+
+            if (currentCustomerFilter !== 'ALL') {
+                ownerDataAll = ownerDataAll.filter(ro => ro.customer.toUpperCase().includes(currentCustomerFilter));
+            }
+
+            let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
+            let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
+            if (sDate || eDate) {
+                ownerDataAll = ownerDataAll.filter(ro => {
+                    if (!ro.openedDT) return false;
+                    if (sDate && ro.openedDT < sDate) return false;
+                    if (eDate && ro.openedDT > eDate) return false;
+                    return true;
+                });
+            }
+
+            let targetData = ownerDataAll.filter(ro => ro.isOpen);
+            
+            if(targetData.length === 0) return `<p style="margin-top:15px; color:#666;">No active Repair Orders to display.</p>`;
+            
+            let hierarchy = {};
+            targetData.forEach(ro => {
+                if(!hierarchy[ro.drillTopLevel]) hierarchy[ro.drillTopLevel] = {};
+                if(!hierarchy[ro.drillTopLevel][ro.subregion]) hierarchy[ro.drillTopLevel][ro.subregion] = {};
+                if(!hierarchy[ro.drillTopLevel][ro.subregion][ro.branch]) hierarchy[ro.drillTopLevel][ro.subregion][ro.branch] = [];
+                hierarchy[ro.drillTopLevel][ro.subregion][ro.branch].push(ro);
+            });
+            
+            let htmlStr = '';
+            for(let topLvl in hierarchy) {
+                htmlStr += `<details class="ers-ro-node"><summary>${topLvl}</summary>`; 
+                for(let sub in hierarchy[topLvl]) {
+                    htmlStr += `<details class="ers-ro-node"><summary>${sub}</summary>`;
+                    for(let branch in hierarchy[topLvl][sub]) {
+                        let branchROs = hierarchy[topLvl][sub][branch];
+                        branchROs.sort((a,b) => { 
+                            const ord = {'URGENT':1,'MEDIUM':2,'LOW':3};
+                            if(ord[a.priority] !== ord[b.priority]) return ord[a.priority] - ord[b.priority];
+                            return (b.isOOS - a.isOOS);
+                        });
+                        htmlStr += `<details class="ers-ro-node"><summary>${branch} (${branchROs.length} ROs)</summary>`;
+                        let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:12%;"><col style="width:10%;"><col style="width:8%;"><col style="width:8%;"><col style="width:6%;"><col style="width:14%;"><col style="width:10%;"><col style="width:32%;"></colgroup><thead><tr><th>AFS RO #</th><th>Unit No</th><th>Priority</th><th>OOS Status</th><th>Total Unit ROs</th><th>Status</th><th>ECD</th><th>Task / VMRS</th></tr></thead><tbody>`;
+                        branchROs.forEach(ro => {
+                            let ecdCell = '';
+                            if (ro.ecdState === 'missing') ecdCell = `<span class="badge-ecd-missing">${ro.ecdFormatted}</span>`;
+                            else if (ro.ecdState === 'red') ecdCell = `<span class="ecd-red">${ro.ecdFormatted}</span>`;
+                            else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
+                            
+                            let isGarda = ro.customer.toUpperCase().includes('GARDA');
+                            let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
+
+                            tableHTML += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
+                        });
+                        tableHTML += `</tbody></table></div>`; 
+                        htmlStr += tableHTML + `</details>`;
+                    }
+                    htmlStr += `</details>`;
+                }
+                htmlStr += `</details>`;
+            }
+            return htmlStr;
+        }
+
+        function toggleErsRODetails(expand) {
+            document.querySelectorAll('#ers-ro-drilldown-body details').forEach(d => { if(expand) d.setAttribute('open',''); else d.removeAttribute('open'); });
+        }
+
         function loadErsDrilldown(owner, parentViewId) {
             navigate('ers-detail-view', null, true); 
             currentOwnerView = owner; currentParentView = parentViewId;
@@ -1503,6 +1632,9 @@
                     return true;
                 });
             }
+
+            // Top Banner KPIs
+            document.getElementById('ers-master-kpis').innerHTML = generateErsMasterTileHTML('', fData);
 
             let scStats = {}; let coordStats = {};
             fMetrics.forEach(m => {
@@ -1556,6 +1688,9 @@
             sortSummaryData(sortColSum, sortAscSum); renderSummaryTable();
             sortScorecardData(sortColSc, sortAscSc); renderScorecardTable();
             if (sortColErs) sortErsViewData(sortColErs, sortAscErs); renderErsTable();
+
+            // Inject the RO Drilldown
+            document.getElementById('ers-ro-drilldown-body').innerHTML = generateErsRoDrilldownHtml(owner);
         }
 
         // --- ERS SPECIFIC TABLE RENDERING & SORTING ---
