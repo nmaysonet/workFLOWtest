@@ -6,7 +6,6 @@
     <title>workFLOW + | Workflow Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -107,8 +106,6 @@
         /* Master Dashboard Container & Layout */
         .home-dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); flex-wrap: wrap; gap: 15px;}
         .filter-select { padding: 8px 15px; border-radius: 4px; border: 1px solid #ccc; font-weight: 700; font-size: 14px; background: #fff;}
-        .date-controls { display: flex; gap: 10px; align-items: center; }
-        .date-controls label { font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase;}
         
         .home-kpi-container { display: flex; gap: 15px; flex-wrap: nowrap; width: 100%; overflow-x: auto; padding-bottom: 15px; }
         
@@ -145,7 +142,7 @@
         
         .drilldown-container { background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 20px; margin-top: 10px; }
         details { margin-bottom: 10px; }
-        summary { font-weight: 700; padding: 10px; background-color: #f9fafc; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; user-select: none; }
+        summary { font-weight: 700; padding: 10px; background-color: #f9fafc; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; user-select: none; display: flex; align-items: center;}
         summary:hover { background-color: #f1f3f6; }
         details details { margin-left: 20px; margin-top: 5px; }
         details details summary { background-color: #fff; color: #555; border-left: 3px solid var(--gold); }
@@ -171,9 +168,6 @@
         .ecd-red { color: #d9534f; font-weight: 800; }
         .ecd-green { color: #5cb85c; font-weight: 800; }
         .badge-ecd-missing { background-color: #fff3cd; color: #d9534f; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; border: 1px solid #d9534f; white-space: nowrap; display: inline-block; }
-
-        /* Reassign Styles */
-        input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--gold); }
     </style>
 </head>
 <body>
@@ -198,7 +192,6 @@
         <div class="menu-item" id="menu-pm" onclick="navigate('pm-view', this)">PM Queue</div>
         <div class="menu-item" id="menu-vended" onclick="navigate('vended-view', this)">Vended Repair Queue</div>
         <div class="menu-item" id="menu-ers" onclick="navigate('ers-view', this)">ERS Queue</div>
-        <div class="menu-item" id="menu-reassign" onclick="promptPasswordAndNavigate('reassign-view', this)">Assign Orders 🔒</div>
         
         <div class="sidebar-truck">
             <svg width="140" height="70" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" class="moving-truck-svg">
@@ -259,11 +252,11 @@
         <div id="home-view" class="view-section active">
             <h1 class="home-title">Welcome to workFLOW +</h1>
             <div class="upload-container" id="upload-box">
-                <h3>Loading Live Dashboard Data</h3>
-                <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Attempting to fetch live data from Google Sheets database...</p>
+                <h3>Loading Dashboard Data</h3>
+                <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Attempting to automatically fetch <b>master_workFLOW.xlsx</b> from the repository...</p>
                 <div id="upload-status" style="font-size: 15px; font-weight: bold; color: #888;">Initializing...</div>
                 <div id="manual-upload-section" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ccc;">
-                    <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Fallback: Connection failed. Upload manually below.</p>
+                    <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Fallback: File not found. Upload manually below.</p>
                     <label for="excelFileInput" class="upload-btn">Browse Files</label>
                     <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" multiple />
                 </div>
@@ -271,16 +264,10 @@
             <div id="home-dashboard" style="display:none;">
                 <div class="home-dashboard-header">
                     <h2 style="margin:0;">Aggregate Performance Overview</h2>
-                    <div class="date-controls">
-                        <label>Date Range:</label>
-                        <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
-                        <span style="font-weight:bold; color:#666;">-</span>
-                        <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
-                        
-                        <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)" style="margin-left: 10px;">
+                    <div>
+                        <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
                             <option value="ALL">All Customers</option>
                         </select>
-                        <button class="btn-green" onclick="fetchData()" style="margin-left: 10px;">↻ Refresh</button>
                     </div>
                 </div>
                 <div class="home-kpi-container" id="home-kpi-container"></div>
@@ -290,19 +277,15 @@
         <div id="pm-view" class="view-section">
             <div class="view-title">
                 <span style="font-weight: 700;">PM Queue</span>
-                <div class="date-controls">
+                <div>
                     <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
                         <option value="ALL">All Customers</option>
                     </select>
-                    <button class="btn-green" onclick="fetchData()" style="margin-left: 10px;">↻ Refresh</button>
                 </div>
             </div>
             <div class="filter-bar">
-                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Active</button>
-                <button class="filter-btn" data-filter="URGENT" onclick="setFilter('URGENT')">Urgent</button>
-                <button class="filter-btn" data-filter="MEDIUM" onclick="setFilter('MEDIUM')">Medium</button>
-                <button class="filter-btn" data-filter="LOW" onclick="setFilter('LOW')">Low</button>
-                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">OOS Only</button>
+                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
+                <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
             </div>
             <div class="kpi-grid" id="pm-kpi-container"></div>
         </div>
@@ -310,19 +293,15 @@
         <div id="vended-view" class="view-section">
             <div class="view-title">
                 <span style="font-weight: 700;">Vended Repair Queue</span>
-                <div class="date-controls">
+                <div>
                     <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
                         <option value="ALL">All Customers</option>
                     </select>
-                    <button class="btn-green" onclick="fetchData()" style="margin-left: 10px;">↻ Refresh</button>
                 </div>
             </div>
             <div class="filter-bar">
-                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Active</button>
-                <button class="filter-btn" data-filter="URGENT" onclick="setFilter('URGENT')">Urgent</button>
-                <button class="filter-btn" data-filter="MEDIUM" onclick="setFilter('MEDIUM')">Medium</button>
-                <button class="filter-btn" data-filter="LOW" onclick="setFilter('LOW')">Low</button>
-                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">OOS Only</button>
+                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
+                <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
             </div>
             <div class="kpi-grid" id="vended-kpi-container"></div>
         </div>
@@ -330,19 +309,15 @@
         <div id="ers-view" class="view-section">
             <div class="view-title">
                 <span style="font-weight: 700;">ERS Queue</span>
-                <div class="date-controls">
+                <div>
                     <select class="filter-select customer-filter-select" onchange="setCustomerFilter(this.value)">
                         <option value="ALL">All Customers</option>
                     </select>
-                    <button class="btn-green" onclick="fetchData()" style="margin-left: 10px;">↻ Refresh</button>
                 </div>
             </div>
             <div class="filter-bar">
-                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Active</button>
-                <button class="filter-btn" data-filter="URGENT" onclick="setFilter('URGENT')">Urgent</button>
-                <button class="filter-btn" data-filter="MEDIUM" onclick="setFilter('MEDIUM')">Medium</button>
-                <button class="filter-btn" data-filter="LOW" onclick="setFilter('LOW')">Low</button>
-                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">OOS Only</button>
+                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
+                <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
             </div>
             <div class="kpi-grid" id="ers-kpi-container"></div>
         </div>
@@ -356,11 +331,6 @@
                     </select>
                 </div>
                 <div class="controls-group" style="display: flex; align-items: center;">
-                    <div class="date-controls" style="margin-right: 15px;">
-                        <input type="date" class="filter-select date-filter-start" onchange="setDateFilter('start', this.value)">
-                        <span style="font-weight:bold; color:#666;">-</span>
-                        <input type="date" class="filter-select date-filter-end" onchange="setDateFilter('end', this.value)">
-                    </div>
                     <button class="btn-green" onclick="exportDrilldownToExcel()">Export to XLSX</button>
                     <button onclick="toggleAllDetails(true)">Expand All</button>
                     <button onclick="toggleAllDetails(false)">Collapse All</button>
@@ -368,50 +338,10 @@
                 </div>
             </div>
             <div class="filter-bar" id="standard-drilldown-filters">
-                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Active</button>
-                <button class="filter-btn" data-filter="URGENT" onclick="setFilter('URGENT')">Urgent</button>
-                <button class="filter-btn" data-filter="MEDIUM" onclick="setFilter('MEDIUM')">Medium</button>
-                <button class="filter-btn" data-filter="LOW" onclick="setFilter('LOW')">Low</button>
-                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">OOS Only</button>
+                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
+                <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
             </div>
             <div class="drilldown-container" id="drilldown-body"></div>
-        </div>
-
-        <div id="reassign-view" class="view-section">
-            <h2 class="view-title">Assign / Transfer Orders 🔒</h2>
-            <div style="background:#fff; padding: 20px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 20px; display:flex; gap:20px; align-items: flex-end; flex-wrap: wrap;">
-                <div>
-                    <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px; color:#555;">Filter by Current Owner:</label>
-                    <select id="reassign-filter-owner" class="filter-select" onchange="renderReassignTable()">
-                        <option value="ALL">All Open Orders</option>
-                    </select>
-                </div>
-                <div style="flex-grow:1;"></div>
-                <div style="background: #f9fafc; padding: 15px; border-radius: 4px; border: 1px solid var(--border); display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
-                    <div>
-                        <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px; color:#555;">Assign Selected To:</label>
-                        <select id="reassign-target-owner" class="filter-select"></select>
-                    </div>
-                    <button class="btn-green" style="margin-top: 18px;" onclick="executeReassignment()">Confirm Assignment</button>
-                </div>
-            </div>
-            
-            <div class="drilldown-container table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 40px; text-align: center;"><input type="checkbox" id="reassign-select-all" onclick="toggleAllReassign(this)"></th>
-                            <th>AFS RO #</th>
-                            <th>Unit No</th>
-                            <th>Priority</th>
-                            <th>Current Owner</th>
-                            <th>Status</th>
-                            <th>Task / VMRS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reassign-table-body"></tbody>
-                </table>
-            </div>
         </div>
 
         <div id="search-view" class="view-section">
@@ -425,7 +355,7 @@
                     </colgroup>
                     <thead>
                         <tr>
-                            <th>AFS RO #</th><th>Unit No</th><th>Priority</th>
+                            <th>AFS RO #</th><th>Unit No</th><th>Priority Status</th>
                             <th>OOS Status</th><th>Total Unit ROs</th><th>Owner</th>
                             <th>Status</th><th>ECD</th><th>Task / VMRS</th>
                         </tr>
@@ -441,8 +371,6 @@
         let processedData = []; 
         let currentFilter = 'ALL';
         let currentCustomerFilter = 'ALL';
-        let currentStartDate = '';
-        let currentEndDate = '';
         let currentOwnerView = '';
         let currentParentView = '';
         let globalChartInstances = {}; 
@@ -451,14 +379,26 @@
         let pmOwners = [];
         let vendedOwners = [];
         let ersOwners = [];
-        let allActiveOwners = []; 
 
-        let isReassignUnlocked = false; 
+        let branchUsefulMap = {}; // Holds Useful % data mapped by Branch string
 
-        const excludedStatuses = ['COMPLETED', 'FINAL CHARGES SUBMITTED', 'CREDIT VROS'];
+        // Strict Open Order definitions
+        const excludedStatuses = [
+            'COMPLETED', 
+            'FINAL CHARGES SUBMITTED', 
+            'CREDIT VROS', 
+            'CANCELED', 
+            'CANCELLED', 
+            'CLOSED', 
+            'REJECTED', 
+            'DECLINED', 
+            'VOID', 
+            'VOIDED'
+        ];
+        
         let lastActiveView = 'home-view';
 
-        // --- FETCH GOOGLE SHEETS LIVE DATA ---
+        // --- FETCH LOCAL DATA ---
         async function fetchData() {
             const statusEl = document.getElementById('upload-status');
             const uploadBox = document.getElementById('upload-box');
@@ -466,49 +406,88 @@
 
             uploadBox.style.display = 'block';
             dashboard.style.display = 'none';
-            statusEl.innerText = "Fetching live data from Google Sheets...";
+            statusEl.innerText = "Fetching local database file...";
             statusEl.style.color = '#888';
             document.getElementById('manual-upload-section').style.display = 'none';
 
-            const baseId = '1TY8z9tIdmBorN_1vKTCmjIS-WdhrhRMa';
-            const sheets = ['VRO Export', 'Resource Table', 'OOS GARDA'];
-            
             try {
-                const fetchPromises = sheets.map(sheet => 
-                    fetch(`https://docs.google.com/spreadsheets/d/${baseId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheet)}`)
-                        .then(res => {
-                            if(!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                            return res.text();
-                        })
-                );
-
-                const [vroCsv, resourceCsv, oosCsv] = await Promise.all(fetchPromises);
-
-                const vroRaw = Papa.parse(vroCsv, { header: true, skipEmptyLines: true }).data;
-                const resourceRaw = Papa.parse(resourceCsv, { header: true, skipEmptyLines: true }).data;
-                const oosRaw = Papa.parse(oosCsv, { header: true, skipEmptyLines: true }).data;
-
-                const cleanKeys = (data) => data.map(row => {
-                    let cleanRow = {};
-                    for(let key in row) cleanRow[key.trim()] = row[key];
-                    return cleanRow;
+                // Add timestamp to bypass local caching issues
+                const timestamp = new Date().getTime();
+                const response = await fetch(`master_workFLOW.xlsx?_=${timestamp}`);
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                statusEl.innerText = "File found! Processing data...";
+                const data = await response.arrayBuffer();
+                const workbook = XLSX.read(data, {type: 'array'});
+                
+                let vroRaw = [], resourceRaw = [], oosRaw = [], assignRaw = [], usefulRaw = [];
+                
+                workbook.SheetNames.forEach(sheetName => {
+                    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: ''});
+                    if(sheetData.length === 0) return;
+                    
+                    const keys = Object.keys(sheetData[0]).map(k => String(k).toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    
+                    // Tab 4: Order Assignments
+                    if (keys.includes('vro') && keys.includes('assignee')) {
+                        assignRaw = assignRaw.concat(sheetData);
+                    } 
+                    // Tab 2: Resource Table
+                    else if (keys.includes('createdby') || keys.includes('team') || keys.includes('pmcomp')) {
+                        resourceRaw = resourceRaw.concat(sheetData);
+                    } 
+                    // Tab 3: OOS GARDA (Make sure not to confuse with Useful %)
+                    else if (keys.includes('gardaregion') && !keys.includes('useful')) {
+                        oosRaw = oosRaw.concat(sheetData);
+                    } 
+                    // Tab 5: Useful % (Using raw array to bypass bad top rows)
+                    else if (keys.includes('useful') || String(sheetName).toLowerCase().includes('useful')) {
+                        const aoa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1, defval: ''});
+                        let headerIdx = -1;
+                        for(let i=0; i<Math.min(10, aoa.length); i++) {
+                            if (aoa[i].some(cell => String(cell).toLowerCase().includes('useful') || String(cell).toLowerCase().includes('branch'))) {
+                                headerIdx = i; break;
+                            }
+                        }
+                        if (headerIdx !== -1) {
+                            let headers = aoa[headerIdx];
+                            for(let i=headerIdx+1; i<aoa.length; i++) {
+                                let obj = {};
+                                headers.forEach((h, j) => {
+                                    let key = String(h).trim();
+                                    if (key) {
+                                        // Handle duplicate keys like multiple "Useful %" columns
+                                        if (obj[key] !== undefined) {
+                                            let c = 1;
+                                            while(obj[key + '_' + c] !== undefined) c++;
+                                            key = key + '_' + c;
+                                        }
+                                        obj[key] = aoa[i][j];
+                                    }
+                                });
+                                usefulRaw.push(obj);
+                            }
+                        }
+                    }
+                    // Tab 1: VRO Export
+                    else if (keys.includes('order') || keys.includes('ronumber') || keys.includes('owner')) {
+                        vroRaw = vroRaw.concat(sheetData);
+                    }
                 });
-
-                processExcelData(cleanKeys(vroRaw), cleanKeys(resourceRaw), cleanKeys(oosRaw));
+                
+                statusEl.innerText = "Building dashboards...";
+                processExcelData(vroRaw, resourceRaw, oosRaw, assignRaw, usefulRaw);
 
             } catch (error) {
                 console.error("Fetch failed:", error);
-                statusEl.innerText = "Failed to load live data. Ensure the Google Sheet is Published to the Web.";
+                statusEl.innerText = "Failed to load live data. Please manually upload the master file below.";
                 statusEl.style.color = "red";
                 document.getElementById('manual-upload-section').style.display = 'block';
             }
         }
 
-        // Auto Refresh every 3 hours (10,800,000 ms)
-        setInterval(() => {
-            console.log("Auto-fetching latest data from Google Sheets...");
-            fetchData();
-        }, 10800000);
+        window.onload = fetchData;
 
         // --- PRECISE DATA PARSER ---
         function getCol(row, possibleNames) {
@@ -549,28 +528,17 @@
                 ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
             }
 
-            let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
-            let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
-            if (sDate || eDate) {
-                ownerDataAll = ownerDataAll.filter(ro => {
-                    if (!ro.openedDT) return false;
-                    if (sDate && ro.openedDT < sDate) return false;
-                    if (eDate && ro.openedDT > eDate) return false;
-                    return true;
-                });
-            }
-
             let targetData = ownerDataAll.filter(ro => ro.isOpen);
-            if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
-            else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
-            else if(currentFilter === 'LOW') targetData = targetData.filter(ro => ro.priority === 'LOW');
-            else if(currentFilter === 'OOS') targetData = targetData.filter(ro => ro.isOOS);
+            if(currentFilter === 'PRIORITY') {
+                targetData = targetData.filter(ro => ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100));
+            }
 
             if (targetData.length === 0) { alert("No data available to export."); return; }
 
             const excelRows = targetData.map(ro => ({
-                "AFS RO #": ro.roNum, "Unit No": ro.unitNo, "Priority": ro.priority,
+                "AFS RO #": ro.roNum, "Unit No": ro.unitNo, 
                 "OOS Status": (ro.custKey === 'Garda' && ro.isOOS) ? "OOS" : "",
+                "Useful %": ro.usefulPct !== null ? Math.round(ro.usefulPct * 100) + '%' : "N/A",
                 "Total Unit ROs": ro.roCount, "Status": ro.status, "ECD": ro.ecdFormatted,
                 "Task / VMRS": ro.vmrs, "Customer Group": ro.drillTopLevel, "Subregion": ro.subregion, "Branch": ro.branch
             }));
@@ -581,7 +549,7 @@
             XLSX.writeFile(workbook, `workflow_export_${String(currentOwnerView).replace(/\s+/g, '_')}_${currentFilter.toLowerCase()}.xlsx`);
         }
 
-        // --- FILTER & CUSTOMER & DATE DROPDOWN LOGIC ---
+        // --- FILTER & CUSTOMER LOGIC ---
         function setFilter(val) {
             currentFilter = val;
             document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -597,17 +565,6 @@
             triggerViewUpdate();
         }
 
-        function setDateFilter(type, val) {
-            if (type === 'start') {
-                currentStartDate = val;
-                document.querySelectorAll('.date-filter-start').forEach(el => el.value = val);
-            } else {
-                currentEndDate = val;
-                document.querySelectorAll('.date-filter-end').forEach(el => el.value = val);
-            }
-            triggerViewUpdate();
-        }
-
         function triggerViewUpdate() {
             let activeView = document.querySelector('.view-section.active').id;
             if(activeView === 'home-view') renderHomeDashboard();
@@ -617,73 +574,89 @@
             else if(activeView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView); }
         }
 
-        // --- SECURITY / REASSIGNMENT LOGIC ---
-        function promptPasswordAndNavigate(viewId, element) {
-            if(!isReassignUnlocked) {
-                let pass = prompt("Enter Password to access Orders Assignment:");
-                if(pass === '1234578') {
-                    isReassignUnlocked = true;
-                } else {
-                    if (pass !== null) alert("Incorrect Password.");
-                    return;
+        // --- MANUAL UPLOAD FALLBACK ---
+        document.getElementById('excelFileInput').addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            const statusEl = document.getElementById('upload-status');
+            statusEl.innerText = "Reading manual upload...";
+            
+            let vroRaw = [], resourceRaw = [], oosRaw = [], assignRaw = [], usefulRaw = [];
+            
+            try {
+                for(let file of files) {
+                    const data = await file.arrayBuffer();
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    workbook.SheetNames.forEach(sheetName => {
+                        const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: ''});
+                        if(sheetData.length === 0) return;
+                        
+                        const keys = Object.keys(sheetData[0]).map(k => String(k).toLowerCase().replace(/[^a-z0-9]/g, ''));
+                        
+                        if (keys.includes('vro') && keys.includes('assignee')) {
+                            assignRaw = assignRaw.concat(sheetData);
+                        } else if (keys.includes('createdby') || keys.includes('team') || keys.includes('pmcomp')) {
+                            resourceRaw = resourceRaw.concat(sheetData);
+                        } else if (keys.includes('gardaregion') && !keys.includes('useful')) {
+                            oosRaw = oosRaw.concat(sheetData);
+                        } else if (keys.includes('useful') || String(sheetName).toLowerCase().includes('useful')) {
+                            const aoa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1, defval: ''});
+                            let headerIdx = -1;
+                            for(let i=0; i<Math.min(10, aoa.length); i++) {
+                                if (aoa[i].some(cell => String(cell).toLowerCase().includes('useful') || String(cell).toLowerCase().includes('branch'))) {
+                                    headerIdx = i; break;
+                                }
+                            }
+                            if (headerIdx !== -1) {
+                                let headers = aoa[headerIdx];
+                                for(let i=headerIdx+1; i<aoa.length; i++) {
+                                    let obj = {};
+                                    headers.forEach((h, j) => {
+                                        let key = String(h).trim();
+                                        if (key) {
+                                            if (obj[key] !== undefined) {
+                                                let c = 1;
+                                                while(obj[key + '_' + c] !== undefined) c++;
+                                                key = key + '_' + c;
+                                            }
+                                            obj[key] = aoa[i][j];
+                                        }
+                                    });
+                                    usefulRaw.push(obj);
+                                }
+                            }
+                        } else if (keys.includes('order') || keys.includes('ronumber') || keys.includes('owner')) {
+                            vroRaw = vroRaw.concat(sheetData);
+                        }
+                    });
                 }
+                processExcelData(vroRaw, resourceRaw, oosRaw, assignRaw, usefulRaw);
+            } catch (error) { 
+                console.error(error); 
+                statusEl.innerText = "Error parsing files."; 
             }
-            navigate(viewId, element);
-            if(viewId === 'reassign-view') renderReassignTable();
-        }
-
-        function renderReassignTable() {
-            let filterOwner = document.getElementById('reassign-filter-owner').value;
-            let targetData = processedData.filter(ro => ro.isOpen);
-            if (filterOwner !== 'ALL') {
-                targetData = targetData.filter(ro => ro.owner === filterOwner);
-            }
-            
-            const tbody = document.getElementById('reassign-table-body');
-            tbody.innerHTML = '';
-            targetData.forEach(ro => {
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="text-align:center;"><input type="checkbox" class="ro-reassign-cb" value="${ro.roNum}"></td>
-                    <td>${ro.roNum}</td>
-                    <td><strong>${ro.unitNo}</strong></td>
-                    <td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td>
-                    <td>${ro.owner}</td>
-                    <td>${ro.status}</td>
-                    <td>${ro.vmrs}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-            document.getElementById('reassign-select-all').checked = false;
-        }
-
-        function toggleAllReassign(source) {
-            document.querySelectorAll('.ro-reassign-cb').forEach(cb => { cb.checked = source.checked; });
-        }
-
-        function executeReassignment() {
-            let newOwner = document.getElementById('reassign-target-owner').value;
-            if(!newOwner) { alert("Please select a target owner."); return; }
-            
-            let selectedRoNums = Array.from(document.querySelectorAll('.ro-reassign-cb:checked')).map(cb => cb.value);
-            if(selectedRoNums.length === 0) { alert("Please select at least one Repair Order to assign."); return; }
-            
-            let count = 0;
-            processedData.forEach(ro => {
-                if(selectedRoNums.includes(ro.roNum)) {
-                    ro.owner = newOwner;
-                    count++;
-                }
-            });
-            
-            alert(`Successfully assigned ${count} order(s) to ${newOwner}.`);
-            renderReassignTable();
-        }
+        });
 
         // --- PROCESS DATA ---
-        function processExcelData(vroRaw, resourceRaw, oosRaw) {
+        function processExcelData(vroRaw, resourceRaw, oosRaw, assignRaw, usefulRaw) {
             const today = new Date(); today.setHours(0, 0, 0, 0);
             
+            // Build Useful % Map
+            branchUsefulMap = {};
+            if (usefulRaw && usefulRaw.length > 0) {
+                usefulRaw.forEach(row => {
+                    let branch = getCol(row, ['Branch']);
+                    let usefulStr = getCol(row, ['Useful %', 'Useful']);
+                    if (branch && usefulStr !== '') {
+                        let pct = parseFloat(usefulStr);
+                        if (!isNaN(pct)) {
+                            branchUsefulMap[branch.toUpperCase().trim()] = pct;
+                        }
+                    }
+                });
+            }
+
             let oosSet = new Set();
             let unitToLocation = {};
             oosRaw.forEach(row => {
@@ -711,22 +684,27 @@
             let activeERS = new Set();
 
             resourceRaw.forEach(row => {
-                let createdBy = getCol(row, ['CREATEDBY']);
-                let name = getCol(row, ['Name']);
+                let createdBy = getCol(row, ['CREATEDBY', 'Email', 'Created By']);
+                let name = getCol(row, ['Name', 'Assignee']);
                 let status = getCol(row, ['Status']).toUpperCase();
                 let team = getCol(row, ['Team']).toUpperCase();
                 let pmComp = getCol(row, ['PM Comp:']);
                 
                 if (createdBy) {
-                    let key = String(createdBy).toLowerCase().trim();
-                    let finalName = String(name || createdBy).trim();
-                    ownerMap[key] = { name: finalName, status: status, team: team };
-                    if (name) ownerMap[String(name).toLowerCase().trim()] = { name: finalName, status: status, team: team };
+                    let keyEmail = String(createdBy).toLowerCase().trim();
+                    let finalName = name ? String(name).trim() : String(createdBy).trim();
+                    let keyName = finalName.toLowerCase().trim();
                     
-                    if (status === 'ACTIVE') {
-                        if (team === 'PM') activePM.add(finalName);
-                        else if (team === 'VENDED REPAIR') activeVended.add(finalName);
-                        else if (team === 'ERS') activeERS.add(finalName);
+                    let statUpper = status.toUpperCase();
+                    let teamUpper = team.toUpperCase();
+
+                    ownerMap[keyEmail] = { name: finalName, status: statUpper, team: teamUpper };
+                    ownerMap[keyName] = { name: finalName, status: statUpper, team: teamUpper };
+                    
+                    if (statUpper === 'ACTIVE') {
+                        if (teamUpper === 'PM') activePM.add(finalName);
+                        else if (teamUpper === 'VENDED REPAIR') activeVended.add(finalName);
+                        else if (teamUpper === 'ERS') activeERS.add(finalName);
                     }
                 }
                 
@@ -738,22 +716,6 @@
             pmOwners = Array.from(activePM);
             vendedOwners = Array.from(activeVended);
             ersOwners = Array.from(activeERS);
-            
-            // Build Assignments Array for dropdowns
-            allActiveOwners = Array.from(new Set([...pmOwners, ...vendedOwners, ...ersOwners])).sort();
-            
-            let filterSel = document.getElementById('reassign-filter-owner');
-            let targetSel = document.getElementById('reassign-target-owner');
-            filterSel.innerHTML = '<option value="ALL">All Open Orders</option>';
-            targetSel.innerHTML = '';
-            
-            allActiveOwners.forEach(o => {
-                let opt1 = document.createElement('option'); opt1.value = o; opt1.innerText = o;
-                let opt2 = document.createElement('option'); opt2.value = o; opt2.innerText = o;
-                filterSel.appendChild(opt1);
-                targetSel.appendChild(opt2);
-            });
-
             pmKeywords = [...new Set(pmKeywords)]; 
 
             let unitROCounts = {};
@@ -762,10 +724,20 @@
                 if(unit) unitROCounts[unit] = (unitROCounts[unit] || 0) + 1;
             });
 
+            // TAB 4 ORDER ASSIGNMENTS INJECTION
+            let reassignments = {};
+            assignRaw.forEach(row => {
+                let vro = getCol(row, ['VRO', 'Order', 'RO Number', 'AFS RO #']);
+                let assignee = getCol(row, ['Assignee', 'Name', 'Owner']);
+                if (vro && assignee) {
+                    reassignments[String(vro).toUpperCase().trim()] = String(assignee).trim();
+                }
+            });
+
             let allCustSet = new Set();
 
             processedData = vroRaw.map(row => {
-                let roNum = getCol(row, ['Order', 'RO Number', 'RONum', 'AFS RO #']);
+                let roNum = getCol(row, ['Order', 'RO Number', 'RONum', 'AFS RO #']).toUpperCase().trim();
                 let customer = getCol(row, ['Customer', 'CUSTOMERNAME', 'Customer Name']); 
                 let rawOwner = getCol(row, ['Owner', 'Created By']); 
                 let unit = getCol(row, ['Unit No', 'UNITNUMBER', 'Vehicle']).toUpperCase();
@@ -775,9 +747,25 @@
                 let dueRaw = getCol(row, ['Unit Due Date', 'Estimate Due Date', 'Due Date', 'L']);
                 let compRaw = getCol(row, ['Completed Date', 'Completed', 'P']);
                 
-                let finalOwner = String(rawOwner || '').trim();
-                let ownerLookup = ownerMap[finalOwner.toLowerCase()];
-                if (ownerLookup) finalOwner = ownerLookup.name;
+                let targetOwnerRaw = String(rawOwner || '').trim();
+                
+                // --- APPLY REASSIGNMENTS OVERRIDE (TAB 4) ---
+                if (reassignments[roNum]) {
+                    targetOwnerRaw = reassignments[roNum];
+                }
+
+                // Strictly map to active Display Name
+                let finalOwner = 'INACTIVE_OR_UNASSIGNED';
+                if (targetOwnerRaw) {
+                    let lookupKey = targetOwnerRaw.toLowerCase().trim();
+                    let ownerData = ownerMap[lookupKey];
+                    if (ownerData && ownerData.status === 'ACTIVE') {
+                        finalOwner = ownerData.name;
+                    }
+                }
+
+                // Discard inactive / unassigned entirely.
+                if (finalOwner === 'INACTIVE_OR_UNASSIGNED') return { roNum: '' };
 
                 let openedDate = new Date(openedRaw);
                 let openedDT = isNaN(openedDate.getTime()) ? null : openedDate;
@@ -842,26 +830,13 @@
                 let drillTopLevel = custKey + (loc.region !== 'Unknown State' && loc.region !== 'Unknown Region' ? ' ' + loc.region : '');
                 allCustSet.add(custKey);
 
+                let statusStr = String(status || '').toUpperCase().trim();
                 let isOOS = oosSet.has(unit); 
-                let isOpen = !excludedStatuses.includes(status.toUpperCase());
-                let priorityStr = 'LOW'; let priorityClass = 'badge-low'; 
-
-                if (isOpen) {
-                    if (isPMOrder) {
-                        let dueDate = new Date(dueRaw);
-                        if (!isNaN(dueDate.getTime())) {
-                            let diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-                            if (diffDays <= 0) { priorityStr = 'URGENT'; priorityClass = 'badge-urgent'; }
-                            else if (diffDays <= 10) { priorityStr = 'MEDIUM'; priorityClass = 'badge-medium'; }
-                        }
-                    } else {
-                        if (!isNaN(openedDate.getTime())) {
-                            let diffDays = Math.floor((today - openedDate) / (1000 * 60 * 60 * 24));
-                            if (diffDays > 7 || isOOS) { priorityStr = 'URGENT'; priorityClass = 'badge-urgent'; }
-                            else if (diffDays > 3) { priorityStr = 'MEDIUM'; priorityClass = 'badge-medium'; }
-                        } else if (isOOS) { priorityStr = 'URGENT'; priorityClass = 'badge-urgent'; }
-                    }
-                } else { priorityStr = 'COMPLETED'; priorityClass = 'badge-active'; }
+                // Strict Open validation: Ignore anything matching excluded strings exactly
+                let isOpen = !excludedStatuses.includes(statusStr);
+                
+                // Map Useful %
+                let usefulPct = branchUsefulMap[loc.branch.toUpperCase()] !== undefined ? branchUsefulMap[loc.branch.toUpperCase()] : null;
 
                 let ecdState = 'missing'; let ecdFormatted = 'NO ECD, UPDATE';
                 let ecdDate = new Date(dueRaw);
@@ -874,7 +849,7 @@
                 }
 
                 let isCompletedKPI = false; let isOnTimeKPI = false; let isLateKPI = false;
-                if (['COMPLETED', 'FINAL CHARGES SUBMITTED'].includes(status.toUpperCase()) && compRaw !== '') {
+                if (excludedStatuses.includes(statusStr) && compRaw !== '') {
                     isCompletedKPI = true; let cDate = new Date(compRaw);
                     if (!isNaN(cDate.getTime())) {
                         let dDate = new Date(dueRaw);
@@ -884,7 +859,7 @@
                     } else isCompletedKPI = false;
                 }
                 
-                return { roNum, customer, custKey, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, priority: priorityStr, priorityClass, ecdState, ecdFormatted, openedDT };
+                return { roNum, customer, custKey, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, ecdState, ecdFormatted, openedDT, usefulPct };
             }).filter(ro => ro.roNum !== '');
 
             let sortedAllCust = Array.from(allCustSet).sort();
@@ -901,41 +876,36 @@
             document.getElementById('upload-box').style.display = 'none';
             document.getElementById('home-dashboard').style.display = 'block';
             
-            renderHomeDashboard();
-            renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
-            renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
-            renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
-            
-            // Re-render assignment dropdowns if they are populated but we want the newest list
-            let filterSel = document.getElementById('reassign-filter-owner');
-            let targetSel = document.getElementById('reassign-target-owner');
-            filterSel.innerHTML = '<option value="ALL">All Open Orders</option>';
-            targetSel.innerHTML = '';
-            
-            allActiveOwners.forEach(o => {
-                let opt1 = document.createElement('option'); opt1.value = o; opt1.innerText = o;
-                let opt2 = document.createElement('option'); opt2.value = o; opt2.innerText = o;
-                filterSel.appendChild(opt1);
-                targetSel.appendChild(opt2);
-            });
+            triggerViewUpdate();
+        }
+
+        function getUsefulBadge(usefulArray) {
+            let valid = usefulArray.filter(v => v !== null && v !== undefined && !isNaN(v));
+            if (valid.length === 0) return '';
+            let avg = valid.reduce((a,b) => a+b, 0) / valid.length;
+            let val = Math.round(avg * 100);
+            let bg = 'var(--low-green)';
+            if (val < 100) bg = 'var(--urgent-red)';
+            else if (val === 100) bg = 'var(--medium-yellow)';
+            return `<span class="badge" style="background-color: ${bg}; color: white; margin-left: 10px; font-size: 11px;">Useful: ${val}%</span>`;
         }
 
         // --- HIERARCHY / KPI GENERATORS ---
         function generateTileHTML(name, dataSet, chartId = null) {
             let filteredOpen = dataSet.filter(ro => ro.isOpen);
-            if(currentFilter === 'URGENT') filteredOpen = filteredOpen.filter(ro => ro.priority === 'URGENT');
-            else if(currentFilter === 'MEDIUM') filteredOpen = filteredOpen.filter(ro => ro.priority === 'MEDIUM');
-            else if(currentFilter === 'LOW') filteredOpen = filteredOpen.filter(ro => ro.priority === 'LOW');
-            else if(currentFilter === 'OOS') filteredOpen = filteredOpen.filter(ro => ro.isOOS);
+            if(currentFilter === 'PRIORITY') {
+                filteredOpen = filteredOpen.filter(ro => ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100));
+            }
             
-            let urgentCount = filteredOpen.filter(ro => ro.priority === 'URGENT').length;
+            // Re-calculate the "Priority" logic independently for the KPI count bubble
+            let priorityCount = dataSet.filter(ro => ro.isOpen && (ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100))).length;
             let completedOrders = dataSet.filter(ro => ro.isCompletedKPI);
             let compCount = completedOrders.length;
             let onTimeCount = completedOrders.filter(ro => ro.isOnTimeKPI).length;
             let lateCount = completedOrders.filter(ro => ro.isLateKPI).length;
             let compPct = compCount > 0 ? Math.round((onTimeCount / compCount) * 100) : 0;
             let latePct = compCount > 0 ? Math.round((lateCount / compCount) * 100) : 0;
-            let filterLabel = currentFilter === 'ALL' ? 'Open ROs' : `${currentFilter} ROs`;
+            let filterLabel = currentFilter === 'ALL' ? 'Open ROs' : `Priority ROs`;
 
             let chartHTML = '';
             if (chartId) {
@@ -950,8 +920,8 @@
                         <div class="num">${filteredOpen.length}</div>
                     </div>
                     <div class="highlight-box urgent-box">
-                        <div class="title">Urgent</div>
-                        <div class="num">${urgentCount}</div>
+                        <div class="title">Priority</div>
+                        <div class="num">${priorityCount}</div>
                     </div>
                     ${chartHTML}
                 </div>
@@ -1014,17 +984,6 @@
             if (currentCustomerFilter !== 'ALL') {
                 aggData = aggData.filter(ro => ro.custKey === currentCustomerFilter);
             }
-            
-            let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
-            let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
-            if (sDate || eDate) {
-                aggData = aggData.filter(ro => {
-                    if (!ro.openedDT) return false;
-                    if (sDate && ro.openedDT < sDate) return false;
-                    if (eDate && ro.openedDT > eDate) return false;
-                    return true;
-                });
-            }
 
             let pmData = aggData.filter(ro => pmOwners.includes(ro.owner));
             let vendedData = aggData.filter(ro => vendedOwners.includes(ro.owner));
@@ -1057,22 +1016,10 @@
                     ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
                 }
 
-                let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
-                let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
-                if (sDate || eDate) {
-                    ownerDataAll = ownerDataAll.filter(ro => {
-                        if (!ro.openedDT) return false;
-                        if (sDate && ro.openedDT < sDate) return false;
-                        if (eDate && ro.openedDT > eDate) return false;
-                        return true;
-                    });
-                }
-
                 let targetData = ownerDataAll.filter(ro => ro.isOpen);
-                if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
-                else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
-                else if(currentFilter === 'LOW') targetData = targetData.filter(ro => ro.priority === 'LOW');
-                else if(currentFilter === 'OOS') targetData = targetData.filter(ro => ro.isOOS);
+                if(currentFilter === 'PRIORITY') {
+                    targetData = targetData.filter(ro => ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100));
+                }
                 
                 if (targetData.length === 0) return; 
 
@@ -1086,10 +1033,9 @@
         // --- MASTER DOM DRILLDOWN HTML GENERATOR ---
         function generateRoDrilldownHtml(ownerDataAll) {
             let targetData = ownerDataAll.filter(ro => ro.isOpen);
-            if(currentFilter === 'URGENT') targetData = targetData.filter(ro => ro.priority === 'URGENT');
-            else if(currentFilter === 'MEDIUM') targetData = targetData.filter(ro => ro.priority === 'MEDIUM');
-            else if(currentFilter === 'LOW') targetData = targetData.filter(ro => ro.priority === 'LOW');
-            else if(currentFilter === 'OOS') targetData = targetData.filter(ro => ro.isOOS);
+            if(currentFilter === 'PRIORITY') {
+                targetData = targetData.filter(ro => ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100));
+            }
 
             if(targetData.length === 0) return `<p style="margin-top:15px; color:#666;">No active Repair Orders to display under the current filters.</p>`;
             
@@ -1103,20 +1049,26 @@
             
             let htmlStr = '';
             for(let topLvl in hierarchy) {
-                htmlStr += `<details class="ro-detail-node"><summary>${topLvl}</summary>`; 
+                let topLvlUseful = [];
+                let subHtml = '';
                 for(let sub in hierarchy[topLvl]) {
-                    htmlStr += `<details class="ro-detail-node"><summary>${sub}</summary>`;
+                    let subLvlUseful = [];
+                    let branchHtml = '';
                     for(let branch in hierarchy[topLvl][sub]) {
                         let branchROs = hierarchy[topLvl][sub][branch];
+                        let bPct = branchROs[0].usefulPct;
+                        if (bPct !== null && bPct !== undefined) {
+                            subLvlUseful.push(bPct);
+                            topLvlUseful.push(bPct);
+                        }
+                        
                         branchROs.sort((a,b) => { 
-                            const ord = {'URGENT':1,'MEDIUM':2,'LOW':3};
-                            let valA = ord[a.priority] || 4;
-                            let valB = ord[b.priority] || 4;
-                            if (valA !== valB) return valA - valB;
                             return (b.isOOS === true ? 1 : 0) - (a.isOOS === true ? 1 : 0);
                         });
-                        htmlStr += `<details class="ro-detail-node"><summary>${branch} (${branchROs.length} ROs)</summary>`;
-                        let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:12%;"><col style="width:10%;"><col style="width:8%;"><col style="width:8%;"><col style="width:6%;"><col style="width:14%;"><col style="width:10%;"><col style="width:32%;"></colgroup><thead><tr><th>AFS RO #</th><th>Unit No</th><th>Priority</th><th>OOS Status</th><th>Total Unit ROs</th><th>Status</th><th>ECD</th><th>Task / VMRS</th></tr></thead><tbody>`;
+                        
+                        let branchBadge = getUsefulBadge(bPct !== null && bPct !== undefined ? [bPct] : []);
+                        branchHtml += `<details class="ro-detail-node"><summary>${branch} (${branchROs.length} ROs)${branchBadge}</summary>`;
+                        let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:12%;"><col style="width:10%;"><col style="width:10%;"><col style="width:8%;"><col style="width:6%;"><col style="width:14%;"><col style="width:10%;"><col style="width:30%;"></colgroup><thead><tr><th>AFS RO #</th><th>Unit No</th><th>Priority Status</th><th>OOS Status</th><th>Total Unit ROs</th><th>Status</th><th>ECD</th><th>Task / VMRS</th></tr></thead><tbody>`;
                         branchROs.forEach(ro => {
                             let ecdCell = '';
                             if (ro.ecdState === 'missing') ecdCell = `<span class="badge-ecd-missing">${ro.ecdFormatted}</span>`;
@@ -1125,15 +1077,20 @@
                             
                             let isGarda = ro.custKey === 'Garda';
                             let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
+                            
+                            let isPriority = ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
+                            let priorityStatusBadge = isPriority ? `<span class="badge badge-urgent">Priority</span>` : `<span class="badge badge-low">Normal</span>`;
 
-                            tableHTML += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
+                            tableHTML += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td>${priorityStatusBadge}</td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
                         });
                         tableHTML += `</tbody></table></div>`; 
-                        htmlStr += tableHTML + `</details>`;
+                        branchHtml += tableHTML + `</details>`;
                     }
-                    htmlStr += `</details>`;
+                    let subBadge = getUsefulBadge(subLvlUseful);
+                    subHtml += `<details class="ro-detail-node"><summary>${sub}${subBadge}</summary>${branchHtml}</details>`;
                 }
-                htmlStr += `</details>`;
+                let topBadge = getUsefulBadge(topLvlUseful);
+                htmlStr += `<details class="ro-detail-node"><summary>${topLvl}${topBadge}</summary>${subHtml}</details>`;
             }
             return htmlStr;
         }
@@ -1160,17 +1117,6 @@
             if (currentCustomerFilter !== 'ALL') {
                 ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
             }
-            
-            let sDate = currentStartDate ? new Date(currentStartDate + 'T00:00:00') : null;
-            let eDate = currentEndDate ? new Date(currentEndDate + 'T23:59:59') : null;
-            if (sDate || eDate) {
-                ownerDataAll = ownerDataAll.filter(ro => {
-                    if (!ro.openedDT) return false;
-                    if (sDate && ro.openedDT < sDate) return false;
-                    if (eDate && ro.openedDT > eDate) return false;
-                    return true;
-                });
-            }
 
             container.innerHTML = generateRoDrilldownHtml(ownerDataAll);
         }
@@ -1186,6 +1132,7 @@
                 if(searchTerm.length === 0) { navigate(lastActiveView, null, true); return; }
                 navigate('search-view', null, true);
                 document.getElementById('search-term-display').innerText = searchTerm;
+                // Exclude closed from search
                 const results = processedData.filter(ro => ro.unitNo.toLowerCase().includes(searchTerm));
                 let searchHtml = '';
                 if(results.length === 0) searchHtml = '<tr><td colspan="9" style="text-align:center;">No matching units.</td></tr>';
@@ -1198,8 +1145,11 @@
 
                         let isGarda = ro.custKey === 'Garda';
                         let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
+                        
+                        let isPriority = ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
+                        let priorityStatusBadge = isPriority ? `<span class="badge badge-urgent">Priority</span>` : `<span class="badge badge-low">Normal</span>`;
 
-                        searchHtml += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td><span class="badge ${ro.priorityClass}">${ro.priority}</span></td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.owner}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
+                        searchHtml += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td>${priorityStatusBadge}</td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.owner}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
                     });
                 }
                 document.getElementById('search-table-body').innerHTML = searchHtml;
@@ -1209,15 +1159,11 @@
         function navigate(viewId, menuElement = null, preserveCustomerFilter = false) {
             if (!preserveCustomerFilter) {
                 currentCustomerFilter = 'ALL';
-                currentStartDate = '';
-                currentEndDate = '';
                 document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = 'ALL'; });
-                document.querySelectorAll('.date-filter-start').forEach(el => { el.value = ''; });
-                document.querySelectorAll('.date-filter-end').forEach(el => { el.value = ''; });
             }
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
-            if(viewId !== 'search-view' && viewId !== 'person-view' && viewId !== 'reassign-view') lastActiveView = viewId;
+            if(viewId !== 'search-view' && viewId !== 'person-view') lastActiveView = viewId;
             if(menuElement) {
                 document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
                 menuElement.classList.add('active');
