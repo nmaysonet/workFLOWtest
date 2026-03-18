@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         /* Global Styles & Reset */
@@ -153,7 +156,7 @@
         table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 13px; table-layout: fixed; }
         th { background: #f4f6f9; padding: 12px; text-align: left; color: #555; text-transform: uppercase; font-size: 11px; border-bottom: 2px solid var(--border); font-weight: 700; cursor: pointer;}
         th:hover { background-color: #e2e8f0; }
-        td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; font-weight: 500; word-wrap: break-word;}
+        td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; font-weight: 500; word-wrap: break-word;}
         tr:hover td { background-color: #fcfcfc; }
 
         .ro-link { color: #0066cc; font-weight: 700; }
@@ -162,12 +165,20 @@
         .badge-oos { background-color: var(--urgent-red); color: white; }
         .badge-active { background-color: var(--low-green); color: white; }
         .badge-urgent { background-color: var(--urgent-red); color: white; }
-        .badge-medium { background-color: var(--medium-yellow); color: white; text-shadow: 0px 1px 1px rgba(0,0,0,0.2); }
         .badge-low { background-color: var(--low-green); color: white; }
         
         .ecd-red { color: #d9534f; font-weight: 800; }
         .ecd-green { color: #5cb85c; font-weight: 800; }
         .badge-ecd-missing { background-color: #fff3cd; color: #d9534f; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; border: 1px solid #d9534f; white-space: nowrap; display: inline-block; }
+        
+        /* Custom Status Toggles */
+        .status-toggle { cursor: pointer; margin-right: 8px; user-select: none; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); display: inline-block; text-align: center; min-width: 85px; font-size: 10px; letter-spacing: 0.5px;}
+        .status-toggle:hover { opacity: 0.8; transform: translateY(-1px); }
+        .status-pending { background-color: var(--urgent-red); color: white; border: 1px solid #c9302c; }
+        .status-dispatched { background-color: var(--low-green); color: white; border: 1px solid #4cae4c; }
+
+        .grouped-ro-item { margin-bottom: 8px; }
+        .grouped-ro-item:last-child { margin-bottom: 0; }
     </style>
 </head>
 <body>
@@ -236,13 +247,6 @@
                     <button class="btn-action dropbtn">VENDOR MAPS ▼</button>
                     <div class="dropdown-content">
                         <a href="https://app.mapline.com/map/map_282c81fe/TWZ2TzJHRGcrd3BjaG1QMDNPekVGYUhxNThJd080SUZTK2MwZG" target="_blank">Garda</a>
-                        <a href="#" target="_blank">Amerit Fleet Solutions</a>
-                        <a href="#" target="_blank">Brinks</a>
-                        <a href="#" target="_blank">Colony Hardware</a>
-                        <a href="#" target="_blank">Ferguson</a>
-                        <a href="#" target="_blank">Frontier</a>
-                        <a href="#" target="_blank">Sukut Construction</a>
-                        <a href="#" target="_blank">US Foods</a>
                     </div>
                 </div>
                 <a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/CreateVRO" target="_blank" class="btn-action">CREATE A VRO</a>
@@ -253,7 +257,7 @@
             <h1 class="home-title">Welcome to workFLOW +</h1>
             <div class="upload-container" id="upload-box">
                 <h3>Loading Dashboard Data</h3>
-                <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Attempting to automatically fetch <b>master_workFLOW.xlsx</b> from the repository...</p>
+                <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Attempting to fetch <b>master_workFLOW.xlsx</b> from local directory...</p>
                 <div id="upload-status" style="font-size: 15px; font-weight: bold; color: #888;">Initializing...</div>
                 <div id="manual-upload-section" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ccc;">
                     <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Fallback: File not found. Upload manually below.</p>
@@ -283,10 +287,6 @@
                     </select>
                 </div>
             </div>
-            <div class="filter-bar">
-                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
-                <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
-            </div>
             <div class="kpi-grid" id="pm-kpi-container"></div>
         </div>
 
@@ -298,10 +298,6 @@
                         <option value="ALL">All Customers</option>
                     </select>
                 </div>
-            </div>
-            <div class="filter-bar">
-                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
-                <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
             </div>
             <div class="kpi-grid" id="vended-kpi-container"></div>
         </div>
@@ -315,10 +311,6 @@
                     </select>
                 </div>
             </div>
-            <div class="filter-bar">
-                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
-                <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
-            </div>
             <div class="kpi-grid" id="ers-kpi-container"></div>
         </div>
 
@@ -331,7 +323,7 @@
                     </select>
                 </div>
                 <div class="controls-group" style="display: flex; align-items: center;">
-                    <button class="btn-green" onclick="exportDrilldownToExcel()">Export to XLSX</button>
+                    <button class="btn-green" onclick="exportDrilldownToExcel()">&#11139; Export to XLSX</button>
                     <button onclick="toggleAllDetails(true)">Expand All</button>
                     <button onclick="toggleAllDetails(false)">Collapse All</button>
                     <button id="dynamic-back-btn">&larr; Back</button>
@@ -345,19 +337,27 @@
         </div>
 
         <div id="search-view" class="view-section">
-            <h2 class="view-title">Search Results: <span id="search-term-display"></span></h2>
+            <div class="view-title">
+                <div style="display:flex; align-items:center; gap: 20px;">
+                    <span style="font-weight: 700;">Search Results: <span id="search-term-display"></span></span>
+                </div>
+                <div class="controls-group" style="display: flex; align-items: center;">
+                    <button class="btn-green" onclick="exportSearchToExcel()">&#11139; Export to XLSX</button>
+                    <button onclick="navigate(lastActiveView, null, true)">&larr; Back</button>
+                </div>
+            </div>
             <div class="drilldown-container table-wrapper">
                 <table>
                     <colgroup>
-                        <col style="width: 10%;"> <col style="width: 10%;"> <col style="width: 8%;">
-                        <col style="width: 7%;">  <col style="width: 6%;">  <col style="width: 12%;">
-                        <col style="width: 10%;"> <col style="width: 10%;"> <col style="width: 27%;">
+                        <col style="width: 20%;"> <col style="width: 12%;"> <col style="width: 12%;">
+                        <col style="width: 10%;">  <col style="width: 12%;"> <col style="width: 12%;">
+                        <col style="width: 22%;">
                     </colgroup>
                     <thead>
                         <tr>
-                            <th>AFS RO #</th><th>Unit No</th><th>Priority Status</th>
-                            <th>OOS Status</th><th>Total Unit ROs</th><th>Owner</th>
-                            <th>Status</th><th>ECD</th><th>Task / VMRS</th>
+                            <th>AFS RO # & Dispatch</th><th>Unit No</th><th>Priority Status</th>
+                            <th>OOS Status</th><th>Opened Date</th><th>Owner</th>
+                            <th>Status & ECD</th>
                         </tr>
                     </thead>
                     <tbody id="search-table-body"></tbody>
@@ -367,6 +367,43 @@
     </div>
 
     <script>
+        // --- FIREBASE SYNC ENGINE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCr3VAldI-pPCb7APx3rJAEZvf_nl0iz1g",
+            authDomain: "workflow-dashboard-e6134.firebaseapp.com",
+            databaseURL: "https://workflow-dashboard-e6134-default-rtdb.firebaseio.com",
+            projectId: "workflow-dashboard-e6134",
+            storageBucket: "workflow-dashboard-e6134.firebasestorage.app",
+            messagingSenderId: "641710248116",
+            appId: "1:641710248116:web:1546701879d573041447e1"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        let globalRoCheckState = {};
+
+        // Listen for Realtime Button Updates tracked per individual RO
+        db.ref('roChecks').on('value', (snapshot) => {
+            globalRoCheckState = snapshot.val() || {};
+            document.querySelectorAll('.status-toggle').forEach(btn => {
+                let ro = btn.getAttribute('data-ro');
+                let isDispatched = !!globalRoCheckState[ro];
+                if (isDispatched) {
+                    btn.className = 'badge status-toggle status-dispatched';
+                    btn.innerHTML = '✓ DISPATCHED';
+                    btn.onclick = function() { toggleRoCheck(ro, false); };
+                } else {
+                    btn.className = 'badge status-toggle status-pending';
+                    btn.innerHTML = 'PENDING';
+                    btn.onclick = function() { toggleRoCheck(ro, true); };
+                }
+            });
+        });
+
+        function toggleRoCheck(ro, isChecked) {
+            let safeRo = ro.replace(/[.#$\[\]]/g, '_'); 
+            db.ref('roChecks/' + safeRo).set(isChecked);
+        }
+
         // --- GLOBAL DATA ---
         let processedData = []; 
         let currentFilter = 'ALL';
@@ -380,25 +417,49 @@
         let vendedOwners = [];
         let ersOwners = [];
 
-        let branchUsefulMap = {}; // Holds Useful % data mapped by Branch string
+        let branchUsefulMap = {}; 
+        let branchMasterInfo = {}; 
+        let oosMap = {};
+        let dedicatedBranches = new Set();
 
-        // Strict Open Order definitions
         const excludedStatuses = [
             'COMPLETED', 
-            'FINAL CHARGES SUBMITTED', 
-            'CREDIT VROS', 
-            'CANCELED', 
-            'CANCELLED', 
-            'CLOSED', 
-            'REJECTED', 
-            'DECLINED', 
-            'VOID', 
-            'VOIDED'
+            'FINAL CHARGES SUBMITTED'
+        ];
+
+        // Specific Creators (Priority 1)
+        const specificCreators = [
+            "aarmes@ameritfleet.com", "ccaylor@ameritfleet.com", "cchristianson@ameritfleet.com",
+            "cdecker@ameritfleet.com", "dnicholson@ameritfleet.com", "fbeardslee@ameritfleet.com",
+            "fmendozacruz@ameritfleet.com", "jkennedy2@ameritfleet.com", "jmccormick@ameritfleet.com",
+            "kanguzza@ameritfleet.com", "khulbert@ameritfleet.com", "ljohnson@ameritfleet.com",
+            "mmcclain2@ameritfleet.com", "pgallagher@ameritfleet.com", "rcastillo@ameritfleet.com",
+            "sgerdes@ameritfleet.com", "swooton@ameritfleet.com", "tblake@ameritfleet.com",
+            "tforrester@ameritfleet.com", "ttodd@ameritfleet.com", "wvaught@ameritfleet.com"
         ];
         
         let lastActiveView = 'home-view';
 
-        // --- FETCH LOCAL DATA ---
+        function normalizeName(str) {
+            if (!str) return '';
+            let n = String(str).trim().replace(/\s+/g, ' '); 
+            let lower = n.toLowerCase();
+            if (lower === 'kevin a' || lower.includes('kanguzza') || lower === 'kevin anguzza') return 'Kevin Anguzza';
+            return n;
+        }
+
+        function normalizeBranchStr(str) {
+            if (!str) return null;
+            return String(str).toUpperCase().replace(/\d{3}[- ]?\d{2}/g, '').replace(/[^A-Z0-9]/ig, '');
+        }
+
+        function extractGardaCode(str) {
+            if (!str) return null;
+            let match = String(str).match(/(\d{3})[- ]?(\d{2})/);
+            if (match) return match[1] + match[2];
+            return null;
+        }
+
         async function fetchData() {
             const statusEl = document.getElementById('upload-status');
             const uploadBox = document.getElementById('upload-box');
@@ -411,7 +472,6 @@
             document.getElementById('manual-upload-section').style.display = 'none';
 
             try {
-                // Add timestamp to bypass local caching issues
                 const timestamp = new Date().getTime();
                 const response = await fetch(`master_workFLOW.xlsx?_=${timestamp}`);
                 
@@ -421,63 +481,67 @@
                 const data = await response.arrayBuffer();
                 const workbook = XLSX.read(data, {type: 'array'});
                 
-                let vroRaw = [], resourceRaw = [], oosRaw = [], assignRaw = [], usefulRaw = [];
+                let vroRaw = [], resourceRaw = [], oosRaw = [], usefulRaw = [];
                 
                 workbook.SheetNames.forEach(sheetName => {
-                    const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: ''});
-                    if(sheetData.length === 0) return;
-                    
-                    const keys = Object.keys(sheetData[0]).map(k => String(k).toLowerCase().replace(/[^a-z0-9]/g, ''));
-                    
-                    // Tab 4: Order Assignments
-                    if (keys.includes('vro') && keys.includes('assignee')) {
-                        assignRaw = assignRaw.concat(sheetData);
-                    } 
-                    // Tab 2: Resource Table
-                    else if (keys.includes('createdby') || keys.includes('team') || keys.includes('pmcomp')) {
-                        resourceRaw = resourceRaw.concat(sheetData);
-                    } 
-                    // Tab 3: OOS GARDA (Make sure not to confuse with Useful %)
-                    else if (keys.includes('gardaregion') && !keys.includes('useful')) {
-                        oosRaw = oosRaw.concat(sheetData);
-                    } 
-                    // Tab 5: Useful % (Using raw array to bypass bad top rows)
-                    else if (keys.includes('useful') || String(sheetName).toLowerCase().includes('useful')) {
+                    try {
                         const aoa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1, defval: ''});
+                        if (!aoa || aoa.length === 0) return;
+                        
                         let headerIdx = -1;
-                        for(let i=0; i<Math.min(10, aoa.length); i++) {
-                            if (aoa[i].some(cell => String(cell).toLowerCase().includes('useful') || String(cell).toLowerCase().includes('branch'))) {
-                                headerIdx = i; break;
+                        let tabType = 'UNKNOWN';
+                        
+                        for(let i=0; i < Math.min(20, aoa.length); i++) {
+                            if (!aoa[i] || !Array.isArray(aoa[i])) continue; 
+                            
+                            let rowStr = aoa[i].map(c => c ? String(c).toLowerCase().replace(/[^a-z0-9]/g, '') : '').join('');
+                            if (!rowStr) continue;
+                            
+                            if (rowStr.includes('createdby') || (rowStr.includes('unitnumber') && rowStr.includes('team'))) {
+                                headerIdx = i; tabType = 'RESOURCE'; break;
+                            } else if (rowStr.includes('gardaregion') && rowStr.includes('oosflag')) {
+                                headerIdx = i; tabType = 'OOS'; break;
+                            } else if (rowStr.includes('gardaregion') && rowStr.includes('branch') && rowStr.includes('useful')) {
+                                headerIdx = i; tabType = 'USEFUL'; break;
+                            } else if (rowStr.includes('ronumber') || rowStr.includes('order') || rowStr.includes('estimaterequesteddate') || rowStr.includes('customer')) {
+                                headerIdx = i; tabType = 'VRO'; break;
                             }
                         }
+                        
                         if (headerIdx !== -1) {
                             let headers = aoa[headerIdx];
-                            for(let i=headerIdx+1; i<aoa.length; i++) {
+                            let sheetData = [];
+                            for(let i = headerIdx + 1; i < aoa.length; i++) {
+                                if (!aoa[i] || !Array.isArray(aoa[i])) continue;
                                 let obj = {};
+                                let hasData = false;
                                 headers.forEach((h, j) => {
-                                    let key = String(h).trim();
+                                    let key = h ? String(h).trim() : '';
                                     if (key) {
-                                        // Handle duplicate keys like multiple "Useful %" columns
                                         if (obj[key] !== undefined) {
                                             let c = 1;
                                             while(obj[key + '_' + c] !== undefined) c++;
                                             key = key + '_' + c;
                                         }
                                         obj[key] = aoa[i][j];
+                                        if (aoa[i][j] !== '' && aoa[i][j] !== undefined && aoa[i][j] !== null) hasData = true;
                                     }
                                 });
-                                usefulRaw.push(obj);
+                                if (hasData) sheetData.push(obj);
                             }
+                            
+                            if (tabType === 'RESOURCE') resourceRaw = resourceRaw.concat(sheetData);
+                            else if (tabType === 'OOS') oosRaw = oosRaw.concat(sheetData);
+                            else if (tabType === 'USEFUL') usefulRaw = usefulRaw.concat(sheetData);
+                            else if (tabType === 'VRO') vroRaw = vroRaw.concat(sheetData);
                         }
-                    }
-                    // Tab 1: VRO Export
-                    else if (keys.includes('order') || keys.includes('ronumber') || keys.includes('owner')) {
-                        vroRaw = vroRaw.concat(sheetData);
+                    } catch (err) {
+                        console.warn("Skipped sheet due to parsing error:", sheetName, err);
                     }
                 });
                 
                 statusEl.innerText = "Building dashboards...";
-                processExcelData(vroRaw, resourceRaw, oosRaw, assignRaw, usefulRaw);
+                processExcelData(vroRaw, resourceRaw, oosRaw, usefulRaw);
 
             } catch (error) {
                 console.error("Fetch failed:", error);
@@ -489,7 +553,82 @@
 
         window.onload = fetchData;
 
-        // --- PRECISE DATA PARSER ---
+        document.getElementById('excelFileInput').addEventListener('change', async function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            const statusEl = document.getElementById('upload-status');
+            statusEl.innerText = "Reading manual upload...";
+            
+            let vroRaw = [], resourceRaw = [], oosRaw = [], usefulRaw = [];
+            
+            try {
+                for(let file of files) {
+                    const data = await file.arrayBuffer();
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    workbook.SheetNames.forEach(sheetName => {
+                        try {
+                            const aoa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1, defval: ''});
+                            if (!aoa || aoa.length === 0) return;
+                            
+                            let headerIdx = -1;
+                            let tabType = 'UNKNOWN';
+                            
+                            for(let i=0; i < Math.min(20, aoa.length); i++) {
+                                if (!aoa[i] || !Array.isArray(aoa[i])) continue;
+                                let rowStr = aoa[i].map(c => c ? String(c).toLowerCase().replace(/[^a-z0-9]/g, '') : '').join('');
+                                if (!rowStr) continue;
+
+                                if (rowStr.includes('createdby') || (rowStr.includes('unitnumber') && rowStr.includes('team'))) {
+                                    headerIdx = i; tabType = 'RESOURCE'; break;
+                                } else if (rowStr.includes('gardaregion') && rowStr.includes('oosflag')) {
+                                    headerIdx = i; tabType = 'OOS'; break;
+                                } else if (rowStr.includes('gardaregion') && rowStr.includes('branch') && rowStr.includes('useful')) {
+                                    headerIdx = i; tabType = 'USEFUL'; break;
+                                } else if (rowStr.includes('ronumber') || rowStr.includes('order') || rowStr.includes('estimaterequesteddate') || rowStr.includes('customer')) {
+                                    headerIdx = i; tabType = 'VRO'; break;
+                                }
+                            }
+                            
+                            if (headerIdx !== -1) {
+                                let headers = aoa[headerIdx];
+                                let sheetData = [];
+                                for(let i = headerIdx + 1; i < aoa.length; i++) {
+                                    if (!aoa[i] || !Array.isArray(aoa[i])) continue;
+                                    let obj = {};
+                                    let hasData = false;
+                                    headers.forEach((h, j) => {
+                                        let key = h ? String(h).trim() : '';
+                                        if (key) {
+                                            if (obj[key] !== undefined) {
+                                                let c = 1;
+                                                while(obj[key + '_' + c] !== undefined) c++;
+                                                key = key + '_' + c;
+                                            }
+                                            obj[key] = aoa[i][j];
+                                            if (aoa[i][j] !== '' && aoa[i][j] !== undefined && aoa[i][j] !== null) hasData = true;
+                                        }
+                                    });
+                                    if (hasData) sheetData.push(obj);
+                                }
+                                
+                                if (tabType === 'RESOURCE') resourceRaw = resourceRaw.concat(sheetData);
+                                else if (tabType === 'OOS') oosRaw = oosRaw.concat(sheetData);
+                                else if (tabType === 'USEFUL') usefulRaw = usefulRaw.concat(sheetData);
+                                else if (tabType === 'VRO') vroRaw = vroRaw.concat(sheetData);
+                            }
+                        } catch(err) {
+                            console.warn("Skipped sheet", sheetName, err);
+                        }
+                    });
+                }
+                processExcelData(vroRaw, resourceRaw, oosRaw, usefulRaw);
+            } catch (error) { 
+                console.error(error); 
+                statusEl.innerText = "Error parsing files."; 
+            }
+        });
+
         function getCol(row, possibleNames) {
             const rowKeys = Object.keys(row);
             for (let name of possibleNames) {
@@ -500,7 +639,6 @@
             return '';
         }
 
-        // --- NORMALIZING CUSTOMER NAMES ---
         function getCustKey(rawStr) {
             let c = (rawStr || '').toUpperCase();
             if (c.includes('FERGUSON')) return 'Ferguson';
@@ -530,17 +668,18 @@
 
             let targetData = ownerDataAll.filter(ro => ro.isOpen);
             if(currentFilter === 'PRIORITY') {
-                targetData = targetData.filter(ro => ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100));
+                targetData = targetData.filter(ro => ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
             }
 
             if (targetData.length === 0) { alert("No data available to export."); return; }
 
             const excelRows = targetData.map(ro => ({
                 "AFS RO #": ro.roNum, "Unit No": ro.unitNo, 
-                "OOS Status": (ro.custKey === 'Garda' && ro.isOOS) ? "OOS" : "",
+                "OOS Status": ro.isOOS ? "OOS" : "",
                 "Useful %": ro.usefulPct !== null ? Math.round(ro.usefulPct * 100) + '%' : "N/A",
-                "Total Unit ROs": ro.roCount, "Status": ro.status, "ECD": ro.ecdFormatted,
-                "Task / VMRS": ro.vmrs, "Customer Group": ro.drillTopLevel, "Subregion": ro.subregion, "Branch": ro.branch
+                "Opened Date": ro.openedFormatted,
+                "Status": ro.status, "ECD": ro.ecdFormatted,
+                "Customer Group": ro.drillTopLevel, "Subregion": ro.subregion, "Branch": ro.branch
             }));
 
             const worksheet = XLSX.utils.json_to_sheet(excelRows);
@@ -549,7 +688,26 @@
             XLSX.writeFile(workbook, `workflow_export_${String(currentOwnerView).replace(/\s+/g, '_')}_${currentFilter.toLowerCase()}.xlsx`);
         }
 
-        // --- FILTER & CUSTOMER LOGIC ---
+        function exportSearchToExcel() {
+            const searchTerm = document.getElementById('global-search').value.toLowerCase();
+            if(!searchTerm) return;
+            
+            const results = processedData.filter(ro => ro.unitNo.toLowerCase().includes(searchTerm));
+            if(results.length === 0) { alert("No data to export."); return; }
+            
+            const excelRows = results.map(ro => ({
+                "AFS RO #": ro.roNum, "Unit No": ro.unitNo, 
+                "Priority Status": (ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100) ? "Priority" : "Normal",
+                "OOS Status": ro.isOOS ? "OOS" : "",
+                "Opened Date": ro.openedFormatted,
+                "Owner": ro.owner, "Status": ro.status, "ECD": ro.ecdFormatted
+            }));
+            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Search Results");
+            XLSX.writeFile(workbook, `workflow_search_${searchTerm}.xlsx`);
+        }
+
         function setFilter(val) {
             currentFilter = val;
             document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -574,91 +732,94 @@
             else if(activeView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView); }
         }
 
-        // --- MANUAL UPLOAD FALLBACK ---
-        document.getElementById('excelFileInput').addEventListener('change', async function(e) {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
-            const statusEl = document.getElementById('upload-status');
-            statusEl.innerText = "Reading manual upload...";
-            
-            let vroRaw = [], resourceRaw = [], oosRaw = [], assignRaw = [], usefulRaw = [];
-            
-            try {
-                for(let file of files) {
-                    const data = await file.arrayBuffer();
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    workbook.SheetNames.forEach(sheetName => {
-                        const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval: ''});
-                        if(sheetData.length === 0) return;
-                        
-                        const keys = Object.keys(sheetData[0]).map(k => String(k).toLowerCase().replace(/[^a-z0-9]/g, ''));
-                        
-                        if (keys.includes('vro') && keys.includes('assignee')) {
-                            assignRaw = assignRaw.concat(sheetData);
-                        } else if (keys.includes('createdby') || keys.includes('team') || keys.includes('pmcomp')) {
-                            resourceRaw = resourceRaw.concat(sheetData);
-                        } else if (keys.includes('gardaregion') && !keys.includes('useful')) {
-                            oosRaw = oosRaw.concat(sheetData);
-                        } else if (keys.includes('useful') || String(sheetName).toLowerCase().includes('useful')) {
-                            const aoa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1, defval: ''});
-                            let headerIdx = -1;
-                            for(let i=0; i<Math.min(10, aoa.length); i++) {
-                                if (aoa[i].some(cell => String(cell).toLowerCase().includes('useful') || String(cell).toLowerCase().includes('branch'))) {
-                                    headerIdx = i; break;
-                                }
-                            }
-                            if (headerIdx !== -1) {
-                                let headers = aoa[headerIdx];
-                                for(let i=headerIdx+1; i<aoa.length; i++) {
-                                    let obj = {};
-                                    headers.forEach((h, j) => {
-                                        let key = String(h).trim();
-                                        if (key) {
-                                            if (obj[key] !== undefined) {
-                                                let c = 1;
-                                                while(obj[key + '_' + c] !== undefined) c++;
-                                                key = key + '_' + c;
-                                            }
-                                            obj[key] = aoa[i][j];
-                                        }
-                                    });
-                                    usefulRaw.push(obj);
-                                }
-                            }
-                        } else if (keys.includes('order') || keys.includes('ronumber') || keys.includes('owner')) {
-                            vroRaw = vroRaw.concat(sheetData);
-                        }
-                    });
-                }
-                processExcelData(vroRaw, resourceRaw, oosRaw, assignRaw, usefulRaw);
-            } catch (error) { 
-                console.error(error); 
-                statusEl.innerText = "Error parsing files."; 
-            }
-        });
-
         // --- PROCESS DATA ---
-        function processExcelData(vroRaw, resourceRaw, oosRaw, assignRaw, usefulRaw) {
+        function processExcelData(vroRaw, resourceRaw, oosRaw, usefulRaw) {
             const today = new Date(); today.setHours(0, 0, 0, 0);
             
-            // Build Useful % Map
+            // Build Universal Branch Dictionary
+            branchMasterInfo = {}; 
             branchUsefulMap = {};
+            
+            oosRaw.forEach(row => {
+                let region = getCol(row, ['GARDA REGION']);
+                let subregion = getCol(row, ['GARDA SUBREGION']);
+                let branch = getCol(row, ['Branch']);
+                if (branch) {
+                    let bCode = extractGardaCode(branch);
+                    let info = {
+                        region: String(region || 'Unspecified Region').trim(),
+                        subregion: String(subregion || 'Unspecified Subregion').trim(),
+                        branch: String(branch).trim()
+                    };
+                    if (bCode) branchMasterInfo[bCode] = info;
+                    let bNorm = normalizeBranchStr(branch);
+                    if (bNorm) branchMasterInfo[bNorm] = info;
+                }
+            });
+
             if (usefulRaw && usefulRaw.length > 0) {
                 usefulRaw.forEach(row => {
-                    let branch = getCol(row, ['Branch']);
-                    let usefulStr = getCol(row, ['Useful %', 'Useful']);
-                    if (branch && usefulStr !== '') {
-                        let pct = parseFloat(usefulStr);
+                    let rKey = Object.keys(row).find(k => k.trim().toLowerCase().includes('region'));
+                    let subKey = Object.keys(row).find(k => k.trim().toLowerCase().includes('subregion'));
+                    let bKey = Object.keys(row).find(k => k.trim().toLowerCase() === 'branch');
+                    
+                    let r = rKey ? row[rKey] : null;
+                    let s = subKey ? row[subKey] : null;
+                    let b = bKey ? row[bKey] : null;
+                    
+                    if (b) {
+                        let bCode = extractGardaCode(b);
+                        let info = {
+                            region: String(r || 'Unspecified Region').trim(),
+                            subregion: String(s || 'Unspecified Subregion').trim(),
+                            branch: String(b).trim()
+                        };
+                        
+                        if (bCode && !branchMasterInfo[bCode]) branchMasterInfo[bCode] = info;
+                        let bNorm = normalizeBranchStr(b);
+                        if (bNorm && !branchMasterInfo[bNorm]) branchMasterInfo[bNorm] = info;
+
+                        let pct = NaN;
+                        let usefulKeys = Object.keys(row).filter(k => k.toLowerCase().includes('useful'));
+                        let totalKey = usefulKeys.find(k => k.toLowerCase().includes('total'));
+                        
+                        if (totalKey && row[totalKey] !== undefined && row[totalKey] !== '') {
+                            let valStr = String(row[totalKey]).trim();
+                            let val = parseFloat(valStr);
+                            if (!isNaN(val)) {
+                                pct = valStr.includes('%') ? val / 100 : val;
+                            }
+                        }
+                        
+                        if (isNaN(pct)) {
+                            for(let i = usefulKeys.length - 1; i >= 0; i--) {
+                                let k = usefulKeys[i];
+                                if (row[k] !== undefined && row[k] !== '') {
+                                    let valStr = String(row[k]).trim();
+                                    let val = parseFloat(valStr);
+                                    if (!isNaN(val)) {
+                                        pct = valStr.includes('%') ? val / 100 : val;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        
                         if (!isNaN(pct)) {
-                            branchUsefulMap[branch.toUpperCase().trim()] = pct;
+                            if (bCode) {
+                                branchUsefulMap[bCode] = pct;
+                                if (bCode === '18055') branchUsefulMap['14095'] = pct;
+                                if (bCode === '14095') branchUsefulMap['18055'] = pct;
+                            }
+                            if (bNorm) branchUsefulMap[bNorm] = pct;
                         }
                     }
                 });
             }
 
-            let oosSet = new Set();
             let unitToLocation = {};
+            oosMap = {};
+            
             oosRaw.forEach(row => {
                 let unit = getCol(row, ['UNITNUMBER', 'Unit No', 'Vehicle']);
                 let oosFlag = getCol(row, ['OOS Flag', 'Open RO Category']);
@@ -667,8 +828,10 @@
                 let branch = getCol(row, ['Branch']);
                 
                 if(unit) {
-                    let u = unit.toUpperCase();
-                    if (oosFlag.toUpperCase() === 'OOS' || oosFlag === '') oosSet.add(u);
+                    let u = unit.toUpperCase().trim();
+                    let isOOS = (String(oosFlag).toUpperCase().trim() === 'OOS');
+                    oosMap[u] = isOOS;
+
                     unitToLocation[u] = { 
                         region: String(region || 'Unspecified Region').trim(), 
                         subregion: String(subregion || 'Unspecified Subregion').trim(), 
@@ -677,35 +840,54 @@
                 }
             });
 
-            let ownerMap = {};
-            let pmKeywords = [];
+            let unitOwnerMap = {};
+            let creatorMap = {};
+            let globalOwnerMap = {}; 
+            
             let activePM = new Set();
             let activeVended = new Set();
             let activeERS = new Set();
+            let pmKeywords = [];
+            
+            dedicatedBranches = new Set();
 
             resourceRaw.forEach(row => {
-                let createdBy = getCol(row, ['CREATEDBY', 'Email', 'Created By']);
-                let name = getCol(row, ['Name', 'Assignee']);
-                let status = getCol(row, ['Status']).toUpperCase();
-                let team = getCol(row, ['Team']).toUpperCase();
-                let pmComp = getCol(row, ['PM Comp:']);
+                let keys = Object.keys(row);
                 
-                if (createdBy) {
-                    let keyEmail = String(createdBy).toLowerCase().trim();
-                    let finalName = name ? String(name).trim() : String(createdBy).trim();
-                    let keyName = finalName.toLowerCase().trim();
-                    
-                    let statUpper = status.toUpperCase();
-                    let teamUpper = team.toUpperCase();
+                let bVal = getCol(row, ['Branch']);
+                let oVal = getCol(row, ['Owner']);
+                if (bVal && String(oVal).toUpperCase().trim() === 'DEDICATED') {
+                    let bCode = extractGardaCode(bVal);
+                    if (bCode) dedicatedBranches.add(bCode);
+                    let bNorm = normalizeBranchStr(bVal);
+                    if (bNorm) dedicatedBranches.add(bNorm);
+                }
 
-                    ownerMap[keyEmail] = { name: finalName, status: statUpper, team: teamUpper };
-                    ownerMap[keyName] = { name: finalName, status: statUpper, team: teamUpper };
+                let unitKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === 'unitnumber');
+                let teamKeys = keys.filter(k => k.toLowerCase().replace(/[^a-z0-9]/g, '').includes('team'));
+                let unitTeamKey = teamKeys[0]; 
+                
+                if (unitKey && row[unitKey]) {
+                    let u = String(row[unitKey]).toUpperCase().trim();
+                    let o = oVal ? String(oVal).trim() : '';
+                    let t = row[unitTeamKey] ? String(row[unitTeamKey]).toUpperCase().trim() : 'VENDED REPAIR';
+                    unitOwnerMap[u] = { owner: o, team: t };
+                }
+
+                let creatorKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === 'createdby');
+                let nameKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === 'name');
+                let statusKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === 'status');
+                let creatorTeamKey = teamKeys.length > 1 ? teamKeys[1] : teamKeys[0];
+                let pmComp = getCol(row, ['PM Comp:']);
+
+                if (creatorKey && row[creatorKey]) {
+                    let cEmail = String(row[creatorKey]).toLowerCase().trim();
+                    let cName = row[nameKey] ? String(row[nameKey]).trim() : cEmail;
+                    let cTeam = row[creatorTeamKey] ? String(row[creatorTeamKey]).toUpperCase().trim() : 'ERS';
+                    let cStatus = row[statusKey] ? String(row[statusKey]).toUpperCase().trim() : 'INACTIVE';
                     
-                    if (statUpper === 'ACTIVE') {
-                        if (teamUpper === 'PM') activePM.add(finalName);
-                        else if (teamUpper === 'VENDED REPAIR') activeVended.add(finalName);
-                        else if (teamUpper === 'ERS') activeERS.add(finalName);
-                    }
+                    creatorMap[cEmail] = { name: cName, team: cTeam };
+                    globalOwnerMap[cEmail] = { name: cName, status: cStatus, team: cTeam };
                 }
                 
                 if (pmComp && pmComp.toUpperCase() !== 'PM COMP:' && pmComp.trim() !== '') {
@@ -713,62 +895,140 @@
                 }
             });
 
-            pmOwners = Array.from(activePM);
-            vendedOwners = Array.from(activeVended);
-            ersOwners = Array.from(activeERS);
             pmKeywords = [...new Set(pmKeywords)]; 
 
             let unitROCounts = {};
             vroRaw.forEach(row => {
-                let unit = getCol(row, ['Unit No', 'UNITNUMBER', 'Vehicle']).toUpperCase();
+                let unit = getCol(row, ['Unit No', 'UNITNUMBER', 'Vehicle']).toUpperCase().trim();
                 if(unit) unitROCounts[unit] = (unitROCounts[unit] || 0) + 1;
-            });
-
-            // TAB 4 ORDER ASSIGNMENTS INJECTION
-            let reassignments = {};
-            assignRaw.forEach(row => {
-                let vro = getCol(row, ['VRO', 'Order', 'RO Number', 'AFS RO #']);
-                let assignee = getCol(row, ['Assignee', 'Name', 'Owner']);
-                if (vro && assignee) {
-                    reassignments[String(vro).toUpperCase().trim()] = String(assignee).trim();
-                }
             });
 
             let allCustSet = new Set();
 
             processedData = vroRaw.map(row => {
                 let roNum = getCol(row, ['Order', 'RO Number', 'RONum', 'AFS RO #']).toUpperCase().trim();
-                let customer = getCol(row, ['Customer', 'CUSTOMERNAME', 'Customer Name']); 
-                let rawOwner = getCol(row, ['Owner', 'Created By']); 
-                let unit = getCol(row, ['Unit No', 'UNITNUMBER', 'Vehicle']).toUpperCase();
+                let customerRaw = getCol(row, ['Customer', 'CUSTOMERNAME', 'Customer Name']); 
+                let rawOwnerEmail = getCol(row, ['Owner', 'Created By', 'Email']); 
+                let unit = getCol(row, ['Unit No', 'UNITNUMBER', 'Vehicle']).toUpperCase().trim();
                 let status = getCol(row, ['Status']);
                 let vmrs = getCol(row, ['Task', 'DESCRIP', 'VMRS Description']);
                 let openedRaw = getCol(row, ['Opened', 'ROOpenedDate']);
                 let dueRaw = getCol(row, ['Unit Due Date', 'Estimate Due Date', 'Due Date', 'L']);
                 let compRaw = getCol(row, ['Completed Date', 'Completed', 'P']);
-                
-                let targetOwnerRaw = String(rawOwner || '').trim();
-                
-                // --- APPLY REASSIGNMENTS OVERRIDE (TAB 4) ---
-                if (reassignments[roNum]) {
-                    targetOwnerRaw = reassignments[roNum];
+
+                // Opened Date Setup
+                let openedDate = new Date(openedRaw);
+                let openedDT = isNaN(openedDate.getTime()) ? null : openedDate;
+                let openedFormatted = openedDT ? `${openedDT.getMonth()+1}/${openedDT.getDate()}/${openedDT.getFullYear()}` : 'N/A';
+
+                let customerFixed = String(customerRaw || '').toUpperCase().replace('MRTLE', 'MYRTLE');
+                if (customerFixed.includes('HANVER') || customerFixed.includes('HANOVER') || customerFixed.includes('18055') || customerFixed.includes('180-55')) {
+                    customerFixed = 'GARDA - WILKES BARRE, PA 140-95';
+                }
+                if (customerFixed.includes('FONTANA') && !customerFixed.includes('120')) {
+                    customerFixed = 'GARDA - FONTANA, CA 120-14';
                 }
 
-                // Strictly map to active Display Name
-                let finalOwner = 'INACTIVE_OR_UNASSIGNED';
-                if (targetOwnerRaw) {
-                    let lookupKey = targetOwnerRaw.toLowerCase().trim();
-                    let ownerData = ownerMap[lookupKey];
-                    if (ownerData && ownerData.status === 'ACTIVE') {
-                        finalOwner = ownerData.name;
+                let customer = customerFixed;
+                let loc = unitToLocation[unit] || { region: 'Unknown Region', subregion: 'Unknown Subregion', branch: 'Unknown Branch' };
+                let custKey = getCustKey(customer);
+                
+                let cStrNorm = customerFixed.replace(/[^A-Z0-9]/ig, '');
+                let cNameOnly = customerFixed.replace(/\d{3}[- ]?\d{2}/g, '').replace(/[^A-Z0-9]/ig, '');
+                let branchCode = extractGardaCode(customer); 
+                if (!branchCode && loc.branch) branchCode = extractGardaCode(loc.branch);
+                
+                if (custKey === 'Garda') {
+                    if (branchCode && branchMasterInfo[branchCode]) {
+                        loc = Object.assign({}, loc, branchMasterInfo[branchCode]);
+                    } else {
+                        for (let bKey in branchMasterInfo) {
+                            if (bKey.length > 4 && cNameOnly.includes(bKey)) {
+                                loc = Object.assign({}, loc, branchMasterInfo[bKey]);
+                                break;
+                            }
+                        }
                     }
                 }
 
-                // Discard inactive / unassigned entirely.
-                if (finalOwner === 'INACTIVE_OR_UNASSIGNED') return { roNum: '' };
+                if (loc.region === 'Unknown Region' || loc.region === 'Unspecified Region') {
+                    let locPart = customer;
+                    if(String(customer).includes('-')) locPart = customer.substring(customer.indexOf('-') + 1).trim(); 
+                    
+                    let stateName = 'Unknown State';
+                    let cityName = 'Unknown City';
 
-                let openedDate = new Date(openedRaw);
-                let openedDT = isNaN(openedDate.getTime()) ? null : openedDate;
+                    if (locPart.includes(',')) {
+                        let splitComma = locPart.split(','); 
+                        cityName = splitComma[0].trim();
+                        let afterComma = splitComma[1].trim().split(' ').filter(s => s.trim() !== ''); 
+                        if(afterComma.length > 0) stateName = afterComma[0].trim();
+                    } else {
+                        let spaceSplit = locPart.split(' ').filter(s => s.trim() !== '');
+                        if (spaceSplit.length === 1 && spaceSplit[0].length === 2) {
+                            stateName = spaceSplit[0].toUpperCase();
+                            cityName = 'Unknown City';
+                        } else if (spaceSplit.length >= 2) {
+                            let last = spaceSplit[spaceSplit.length - 1].trim();
+                            let secLast = spaceSplit[spaceSplit.length - 2].trim();
+                            if (last.length === 2 && !/\d/.test(last)) {
+                                stateName = last.toUpperCase();
+                                cityName = spaceSplit.slice(0, spaceSplit.length - 1).join(' ');
+                            } else if (secLast.length === 2 && !/\d/.test(secLast)) {
+                                stateName = secLast.toUpperCase();
+                                cityName = spaceSplit.slice(0, spaceSplit.length - 2).join(' ');
+                            } else {
+                                cityName = locPart;
+                            }
+                        } else {
+                            cityName = locPart;
+                        }
+                    }
+                    
+                    loc.region = stateName;
+                    loc.subregion = cityName;
+                    if (loc.branch === 'Unknown Branch' || loc.branch === 'Unspecified Branch') {
+                        loc.branch = String(customerRaw).trim(); 
+                    }
+                }
+                
+                if (custKey === 'Garda') {
+                    if (loc.region === 'PA' || customerFixed.includes(', PA') || customerFixed.includes(' PA ')) {
+                        loc.region = 'East';
+                        loc.subregion = 'Midatlantic';
+                    }
+                }
+                
+                let ownerEmailLower = String(rawOwnerEmail || '').toLowerCase().trim();
+                let finalOwner = '';
+                let finalTeam = 'VENDED REPAIR';
+                let isDedicatedFlag = false;
+
+                if (unitOwnerMap[unit] && unitOwnerMap[unit].owner.toUpperCase() === 'DEDICATED') {
+                    isDedicatedFlag = true;
+                }
+
+                if (specificCreators.includes(ownerEmailLower) && creatorMap[ownerEmailLower]) {
+                    finalOwner = creatorMap[ownerEmailLower].name;
+                    finalTeam = creatorMap[ownerEmailLower].team;
+                } 
+                else if (unitOwnerMap[unit] && !isDedicatedFlag && unitOwnerMap[unit].owner) {
+                    finalOwner = unitOwnerMap[unit].owner;
+                    finalTeam = unitOwnerMap[unit].team;
+                }
+                else {
+                    if (globalOwnerMap[ownerEmailLower]) {
+                        finalOwner = globalOwnerMap[ownerEmailLower].name;
+                        finalTeam = globalOwnerMap[ownerEmailLower].team;
+                    } else if (rawOwnerEmail) {
+                        finalOwner = String(rawOwnerEmail).split('@')[0];
+                        finalOwner = finalOwner.charAt(0).toUpperCase() + finalOwner.slice(1);
+                        finalTeam = 'VENDED REPAIR';
+                    } else {
+                        finalOwner = 'Unassigned';
+                        finalTeam = 'VENDED REPAIR';
+                    }
+                }
 
                 let taskStr = vmrs.toLowerCase();
                 let isPMOrder = false;
@@ -779,64 +1039,48 @@
                     }
                 }
 
-                let loc = unitToLocation[unit] || { region: 'Unknown Region', subregion: 'Unknown Subregion', branch: 'Unknown Branch' };
-                let custKey = getCustKey(customer);
-                
-                let locPart = customer;
-                if(String(customer).includes('-')) {
-                    locPart = customer.substring(customer.indexOf('-') + 1).trim(); 
-                }
-                
-                let stateName = 'Unknown State';
-                let cityName = 'Unknown City';
-
-                if (locPart.includes(',')) {
-                    let splitComma = locPart.split(','); 
-                    cityName = splitComma[0].trim();
-                    let afterComma = splitComma[1].trim().split(' ').filter(s => s.trim() !== ''); 
-                    if(afterComma.length > 0) stateName = afterComma[0].trim();
-                } else {
-                    let spaceSplit = locPart.split(' ').filter(s => s.trim() !== '');
-                    if (spaceSplit.length === 1 && spaceSplit[0].length === 2) {
-                        stateName = spaceSplit[0].toUpperCase();
-                        cityName = 'Unknown City';
-                    } else if (spaceSplit.length >= 2) {
-                        let last = spaceSplit[spaceSplit.length - 1].trim();
-                        let secLast = spaceSplit[spaceSplit.length - 2].trim();
-                        if (last.length === 2 && !/\d/.test(last)) {
-                            stateName = last.toUpperCase();
-                            cityName = spaceSplit.slice(0, spaceSplit.length - 1).join(' ');
-                        } else if (secLast.length === 2 && !/\d/.test(secLast)) {
-                            stateName = secLast.toUpperCase();
-                            cityName = spaceSplit.slice(0, spaceSplit.length - 2).join(' ');
-                        } else {
-                            cityName = locPart;
-                        }
-                    } else {
-                        cityName = locPart;
-                    }
-                }
-
-                let fallbackLoc = { region: stateName, subregion: cityName, branch: String(customer).trim() };
-                
-                if(custKey === 'Ferguson' || custKey === 'Amerit Fleet Solutions' || custKey === 'Brinks' || custKey === 'US Foods' || custKey === 'Frontier' || custKey === 'Colony Hardware' || custKey === 'Sukut Construction') { 
-                    loc = fallbackLoc; 
-                } else if(custKey === 'Garda') {
-                    if(loc.region === 'Unknown Region' || loc.region === 'Unspecified Region') loc = fallbackLoc;
-                } else {
-                    if(loc.region === 'Unknown Region' || loc.region === 'Unspecified Region') loc = fallbackLoc;
-                }
-                
                 let drillTopLevel = custKey + (loc.region !== 'Unknown State' && loc.region !== 'Unknown Region' ? ' ' + loc.region : '');
                 allCustSet.add(custKey);
 
                 let statusStr = String(status || '').toUpperCase().trim();
-                let isOOS = oosSet.has(unit); 
-                // Strict Open validation: Ignore anything matching excluded strings exactly
+                let isOOS = oosMap[unit] === true; 
                 let isOpen = !excludedStatuses.includes(statusStr);
                 
-                // Map Useful %
-                let usefulPct = branchUsefulMap[loc.branch.toUpperCase()] !== undefined ? branchUsefulMap[loc.branch.toUpperCase()] : null;
+                let addTile = false;
+                if (specificCreators.includes(ownerEmailLower)) addTile = true;
+                else if (unitOwnerMap[unit] && !isDedicatedFlag && unitOwnerMap[unit].owner) addTile = true;
+                else if (finalOwner === 'Dedicated' || finalOwner === 'Unassigned') addTile = true;
+                else if (globalOwnerMap[ownerEmailLower] && globalOwnerMap[ownerEmailLower].status === 'ACTIVE') addTile = true;
+
+                if (addTile && isOpen) {
+                    if (finalTeam === 'PM') activePM.add(finalOwner);
+                    else if (finalTeam === 'ERS') activeERS.add(finalOwner);
+                    else activeVended.add(finalOwner);
+                }
+                
+                let usefulPct = null;
+                if (branchCode && branchUsefulMap[branchCode] !== undefined) {
+                    usefulPct = branchUsefulMap[branchCode];
+                } else {
+                    for (let bKey in branchUsefulMap) {
+                        if (bKey.length > 4 && cNameOnly.includes(bKey)) {
+                            usefulPct = branchUsefulMap[bKey];
+                            break;
+                        }
+                    }
+                }
+
+                if (!isDedicatedFlag) {
+                    if (branchCode && dedicatedBranches.has(branchCode)) isDedicatedFlag = true;
+                    else {
+                        for (let bKey of dedicatedBranches) {
+                            if (bKey.length > 4 && cNameOnly.includes(bKey)) {
+                                isDedicatedFlag = true;
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 let ecdState = 'missing'; let ecdFormatted = 'NO ECD, UPDATE';
                 let ecdDate = new Date(dueRaw);
@@ -859,8 +1103,12 @@
                     } else isCompletedKPI = false;
                 }
                 
-                return { roNum, customer, custKey, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, ecdState, ecdFormatted, openedDT, usefulPct };
+                return { roNum, customer, custKey, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, roCount: unitROCounts[unit] || 1, subregion: loc.subregion, branch: loc.branch, ecdState, ecdFormatted, openedDT, openedFormatted, usefulPct, isDedicated: isDedicatedFlag };
             }).filter(ro => ro.roNum !== '');
+
+            pmOwners = Array.from(activePM).sort();
+            vendedOwners = Array.from(activeVended).sort();
+            ersOwners = Array.from(activeERS).sort();
 
             let sortedAllCust = Array.from(allCustSet).sort();
             document.querySelectorAll('.customer-filter-select').forEach(dd => {
@@ -890,22 +1138,16 @@
             return `<span class="badge" style="background-color: ${bg}; color: white; margin-left: 10px; font-size: 11px;">Useful: ${val}%</span>`;
         }
 
-        // --- HIERARCHY / KPI GENERATORS ---
         function generateTileHTML(name, dataSet, chartId = null) {
             let filteredOpen = dataSet.filter(ro => ro.isOpen);
-            if(currentFilter === 'PRIORITY') {
-                filteredOpen = filteredOpen.filter(ro => ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100));
-            }
+            let priorityCount = dataSet.filter(ro => ro.isOpen && ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100).length;
             
-            // Re-calculate the "Priority" logic independently for the KPI count bubble
-            let priorityCount = dataSet.filter(ro => ro.isOpen && (ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100))).length;
             let completedOrders = dataSet.filter(ro => ro.isCompletedKPI);
             let compCount = completedOrders.length;
             let onTimeCount = completedOrders.filter(ro => ro.isOnTimeKPI).length;
             let lateCount = completedOrders.filter(ro => ro.isLateKPI).length;
             let compPct = compCount > 0 ? Math.round((onTimeCount / compCount) * 100) : 0;
             let latePct = compCount > 0 ? Math.round((lateCount / compCount) * 100) : 0;
-            let filterLabel = currentFilter === 'ALL' ? 'Open ROs' : `Priority ROs`;
 
             let chartHTML = '';
             if (chartId) {
@@ -916,11 +1158,11 @@
                 <div class="kpi-name">${name}</div>
                 <div class="kpi-top-metrics">
                     <div class="highlight-box">
-                        <div class="title">${filterLabel}</div>
+                        <div class="title">Open ROs</div>
                         <div class="num">${filteredOpen.length}</div>
                     </div>
                     <div class="highlight-box urgent-box">
-                        <div class="title">Priority</div>
+                        <div class="title">Priority ROs</div>
                         <div class="num">${priorityCount}</div>
                     </div>
                     ${chartHTML}
@@ -1018,7 +1260,7 @@
 
                 let targetData = ownerDataAll.filter(ro => ro.isOpen);
                 if(currentFilter === 'PRIORITY') {
-                    targetData = targetData.filter(ro => ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100));
+                    targetData = targetData.filter(ro => ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
                 }
                 
                 if (targetData.length === 0) return; 
@@ -1030,11 +1272,10 @@
             });
         }
 
-        // --- MASTER DOM DRILLDOWN HTML GENERATOR ---
         function generateRoDrilldownHtml(ownerDataAll) {
             let targetData = ownerDataAll.filter(ro => ro.isOpen);
             if(currentFilter === 'PRIORITY') {
-                targetData = targetData.filter(ro => ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100));
+                targetData = targetData.filter(ro => ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
             }
 
             if(targetData.length === 0) return `<p style="margin-top:15px; color:#666;">No active Repair Orders to display under the current filters.</p>`;
@@ -1056,33 +1297,95 @@
                     let branchHtml = '';
                     for(let branch in hierarchy[topLvl][sub]) {
                         let branchROs = hierarchy[topLvl][sub][branch];
-                        let bPct = branchROs[0].usefulPct;
+                        
+                        let branchUsefulPcts = branchROs.map(ro => ro.usefulPct).filter(p => p !== null && p !== undefined);
+                        let bPct = branchUsefulPcts.length > 0 ? branchUsefulPcts[0] : null;
+                        
                         if (bPct !== null && bPct !== undefined) {
                             subLvlUseful.push(bPct);
                             topLvlUseful.push(bPct);
                         }
-                        
-                        branchROs.sort((a,b) => { 
-                            return (b.isOOS === true ? 1 : 0) - (a.isOOS === true ? 1 : 0);
-                        });
-                        
-                        let branchBadge = getUsefulBadge(bPct !== null && bPct !== undefined ? [bPct] : []);
-                        branchHtml += `<details class="ro-detail-node"><summary>${branch} (${branchROs.length} ROs)${branchBadge}</summary>`;
-                        let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:12%;"><col style="width:10%;"><col style="width:10%;"><col style="width:8%;"><col style="width:6%;"><col style="width:14%;"><col style="width:10%;"><col style="width:30%;"></colgroup><thead><tr><th>AFS RO #</th><th>Unit No</th><th>Priority Status</th><th>OOS Status</th><th>Total Unit ROs</th><th>Status</th><th>ECD</th><th>Task / VMRS</th></tr></thead><tbody>`;
+
+                        let unitsMap = {};
                         branchROs.forEach(ro => {
+                            if(!unitsMap[ro.unitNo]) {
+                                unitsMap[ro.unitNo] = {
+                                    unitNo: ro.unitNo,
+                                    roNums: [],
+                                    roLinks: [],
+                                    openedDates: [],
+                                    statuses: [],
+                                    ecdCells: [],
+                                    isOOS: ro.isOOS,
+                                    usefulPct: ro.usefulPct,
+                                    isDedicated: ro.isDedicated,
+                                    custKey: ro.custKey
+                                };
+                            }
+                            
                             let ecdCell = '';
                             if (ro.ecdState === 'missing') ecdCell = `<span class="badge-ecd-missing">${ro.ecdFormatted}</span>`;
                             else if (ro.ecdState === 'red') ecdCell = `<span class="ecd-red">${ro.ecdFormatted}</span>`;
                             else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
+
+                            unitsMap[ro.unitNo].roNums.push(ro.roNum);
+                            unitsMap[ro.unitNo].roLinks.push(`<a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a>`);
+                            unitsMap[ro.unitNo].openedDates.push(ro.openedFormatted);
+                            unitsMap[ro.unitNo].statuses.push(ro.status);
+                            unitsMap[ro.unitNo].ecdCells.push(ecdCell);
+                        });
+
+                        let groupedUnits = Object.values(unitsMap);
+                        groupedUnits.sort((a,b) => { 
+                            return (b.isOOS === true ? 1 : 0) - (a.isOOS === true ? 1 : 0);
+                        });
+                        
+                        let branchBadge = getUsefulBadge(bPct !== null && bPct !== undefined ? [bPct] : []);
+                        let isBranchDedicated = branchROs.some(ro => ro.isDedicated);
+                        let dedicatedBadge = isBranchDedicated ? `<span style="background-color: white; color: black; border: 1px solid black; border-radius: 12px; padding: 2px 6px; margin-left: 5px; font-size: 10px; font-weight: bold;">(DEDICATED)</span>` : '';
+
+                        branchHtml += `<details class="ro-detail-node"><summary>${branch} (${branchROs.length} ROs)${branchBadge}${dedicatedBadge}</summary>`;
+                        let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:20%;"><col style="width:12%;"><col style="width:12%;"><col style="width:10%;"><col style="width:12%;"><col style="width:20%;"><col style="width:14%;"></colgroup><thead><tr><th>AFS RO # & Dispatch</th><th>Unit No</th><th>Priority Status</th><th>OOS Status</th><th>Opened Date</th><th>Status</th><th>ECD</th></tr></thead><tbody>`;
+                        
+                        groupedUnits.forEach(u => {
+                            let isGarda = u.custKey === 'Garda';
+                            let oosBadge = isGarda ? (u.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
                             
-                            let isGarda = ro.custKey === 'Garda';
-                            let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
-                            
-                            let isPriority = ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
+                            let isPriority = u.isOOS && u.usefulPct !== null && Math.round(u.usefulPct * 100) < 100;
                             let priorityStatusBadge = isPriority ? `<span class="badge badge-urgent">Priority</span>` : `<span class="badge badge-low">Normal</span>`;
 
-                            tableHTML += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td>${priorityStatusBadge}</td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
+                            let rowCount = u.roNums.length;
+
+                            u.roNums.forEach((roNum, idx) => {
+                                let safeRo = roNum.replace(/[.#$\[\]]/g, '_');
+                                let isDispatched = !!globalRoCheckState[safeRo];
+                                let toggleClass = isDispatched ? 'status-dispatched' : 'status-pending';
+                                let toggleText = isDispatched ? '✓ DISPATCHED' : 'PENDING';
+                                let toggleState = isDispatched ? 'false' : 'true'; 
+                                let statusToggleHtml = `<span class="badge status-toggle ${toggleClass}" data-ro="${safeRo}" onclick="toggleRoCheck('${safeRo}', ${toggleState})">${toggleText}</span>`;
+
+                                let roHtml = `<div style="display:flex; align-items:center; gap: 8px;">${statusToggleHtml} ${u.roLinks[idx]}</div>`;
+
+                                tableHTML += `<tr>`;
+                                tableHTML += `<td style="vertical-align:top; padding-top:15px; border-bottom: ${idx === rowCount - 1 ? '1px solid var(--border)' : '1px dashed #eee'};">${roHtml}</td>`;
+                                
+                                if (idx === 0) {
+                                    tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border); border-left: 1px dashed #eee;"><strong>${u.unitNo}</strong></td>`;
+                                    tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border);">${priorityStatusBadge}</td>`;
+                                    tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border); border-right: 1px dashed #eee;">${oosBadge}</td>`;
+                                }
+
+                                let od = u.openedDates[idx] || '';
+                                let st = u.statuses[idx] || '';
+                                let ec = u.ecdCells[idx] || '';
+
+                                tableHTML += `<td style="vertical-align:top; padding-top:15px; border-bottom: ${idx === rowCount - 1 ? '1px solid var(--border)' : '1px dashed #eee'}; font-size:12px; font-weight: 700; color: #555;">${od}</td>`;
+                                tableHTML += `<td style="vertical-align:top; padding-top:15px; border-bottom: ${idx === rowCount - 1 ? '1px solid var(--border)' : '1px dashed #eee'}; font-size:11px; line-height:1.2;">${st}</td>`;
+                                tableHTML += `<td style="vertical-align:top; padding-top:15px; border-bottom: ${idx === rowCount - 1 ? '1px solid var(--border)' : '1px dashed #eee'};">${ec}</td>`;
+                                tableHTML += `</tr>`;
+                            });
                         });
+                        
                         tableHTML += `</tbody></table></div>`; 
                         branchHtml += tableHTML + `</details>`;
                     }
@@ -1132,24 +1435,83 @@
                 if(searchTerm.length === 0) { navigate(lastActiveView, null, true); return; }
                 navigate('search-view', null, true);
                 document.getElementById('search-term-display').innerText = searchTerm;
-                // Exclude closed from search
+                
                 const results = processedData.filter(ro => ro.unitNo.toLowerCase().includes(searchTerm));
                 let searchHtml = '';
-                if(results.length === 0) searchHtml = '<tr><td colspan="9" style="text-align:center;">No matching units.</td></tr>';
-                else {
+                if(results.length === 0) {
+                    searchHtml = '<tr><td colspan="7" style="text-align:center;">No matching units.</td></tr>';
+                } else {
+                    let searchUnitsMap = {};
                     results.forEach(ro => {
+                        if(!searchUnitsMap[ro.unitNo]) {
+                            searchUnitsMap[ro.unitNo] = {
+                                unitNo: ro.unitNo,
+                                roNums: [],
+                                roLinks: [],
+                                openedDates: [],
+                                statuses: [],
+                                ecdCells: [],
+                                owners: [],
+                                isOOS: ro.isOOS,
+                                usefulPct: ro.usefulPct,
+                                custKey: ro.custKey
+                            };
+                        }
+                        
                         let ecdCell = '';
                         if (ro.ecdState === 'missing') ecdCell = `<span class="badge-ecd-missing">${ro.ecdFormatted}</span>`;
                         else if (ro.ecdState === 'red') ecdCell = `<span class="ecd-red">${ro.ecdFormatted}</span>`;
                         else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
 
-                        let isGarda = ro.custKey === 'Garda';
-                        let oosBadge = isGarda ? (ro.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
-                        
-                        let isPriority = ro.isOOS && (ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
+                        searchUnitsMap[ro.unitNo].roNums.push(ro.roNum);
+                        searchUnitsMap[ro.unitNo].roLinks.push(`<a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a>`);
+                        searchUnitsMap[ro.unitNo].openedDates.push(ro.openedFormatted);
+                        searchUnitsMap[ro.unitNo].statuses.push(ro.status);
+                        searchUnitsMap[ro.unitNo].ecdCells.push(ecdCell);
+                        searchUnitsMap[ro.unitNo].owners.push(ro.owner);
+                    });
+
+                    Object.values(searchUnitsMap).forEach(u => {
+                        let isGarda = u.custKey === 'Garda';
+                        let oosBadge = isGarda ? (u.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
+                        let isPriority = u.isOOS && u.usefulPct !== null && Math.round(u.usefulPct * 100) < 100;
                         let priorityStatusBadge = isPriority ? `<span class="badge badge-urgent">Priority</span>` : `<span class="badge badge-low">Normal</span>`;
 
-                        searchHtml += `<tr><td><a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a></td><td><strong>${ro.unitNo}</strong></td><td>${priorityStatusBadge}</td><td>${oosBadge}</td><td>${ro.roCount}</td><td>${ro.owner}</td><td>${ro.status}</td><td>${ecdCell}</td><td>${ro.vmrs}</td></tr>`;
+                        let joinedOwnersHtml = [...new Set(u.owners)].map(ow => `<div class="grouped-ro-item">${ow}</div>`).join('');
+                        let rowCount = u.roNums.length;
+
+                        u.roNums.forEach((roNum, idx) => {
+                            let safeRo = roNum.replace(/[.#$\[\]]/g, '_');
+                            let isDispatched = !!globalRoCheckState[safeRo];
+                            let toggleClass = isDispatched ? 'status-dispatched' : 'status-pending';
+                            let toggleText = isDispatched ? '✓ DISPATCHED' : 'PENDING';
+                            let toggleState = isDispatched ? 'false' : 'true'; 
+                            let statusToggleHtml = `<span class="badge status-toggle ${toggleClass}" data-ro="${safeRo}" onclick="toggleRoCheck('${safeRo}', ${toggleState})">${toggleText}</span>`;
+
+                            let roHtml = `<div style="display:flex; align-items:center; gap: 8px;">${statusToggleHtml} ${u.roLinks[idx]}</div>`;
+
+                            searchHtml += `<tr>`;
+                            searchHtml += `<td style="vertical-align:top; padding-top:15px; border-bottom: ${idx === rowCount - 1 ? '1px solid var(--border)' : '1px dashed #eee'};">${roHtml}</td>`;
+                            
+                            if (idx === 0) {
+                                searchHtml += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border); border-left: 1px dashed #eee;"><strong>${u.unitNo}</strong></td>`;
+                                searchHtml += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border);">${priorityStatusBadge}</td>`;
+                                searchHtml += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border); border-right: 1px dashed #eee;">${oosBadge}</td>`;
+                            }
+
+                            let od = u.openedDates[idx] || '';
+                            let st = u.statuses[idx] || '';
+                            let ec = u.ecdCells[idx] || '';
+
+                            searchHtml += `<td style="vertical-align:top; padding-top:15px; border-bottom: ${idx === rowCount - 1 ? '1px solid var(--border)' : '1px dashed #eee'}; font-size:12px; font-weight: 700; color: #555;">${od}</td>`;
+                            
+                            if (idx === 0) {
+                                searchHtml += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border); border-left: 1px dashed #eee;">${joinedOwnersHtml}</td>`;
+                            }
+                            
+                            searchHtml += `<td style="vertical-align:top; padding-top:15px; border-bottom: ${idx === rowCount - 1 ? '1px solid var(--border)' : '1px dashed #eee'}; font-size:11px; line-height:1.2;"><b>Status:</b> ${st}<br><b>ECD:</b> ${ec}</td>`;
+                            searchHtml += `</tr>`;
+                        });
                     });
                 }
                 document.getElementById('search-table-body').innerHTML = searchHtml;
