@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         /* Global Styles & Reset */
@@ -172,7 +175,7 @@
         .status-toggle { cursor: pointer; margin-right: 8px; user-select: none; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); display: inline-block; text-align: center; min-width: 85px; font-size: 10px; letter-spacing: 0.5px;}
         .status-toggle:hover { opacity: 0.8; transform: translateY(-1px); }
         .status-pending { background-color: var(--urgent-red); color: white; border: 1px solid #c9302c; }
-        .status-scheduled { background-color: var(--low-green); color: white; border: 1px solid #4cae4c; }
+        .status-dispatched { background-color: var(--low-green); color: white; border: 1px solid #4cae4c; }
 
         .grouped-ro-item { margin-bottom: 8px; }
         .grouped-ro-item:last-child { margin-bottom: 0; }
@@ -257,7 +260,7 @@
                 <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Attempting to fetch <b>master_workFLOW.xlsx</b> from local directory...</p>
                 <div id="upload-status" style="font-size: 15px; font-weight: bold; color: #888;">Initializing...</div>
                 <div id="manual-upload-section" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ccc;">
-                    <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Fallback: File not found or network blocked. Upload manually below.</p>
+                    <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Fallback: File not found. Upload manually below.</p>
                     <label for="excelFileInput" class="upload-btn">Browse Files</label>
                     <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" multiple />
                 </div>
@@ -372,50 +375,32 @@
     </div>
 
     <script>
-        // --- BACKGROUND FIREBASE ENGINE (Non-Blocking / Fallback Safe) ---
+        // --- FIREBASE SYNC ENGINE (Safe Initialization) ---
         let db = null;
         let globalRoCheckState = JSON.parse(localStorage.getItem('workflow_checks') || '{}');
 
-        // Dynamically load Firebase to prevent corporate firewalls from hanging the HTML loading process
-        function loadFirebaseDynamically() {
-            let s1 = document.createElement('script');
-            s1.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
-            s1.onload = () => {
-                let s2 = document.createElement('script');
-                s2.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js";
-                s2.onload = initFirebaseSync;
-                document.head.appendChild(s2);
-            };
-            s1.onerror = () => {
-                console.warn("Firebase blocked by firewall. Relying purely on Local Storage.");
-            };
-            document.head.appendChild(s1);
-        }
+        try {
+            if (typeof firebase !== 'undefined') {
+                const firebaseConfig = {
+                    apiKey: "AIzaSyCr3VAldI-pPCb7APx3rJAEZvf_nl0iz1g",
+                    authDomain: "workflow-dashboard-e6134.firebaseapp.com",
+                    databaseURL: "https://workflow-dashboard-e6134-default-rtdb.firebaseio.com",
+                    projectId: "workflow-dashboard-e6134",
+                    storageBucket: "workflow-dashboard-e6134.firebasestorage.app",
+                    messagingSenderId: "641710248116",
+                    appId: "1:641710248116:web:1546701879d573041447e1"
+                };
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.database();
 
-        function initFirebaseSync() {
-            try {
-                if (typeof firebase !== 'undefined') {
-                    const firebaseConfig = {
-                        apiKey: "AIzaSyCr3VAldI-pPCb7APx3rJAEZvf_nl0iz1g",
-                        authDomain: "workflow-dashboard-e6134.firebaseapp.com",
-                        databaseURL: "https://workflow-dashboard-e6134-default-rtdb.firebaseio.com",
-                        projectId: "workflow-dashboard-e6134",
-                        storageBucket: "workflow-dashboard-e6134.firebasestorage.app",
-                        messagingSenderId: "641710248116",
-                        appId: "1:641710248116:web:1546701879d573041447e1"
-                    };
-                    firebase.initializeApp(firebaseConfig);
-                    db = firebase.database();
-
-                    db.ref('roChecks').on('value', (snapshot) => {
-                        globalRoCheckState = snapshot.val() || {};
-                        localStorage.setItem('workflow_checks', JSON.stringify(globalRoCheckState));
-                        updateAllStatusBadges();
-                    });
-                }
-            } catch (error) {
-                console.warn("Firebase Init blocked. Using local state.", error);
+                db.ref('roChecks').on('value', (snapshot) => {
+                    globalRoCheckState = snapshot.val() || {};
+                    localStorage.setItem('workflow_checks', JSON.stringify(globalRoCheckState));
+                    updateAllStatusBadges();
+                });
             }
+        } catch (error) {
+            console.warn("Firebase Init failed or blocked by network. Using local state.", error);
         }
 
         function updateAllStatusBadges() {
@@ -500,17 +485,6 @@
             return null;
         }
 
-        // Failsafe KICKOFF ensures file runs regardless of DOM readiness state
-        let dataFetched = false;
-        function triggerFetch() {
-            if (dataFetched) return;
-            dataFetched = true;
-            fetchData();
-            setTimeout(loadFirebaseDynamically, 1000); // Load Firebase 1 second later so it doesn't block
-        }
-        window.onload = triggerFetch;
-        setTimeout(triggerFetch, 500); // Force run if onload hangs
-
         async function fetchData() {
             const statusEl = document.getElementById('upload-status');
             const uploadBox = document.getElementById('upload-box');
@@ -523,8 +497,8 @@
             document.getElementById('manual-upload-section').style.display = 'none';
 
             try {
-                // Using cache-busting headers instead of query strings to prevent file:/// protocol errors
-                const response = await fetch('master_workFLOW.xlsx', { cache: 'no-store' });
+                const timestamp = new Date().getTime();
+                const response = await fetch(`master_workFLOW.xlsx?_=${timestamp}`);
                 
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
@@ -601,6 +575,8 @@
                 document.getElementById('manual-upload-section').style.display = 'block';
             }
         }
+
+        window.onload = fetchData;
 
         document.getElementById('excelFileInput').addEventListener('change', async function(e) {
             const files = Array.from(e.target.files);
@@ -829,7 +805,6 @@
                         let pct = NaN;
                         let keys = Object.keys(row);
                         
-                        // Strictly match the explicit "Useful %" string first
                         let exactUseful = keys.find(k => k.trim().toLowerCase() === 'useful %');
                         let usefulKey = exactUseful || keys.find(k => k.toLowerCase().includes('useful'));
                         
@@ -1417,8 +1392,6 @@
                         let dedicatedBadge = isBranchDedicated ? `<span style="background-color: white; color: black; border: 1px solid black; border-radius: 12px; padding: 2px 6px; margin-left: 5px; font-size: 10px; font-weight: bold;">(DEDICATED)</span>` : '';
 
                         branchHtml += `<details class="ro-detail-node"><summary>${branch} (${branchROs.length} ROs)${branchBadge}${dedicatedBadge}</summary>`;
-                        
-                        // Modified Table Header for PM
                         let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:20%;"><col style="width:12%;">${isPM ? '' : '<col style="width:12%;">'}<col style="width:10%;"><col style="width:12%;"><col style="width:20%;"><col style="width:14%;"></colgroup><thead><tr><th>AFS RO # & Dispatch</th><th>Unit No</th>${isPM ? '' : '<th>Priority Status</th>'}<th>OOS Status</th><th>Opened Date</th><th>Status</th><th>ECD</th></tr></thead><tbody>`;
                         
                         groupedUnits.forEach(u => {
