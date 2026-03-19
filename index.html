@@ -172,7 +172,7 @@
         .status-toggle { cursor: pointer; margin-right: 8px; user-select: none; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); display: inline-block; text-align: center; min-width: 85px; font-size: 10px; letter-spacing: 0.5px;}
         .status-toggle:hover { opacity: 0.8; transform: translateY(-1px); }
         .status-pending { background-color: var(--urgent-red); color: white; border: 1px solid #c9302c; }
-        .status-dispatched { background-color: var(--low-green); color: white; border: 1px solid #4cae4c; }
+        .status-scheduled { background-color: var(--low-green); color: white; border: 1px solid #4cae4c; }
 
         .grouped-ro-item { margin-bottom: 8px; }
         .grouped-ro-item:last-child { margin-bottom: 0; }
@@ -257,7 +257,7 @@
                 <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Attempting to fetch <b>master_workFLOW.xlsx</b> from local directory...</p>
                 <div id="upload-status" style="font-size: 15px; font-weight: bold; color: #888;">Initializing...</div>
                 <div id="manual-upload-section" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ccc;">
-                    <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Fallback: File not found. Upload manually below.</p>
+                    <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Fallback: File not found or network blocked. Upload manually below.</p>
                     <label for="excelFileInput" class="upload-btn">Browse Files</label>
                     <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" multiple />
                 </div>
@@ -372,25 +372,24 @@
     </div>
 
     <script>
-        // --- BACKGROUND FIREBASE ENGINE (Non-Blocking) ---
+        // --- BACKGROUND FIREBASE ENGINE (Non-Blocking / Fallback Safe) ---
         let db = null;
-        let globalRoCheckState = {};
+        let globalRoCheckState = JSON.parse(localStorage.getItem('workflow_checks') || '{}');
 
-        function injectFirebaseAsync() {
-            let script1 = document.createElement('script');
-            script1.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
-            script1.onload = () => {
-                let script2 = document.createElement('script');
-                script2.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js";
-                script2.onload = () => {
-                    initFirebaseSync();
-                };
-                document.body.appendChild(script2);
+        // Dynamically load Firebase to prevent corporate firewalls from hanging the HTML loading process
+        function loadFirebaseDynamically() {
+            let s1 = document.createElement('script');
+            s1.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
+            s1.onload = () => {
+                let s2 = document.createElement('script');
+                s2.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js";
+                s2.onload = initFirebaseSync;
+                document.head.appendChild(s2);
             };
-            script1.onerror = () => {
-                console.warn("Firebase scripts blocked by firewall. Using local state.");
+            s1.onerror = () => {
+                console.warn("Firebase blocked by firewall. Relying purely on Local Storage.");
             };
-            document.body.appendChild(script1);
+            document.head.appendChild(s1);
         }
 
         function initFirebaseSync() {
@@ -410,6 +409,7 @@
 
                     db.ref('roChecks').on('value', (snapshot) => {
                         globalRoCheckState = snapshot.val() || {};
+                        localStorage.setItem('workflow_checks', JSON.stringify(globalRoCheckState));
                         updateAllStatusBadges();
                     });
                 }
@@ -440,6 +440,7 @@
                 db.ref('roChecks/' + safeRo).set(isChecked);
             } else {
                 globalRoCheckState[safeRo] = isChecked;
+                localStorage.setItem('workflow_checks', JSON.stringify(globalRoCheckState));
                 updateAllStatusBadges();
             }
         }
@@ -499,6 +500,17 @@
             return null;
         }
 
+        // Failsafe KICKOFF ensures file runs regardless of DOM readiness state
+        let dataFetched = false;
+        function triggerFetch() {
+            if (dataFetched) return;
+            dataFetched = true;
+            fetchData();
+            setTimeout(loadFirebaseDynamically, 1000); // Load Firebase 1 second later so it doesn't block
+        }
+        window.onload = triggerFetch;
+        setTimeout(triggerFetch, 500); // Force run if onload hangs
+
         async function fetchData() {
             const statusEl = document.getElementById('upload-status');
             const uploadBox = document.getElementById('upload-box');
@@ -511,8 +523,8 @@
             document.getElementById('manual-upload-section').style.display = 'none';
 
             try {
-                const timestamp = new Date().getTime();
-                const response = await fetch(`master_workFLOW.xlsx?_=${timestamp}`);
+                // Using cache-busting headers instead of query strings to prevent file:/// protocol errors
+                const response = await fetch('master_workFLOW.xlsx', { cache: 'no-store' });
                 
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
@@ -589,12 +601,6 @@
                 document.getElementById('manual-upload-section').style.display = 'block';
             }
         }
-
-        // --- KICKOFF SCRIPT (Guaranteed Execution order) ---
-        document.addEventListener("DOMContentLoaded", () => {
-            fetchData();
-            setTimeout(injectFirebaseAsync, 500); // Wait 0.5s before risking firewall block
-        });
 
         document.getElementById('excelFileInput').addEventListener('change', async function(e) {
             const files = Array.from(e.target.files);
@@ -822,6 +828,8 @@
 
                         let pct = NaN;
                         let keys = Object.keys(row);
+                        
+                        // Strictly match the explicit "Useful %" string first
                         let exactUseful = keys.find(k => k.trim().toLowerCase() === 'useful %');
                         let usefulKey = exactUseful || keys.find(k => k.toLowerCase().includes('useful'));
                         
@@ -830,20 +838,6 @@
                             let val = parseFloat(valStr);
                             if (!isNaN(val)) {
                                 pct = valStr.includes('%') ? val / 100 : val;
-                            }
-                        }
-                        
-                        if (isNaN(pct)) {
-                            for(let i = keys.length - 1; i >= 0; i--) {
-                                let k = keys[i];
-                                if (k.toLowerCase().includes('useful') && row[k] !== undefined && row[k] !== '') {
-                                    let valStr = String(row[k]).trim();
-                                    let val = parseFloat(valStr);
-                                    if (!isNaN(val)) {
-                                        pct = valStr.includes('%') ? val / 100 : val;
-                                        break;
-                                    }
-                                }
                             }
                         }
                         
@@ -1423,7 +1417,9 @@
                         let dedicatedBadge = isBranchDedicated ? `<span style="background-color: white; color: black; border: 1px solid black; border-radius: 12px; padding: 2px 6px; margin-left: 5px; font-size: 10px; font-weight: bold;">(DEDICATED)</span>` : '';
 
                         branchHtml += `<details class="ro-detail-node"><summary>${branch} (${branchROs.length} ROs)${branchBadge}${dedicatedBadge}</summary>`;
-                        let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:20%;"><col style="width:12%;"><col style="width:12%;"><col style="width:10%;"><col style="width:12%;"><col style="width:20%;"><col style="width:14%;"></colgroup><thead><tr><th>AFS RO # & Dispatch</th><th>Unit No</th><th>Priority Status</th><th>OOS Status</th><th>Opened Date</th><th>Status</th><th>ECD</th></tr></thead><tbody>`;
+                        
+                        // Modified Table Header for PM
+                        let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:20%;"><col style="width:12%;">${isPM ? '' : '<col style="width:12%;">'}<col style="width:10%;"><col style="width:12%;"><col style="width:20%;"><col style="width:14%;"></colgroup><thead><tr><th>AFS RO # & Dispatch</th><th>Unit No</th>${isPM ? '' : '<th>Priority Status</th>'}<th>OOS Status</th><th>Opened Date</th><th>Status</th><th>ECD</th></tr></thead><tbody>`;
                         
                         groupedUnits.forEach(u => {
                             let isGarda = u.custKey === 'Garda';
@@ -1449,7 +1445,9 @@
                                 
                                 if (idx === 0) {
                                     tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border); border-left: 1px dashed #eee;"><strong>${u.unitNo}</strong></td>`;
-                                    tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border);">${priorityStatusBadge}</td>`;
+                                    if (!isPM) {
+                                        tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border);">${priorityStatusBadge}</td>`;
+                                    }
                                     tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border); border-right: 1px dashed #eee;">${oosBadge}</td>`;
                                 }
 
