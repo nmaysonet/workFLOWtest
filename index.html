@@ -7,9 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         /* Global Styles & Reset */
@@ -299,6 +296,10 @@
                     </select>
                 </div>
             </div>
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
+                <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
+            </div>
             <div class="kpi-grid" id="vended-kpi-container"></div>
         </div>
 
@@ -310,6 +311,10 @@
                         <option value="ALL">All Customers</option>
                     </select>
                 </div>
+            </div>
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
+                <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
             </div>
             <div class="kpi-grid" id="ers-kpi-container"></div>
         </div>
@@ -367,23 +372,53 @@
     </div>
 
     <script>
-        // --- FIREBASE SYNC ENGINE ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyCr3VAldI-pPCb7APx3rJAEZvf_nl0iz1g",
-            authDomain: "workflow-dashboard-e6134.firebaseapp.com",
-            databaseURL: "https://workflow-dashboard-e6134-default-rtdb.firebaseio.com",
-            projectId: "workflow-dashboard-e6134",
-            storageBucket: "workflow-dashboard-e6134.firebasestorage.app",
-            messagingSenderId: "641710248116",
-            appId: "1:641710248116:web:1546701879d573041447e1"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        // --- BACKGROUND FIREBASE ENGINE (Non-Blocking) ---
+        let db = null;
         let globalRoCheckState = {};
 
-        // Listen for Realtime Button Updates tracked per individual RO
-        db.ref('roChecks').on('value', (snapshot) => {
-            globalRoCheckState = snapshot.val() || {};
+        function injectFirebaseAsync() {
+            let script1 = document.createElement('script');
+            script1.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
+            script1.onload = () => {
+                let script2 = document.createElement('script');
+                script2.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js";
+                script2.onload = () => {
+                    initFirebaseSync();
+                };
+                document.body.appendChild(script2);
+            };
+            script1.onerror = () => {
+                console.warn("Firebase scripts blocked by firewall. Using local state.");
+            };
+            document.body.appendChild(script1);
+        }
+
+        function initFirebaseSync() {
+            try {
+                if (typeof firebase !== 'undefined') {
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyCr3VAldI-pPCb7APx3rJAEZvf_nl0iz1g",
+                        authDomain: "workflow-dashboard-e6134.firebaseapp.com",
+                        databaseURL: "https://workflow-dashboard-e6134-default-rtdb.firebaseio.com",
+                        projectId: "workflow-dashboard-e6134",
+                        storageBucket: "workflow-dashboard-e6134.firebasestorage.app",
+                        messagingSenderId: "641710248116",
+                        appId: "1:641710248116:web:1546701879d573041447e1"
+                    };
+                    firebase.initializeApp(firebaseConfig);
+                    db = firebase.database();
+
+                    db.ref('roChecks').on('value', (snapshot) => {
+                        globalRoCheckState = snapshot.val() || {};
+                        updateAllStatusBadges();
+                    });
+                }
+            } catch (error) {
+                console.warn("Firebase Init blocked. Using local state.", error);
+            }
+        }
+
+        function updateAllStatusBadges() {
             document.querySelectorAll('.status-toggle').forEach(btn => {
                 let ro = btn.getAttribute('data-ro');
                 let isDispatched = !!globalRoCheckState[ro];
@@ -397,11 +432,16 @@
                     btn.onclick = function() { toggleRoCheck(ro, true); };
                 }
             });
-        });
+        }
 
         function toggleRoCheck(ro, isChecked) {
             let safeRo = ro.replace(/[.#$\[\]]/g, '_'); 
-            db.ref('roChecks/' + safeRo).set(isChecked);
+            if (db) {
+                db.ref('roChecks/' + safeRo).set(isChecked);
+            } else {
+                globalRoCheckState[safeRo] = isChecked;
+                updateAllStatusBadges();
+            }
         }
 
         // --- GLOBAL DATA ---
@@ -427,7 +467,6 @@
             'FINAL CHARGES SUBMITTED'
         ];
 
-        // Specific Creators (Priority 1)
         const specificCreators = [
             "aarmes@ameritfleet.com", "ccaylor@ameritfleet.com", "cchristianson@ameritfleet.com",
             "cdecker@ameritfleet.com", "dnicholson@ameritfleet.com", "fbeardslee@ameritfleet.com",
@@ -551,7 +590,11 @@
             }
         }
 
-        window.onload = fetchData;
+        // --- KICKOFF SCRIPT (Guaranteed Execution order) ---
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchData();
+            setTimeout(injectFirebaseAsync, 500); // Wait 0.5s before risking firewall block
+        });
 
         document.getElementById('excelFileInput').addEventListener('change', async function(e) {
             const files = Array.from(e.target.files);
@@ -652,7 +695,6 @@
             return rawStr.split('-')[0].trim() || 'Unknown Customer';
         }
 
-        // --- EXPORT LOGIC ---
         function exportDrilldownToExcel() {
             if (!currentOwnerView || processedData.length === 0) return;
             
@@ -666,8 +708,9 @@
                 ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
             }
 
+            let isPM = currentOwnerView === 'ALL_PM' || pmOwners.includes(currentOwnerView);
             let targetData = ownerDataAll.filter(ro => ro.isOpen);
-            if(currentFilter === 'PRIORITY') {
+            if(!isPM && currentFilter === 'PRIORITY') {
                 targetData = targetData.filter(ro => ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
             }
 
@@ -732,11 +775,9 @@
             else if(activeView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView); }
         }
 
-        // --- PROCESS DATA ---
         function processExcelData(vroRaw, resourceRaw, oosRaw, usefulRaw) {
             const today = new Date(); today.setHours(0, 0, 0, 0);
             
-            // Build Universal Branch Dictionary
             branchMasterInfo = {}; 
             branchUsefulMap = {};
             
@@ -780,11 +821,12 @@
                         if (bNorm && !branchMasterInfo[bNorm]) branchMasterInfo[bNorm] = info;
 
                         let pct = NaN;
-                        let usefulKeys = Object.keys(row).filter(k => k.toLowerCase().includes('useful'));
-                        let totalKey = usefulKeys.find(k => k.toLowerCase().includes('total'));
+                        let keys = Object.keys(row);
+                        let exactUseful = keys.find(k => k.trim().toLowerCase() === 'useful %');
+                        let usefulKey = exactUseful || keys.find(k => k.toLowerCase().includes('useful'));
                         
-                        if (totalKey && row[totalKey] !== undefined && row[totalKey] !== '') {
-                            let valStr = String(row[totalKey]).trim();
+                        if (usefulKey && row[usefulKey] !== undefined && row[usefulKey] !== '') {
+                            let valStr = String(row[usefulKey]).trim();
                             let val = parseFloat(valStr);
                             if (!isNaN(val)) {
                                 pct = valStr.includes('%') ? val / 100 : val;
@@ -792,9 +834,9 @@
                         }
                         
                         if (isNaN(pct)) {
-                            for(let i = usefulKeys.length - 1; i >= 0; i--) {
-                                let k = usefulKeys[i];
-                                if (row[k] !== undefined && row[k] !== '') {
+                            for(let i = keys.length - 1; i >= 0; i--) {
+                                let k = keys[i];
+                                if (k.toLowerCase().includes('useful') && row[k] !== undefined && row[k] !== '') {
                                     let valStr = String(row[k]).trim();
                                     let val = parseFloat(valStr);
                                     if (!isNaN(val)) {
@@ -916,7 +958,6 @@
                 let dueRaw = getCol(row, ['Unit Due Date', 'Estimate Due Date', 'Due Date', 'L']);
                 let compRaw = getCol(row, ['Completed Date', 'Completed', 'P']);
 
-                // Opened Date Setup
                 let openedDate = new Date(openedRaw);
                 let openedDT = isNaN(openedDate.getTime()) ? null : openedDate;
                 let openedFormatted = openedDT ? `${openedDT.getMonth()+1}/${openedDT.getDate()}/${openedDT.getFullYear()}` : 'N/A';
@@ -1138,7 +1179,7 @@
             return `<span class="badge" style="background-color: ${bg}; color: white; margin-left: 10px; font-size: 11px;">Useful: ${val}%</span>`;
         }
 
-        function generateTileHTML(name, dataSet, chartId = null) {
+        function generateTileHTML(name, dataSet, chartId = null, isPM = false) {
             let filteredOpen = dataSet.filter(ro => ro.isOpen);
             let priorityCount = dataSet.filter(ro => ro.isOpen && ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100).length;
             
@@ -1154,6 +1195,13 @@
                 chartHTML = `<div class="chart-box"><canvas id="${chartId}" data-comp="${compPct}" data-late="${latePct}"></canvas></div>`;
             }
 
+            let priorityBoxHtml = isPM ? '' : `
+                <div class="highlight-box urgent-box">
+                    <div class="title">Priority ROs</div>
+                    <div class="num">${priorityCount}</div>
+                </div>
+            `;
+
             let innerHtml = `
                 <div class="kpi-name">${name}</div>
                 <div class="kpi-top-metrics">
@@ -1161,10 +1209,7 @@
                         <div class="title">Open ROs</div>
                         <div class="num">${filteredOpen.length}</div>
                     </div>
-                    <div class="highlight-box urgent-box">
-                        <div class="title">Priority ROs</div>
-                        <div class="num">${priorityCount}</div>
-                    </div>
+                    ${priorityBoxHtml}
                     ${chartHTML}
                 </div>
                 <div class="kpi-stats-grid">
@@ -1231,7 +1276,7 @@
             let vendedData = aggData.filter(ro => vendedOwners.includes(ro.owner));
             let ersRoData = aggData.filter(ro => ersOwners.includes(ro.owner));
 
-            const pmTile = document.createElement('div'); pmTile.className = 'kpi-tile home-master-tile'; pmTile.innerHTML = generateTileHTML('PM Dashboard', pmData, 'chart-pm');
+            const pmTile = document.createElement('div'); pmTile.className = 'kpi-tile home-master-tile'; pmTile.innerHTML = generateTileHTML('PM Dashboard', pmData, 'chart-pm', true);
             pmTile.onclick = () => loadPersonDrilldown('ALL_PM', 'home-view');
             container.appendChild(pmTile);
             
@@ -1251,6 +1296,8 @@
             const container = document.getElementById(containerId); container.innerHTML = ''; 
             if(processedData.length === 0) return;
 
+            let isPM = containerId === 'pm-kpi-container';
+
             ownersList.forEach(owner => {
                 let ownerDataAll = processedData.filter(ro => ro.owner === owner);
                 
@@ -1259,7 +1306,7 @@
                 }
 
                 let targetData = ownerDataAll.filter(ro => ro.isOpen);
-                if(currentFilter === 'PRIORITY') {
+                if(!isPM && currentFilter === 'PRIORITY') {
                     targetData = targetData.filter(ro => ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
                 }
                 
@@ -1267,14 +1314,49 @@
 
                 const tile = document.createElement('div'); tile.className = 'kpi-tile';
                 tile.onclick = () => loadPersonDrilldown(owner, parentViewId);
-                tile.innerHTML = generateTileHTML(owner, ownerDataAll);
+                tile.innerHTML = generateTileHTML(owner, ownerDataAll, null, isPM);
                 container.appendChild(tile);
             });
         }
 
-        function generateRoDrilldownHtml(ownerDataAll) {
-            let targetData = ownerDataAll.filter(ro => ro.isOpen);
-            if(currentFilter === 'PRIORITY') {
+        function generateRoDrilldownHtml(ownerDataAll, isPM) {
+            let baseOpenData = ownerDataAll.filter(ro => ro.isOpen);
+
+            // PASS 1: Build unfiltered static Useful % values
+            let baseHierarchy = {};
+            baseOpenData.forEach(ro => {
+                if(!baseHierarchy[ro.drillTopLevel]) baseHierarchy[ro.drillTopLevel] = {};
+                if(!baseHierarchy[ro.drillTopLevel][ro.subregion]) baseHierarchy[ro.drillTopLevel][ro.subregion] = {};
+                if(!baseHierarchy[ro.drillTopLevel][ro.subregion][ro.branch]) baseHierarchy[ro.drillTopLevel][ro.subregion][ro.branch] = [];
+                baseHierarchy[ro.drillTopLevel][ro.subregion][ro.branch].push(ro);
+            });
+
+            let topUsefulMap = {}; 
+            let subUsefulMap = {}; 
+            let branchUsefulVals = {}; 
+
+            for(let topLvl in baseHierarchy) {
+                topUsefulMap[topLvl] = [];
+                for(let sub in baseHierarchy[topLvl]) {
+                    let subKey = topLvl + '|||' + sub;
+                    subUsefulMap[subKey] = [];
+                    for(let branch in baseHierarchy[topLvl][sub]) {
+                        let branchKey = subKey + '|||' + branch;
+                        let branchROs = baseHierarchy[topLvl][sub][branch];
+                        let validPcts = branchROs.map(ro => ro.usefulPct).filter(p => p !== null && p !== undefined);
+                        let bPct = validPcts.length > 0 ? validPcts[0] : null;
+                        if (bPct !== null && bPct !== undefined) {
+                            branchUsefulVals[branchKey] = bPct;
+                            subUsefulMap[subKey].push(bPct);
+                            topUsefulMap[topLvl].push(bPct);
+                        }
+                    }
+                }
+            }
+
+            // PASS 2: Apply Filters
+            let targetData = baseOpenData;
+            if(!isPM && currentFilter === 'PRIORITY') {
                 targetData = targetData.filter(ro => ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
             }
 
@@ -1290,21 +1372,18 @@
             
             let htmlStr = '';
             for(let topLvl in hierarchy) {
-                let topLvlUseful = [];
+                let topBadge = getUsefulBadge(topUsefulMap[topLvl] || []);
                 let subHtml = '';
                 for(let sub in hierarchy[topLvl]) {
-                    let subLvlUseful = [];
+                    let subKey = topLvl + '|||' + sub;
+                    let subBadge = getUsefulBadge(subUsefulMap[subKey] || []);
                     let branchHtml = '';
                     for(let branch in hierarchy[topLvl][sub]) {
+                        let branchKey = subKey + '|||' + branch;
                         let branchROs = hierarchy[topLvl][sub][branch];
                         
-                        let branchUsefulPcts = branchROs.map(ro => ro.usefulPct).filter(p => p !== null && p !== undefined);
-                        let bPct = branchUsefulPcts.length > 0 ? branchUsefulPcts[0] : null;
-                        
-                        if (bPct !== null && bPct !== undefined) {
-                            subLvlUseful.push(bPct);
-                            topLvlUseful.push(bPct);
-                        }
+                        let bPct = branchUsefulVals[branchKey];
+                        let branchBadge = getUsefulBadge(bPct !== undefined && bPct !== null ? [bPct] : []);
 
                         let unitsMap = {};
                         branchROs.forEach(ro => {
@@ -1340,7 +1419,6 @@
                             return (b.isOOS === true ? 1 : 0) - (a.isOOS === true ? 1 : 0);
                         });
                         
-                        let branchBadge = getUsefulBadge(bPct !== null && bPct !== undefined ? [bPct] : []);
                         let isBranchDedicated = branchROs.some(ro => ro.isDedicated);
                         let dedicatedBadge = isBranchDedicated ? `<span style="background-color: white; color: black; border: 1px solid black; border-radius: 12px; padding: 2px 6px; margin-left: 5px; font-size: 10px; font-weight: bold;">(DEDICATED)</span>` : '';
 
@@ -1402,6 +1480,8 @@
             navigate('person-view', null, true); 
             currentOwnerView = owner; currentParentView = parentViewId;
             
+            let isPM = owner === 'ALL_PM' || pmOwners.includes(owner);
+
             let titleText = `RO Hierarchy: ${owner}`;
             if (owner === 'ALL_PM') titleText = 'Overall PM Details';
             if (owner === 'ALL_VENDED') titleText = 'Overall Vended Repair Details';
@@ -1409,6 +1489,14 @@
 
             document.getElementById('person-name-title').innerText = titleText;
             document.getElementById('dynamic-back-btn').onclick = () => navigate(parentViewId, null, true);
+            
+            if (isPM) {
+                document.getElementById('standard-drilldown-filters').style.display = 'none';
+                currentFilter = 'ALL';
+            } else {
+                document.getElementById('standard-drilldown-filters').style.display = 'flex';
+            }
+
             const container = document.getElementById('drilldown-body'); 
             
             let ownerDataAll = processedData;
@@ -1421,7 +1509,7 @@
                 ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
             }
 
-            container.innerHTML = generateRoDrilldownHtml(ownerDataAll);
+            container.innerHTML = generateRoDrilldownHtml(ownerDataAll, isPM);
         }
 
         function toggleAllDetails(expand) { 
