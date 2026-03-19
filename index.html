@@ -7,9 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
         /* Global Styles & Reset */
@@ -375,31 +372,55 @@
     </div>
 
     <script>
-        // --- FIREBASE SYNC ENGINE (Wrapped in Try/Catch to prevent Firewall Crash) ---
+        // --- SAFE FIREBASE SYNC ENGINE ---
         let db = null;
         let globalRoCheckState = {};
 
+        // Safely extract from Local Storage (prevents complete crash if local files are blocked)
         try {
-            if (typeof firebase !== 'undefined') {
-                const firebaseConfig = {
-                    apiKey: "AIzaSyCr3VAldI-pPCb7APx3rJAEZvf_nl0iz1g",
-                    authDomain: "workflow-dashboard-e6134.firebaseapp.com",
-                    databaseURL: "https://workflow-dashboard-e6134-default-rtdb.firebaseio.com",
-                    projectId: "workflow-dashboard-e6134",
-                    storageBucket: "workflow-dashboard-e6134.firebasestorage.app",
-                    messagingSenderId: "641710248116",
-                    appId: "1:641710248116:web:1546701879d573041447e1"
-                };
-                firebase.initializeApp(firebaseConfig);
-                db = firebase.database();
+            globalRoCheckState = JSON.parse(localStorage.getItem('workflow_checks') || '{}');
+        } catch(e) {
+            console.warn("Local storage disabled by browser. Running entirely in temporary memory.");
+        }
 
-                db.ref('roChecks').on('value', (snapshot) => {
-                    globalRoCheckState = snapshot.val() || {};
-                    updateAllStatusBadges();
-                });
-            }
-        } catch (error) {
-            console.warn("Firebase Init blocked by network. Running locally.");
+        // Dynamically load Firebase in background AFTER initial file loads
+        function initFirebaseSync() {
+            let s1 = document.createElement('script');
+            s1.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js";
+            s1.onload = () => {
+                let s2 = document.createElement('script');
+                s2.src = "https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js";
+                s2.onload = () => {
+                    try {
+                        if (typeof firebase !== 'undefined') {
+                            const firebaseConfig = {
+                                apiKey: "AIzaSyCr3VAldI-pPCb7APx3rJAEZvf_nl0iz1g",
+                                authDomain: "workflow-dashboard-e6134.firebaseapp.com",
+                                databaseURL: "https://workflow-dashboard-e6134-default-rtdb.firebaseio.com",
+                                projectId: "workflow-dashboard-e6134",
+                                storageBucket: "workflow-dashboard-e6134.firebasestorage.app",
+                                messagingSenderId: "641710248116",
+                                appId: "1:641710248116:web:1546701879d573041447e1"
+                            };
+                            firebase.initializeApp(firebaseConfig);
+                            db = firebase.database();
+
+                            db.ref('roChecks').on('value', (snapshot) => {
+                                globalRoCheckState = snapshot.val() || {};
+                                try { localStorage.setItem('workflow_checks', JSON.stringify(globalRoCheckState)); } catch(e) {}
+                                updateAllStatusBadges();
+                            });
+                        }
+                    } catch (error) {
+                        console.warn("Firebase Init blocked. Using local state.");
+                    }
+                };
+                document.body.appendChild(s2);
+            };
+            s1.onerror = () => {
+                console.warn("Firebase blocked by network firewall. Proceeding locally.");
+            };
+            document.body.appendChild(s1);
         }
 
         function updateAllStatusBadges() {
@@ -424,6 +445,7 @@
                 db.ref('roChecks/' + safeRo).set(isChecked);
             } else {
                 globalRoCheckState[safeRo] = isChecked;
+                try { localStorage.setItem('workflow_checks', JSON.stringify(globalRoCheckState)); } catch(e) {}
                 updateAllStatusBadges();
             }
         }
@@ -495,7 +517,7 @@
             document.getElementById('manual-upload-section').style.display = 'none';
 
             try {
-                // Exact fetch logic previously verified working
+                // EXPLICIT ORIGINAL FETCH LOGIC - EXACTLY as confirmed working
                 const timestamp = new Date().getTime();
                 const response = await fetch(`master_workFLOW.xlsx?_=${timestamp}`);
                 
@@ -567,6 +589,9 @@
                 statusEl.innerText = "Building dashboards...";
                 processExcelData(vroRaw, resourceRaw, oosRaw, usefulRaw);
 
+                // ONLY try to connect to Firebase once Excel is safely loaded
+                setTimeout(initFirebaseSync, 500);
+
             } catch (error) {
                 console.error("Fetch failed:", error);
                 statusEl.innerText = "Failed to load live data. Please manually upload the master file below.";
@@ -575,7 +600,8 @@
             }
         }
 
-        window.onload = fetchData;
+        // Extremely safe trigger mechanism
+        setTimeout(fetchData, 50);
 
         document.getElementById('excelFileInput').addEventListener('change', async function(e) {
             const files = Array.from(e.target.files);
@@ -647,6 +673,7 @@
                     });
                 }
                 processExcelData(vroRaw, resourceRaw, oosRaw, usefulRaw);
+                setTimeout(initFirebaseSync, 500); // Trigger background sync attempt
             } catch (error) { 
                 console.error(error); 
                 statusEl.innerText = "Error parsing files."; 
@@ -802,7 +829,10 @@
                         if (bNorm && !branchMasterInfo[bNorm]) branchMasterInfo[bNorm] = info;
 
                         let pct = NaN;
-                        let exactUsefulKey = Object.keys(row).find(k => k.trim() === 'Useful %');
+                        let keys = Object.keys(row);
+                        
+                        // Extremely strict check for the actual "Useful %" column
+                        let exactUsefulKey = keys.find(k => k.trim().toLowerCase() === 'useful %');
                         
                         if (exactUsefulKey && row[exactUsefulKey] !== undefined && row[exactUsefulKey] !== '') {
                             let valStr = String(row[exactUsefulKey]).trim();
@@ -811,25 +841,11 @@
                                 pct = valStr.includes('%') ? val / 100 : val;
                             }
                         } else {
-                            let usefulKeys = Object.keys(row).filter(k => k.toLowerCase().includes('useful'));
-                            let totalKey = usefulKeys.find(k => k.toLowerCase().includes('total'));
-                            if (totalKey && row[totalKey] !== undefined && row[totalKey] !== '') {
-                                let valStr = String(row[totalKey]).trim();
+                            let usefulKey = keys.find(k => k.toLowerCase().includes('useful'));
+                            if (usefulKey && row[usefulKey] !== undefined && row[usefulKey] !== '') {
+                                let valStr = String(row[usefulKey]).trim();
                                 let val = parseFloat(valStr);
                                 if (!isNaN(val)) pct = valStr.includes('%') ? val / 100 : val;
-                            }
-                            if (isNaN(pct)) {
-                                for(let i = usefulKeys.length - 1; i >= 0; i--) {
-                                    let k = usefulKeys[i];
-                                    if (row[k] !== undefined && row[k] !== '') {
-                                        let valStr = String(row[k]).trim();
-                                        let val = parseFloat(valStr);
-                                        if (!isNaN(val)) {
-                                            pct = valStr.includes('%') ? val / 100 : val;
-                                            break;
-                                        }
-                                    }
-                                }
                             }
                         }
                         
@@ -1303,29 +1319,36 @@
             let baseOpenData = ownerDataAll.filter(ro => ro.isOpen);
 
             // PASS 1: Build unfiltered static Useful % values
-            let branchUsefulVals = {};
-            let subUsefulMap = {};
-            let topUsefulMap = {};
-
+            let baseHierarchy = {};
             baseOpenData.forEach(ro => {
-                if (ro.usefulPct !== null && ro.usefulPct !== undefined) {
-                    let topLvl = ro.drillTopLevel;
-                    let sub = ro.subregion;
-                    let branch = ro.branch;
-                    let branchKey = topLvl + '|||' + sub + '|||' + branch;
-                    let subKey = topLvl + '|||' + sub;
+                if(!baseHierarchy[ro.drillTopLevel]) baseHierarchy[ro.drillTopLevel] = {};
+                if(!baseHierarchy[ro.drillTopLevel][ro.subregion]) baseHierarchy[ro.drillTopLevel][ro.subregion] = {};
+                if(!baseHierarchy[ro.drillTopLevel][ro.subregion][ro.branch]) baseHierarchy[ro.drillTopLevel][ro.subregion][ro.branch] = [];
+                baseHierarchy[ro.drillTopLevel][ro.subregion][ro.branch].push(ro);
+            });
 
-                    if (branchUsefulVals[branchKey] === undefined) {
-                        branchUsefulVals[branchKey] = ro.usefulPct;
-                        
-                        if (!subUsefulMap[subKey]) subUsefulMap[subKey] = [];
-                        subUsefulMap[subKey].push(ro.usefulPct);
-                        
-                        if (!topUsefulMap[topLvl]) topUsefulMap[topLvl] = [];
-                        topUsefulMap[topLvl].push(ro.usefulPct);
+            let topUsefulMap = {}; 
+            let subUsefulMap = {}; 
+            let branchUsefulVals = {}; 
+
+            for(let topLvl in baseHierarchy) {
+                topUsefulMap[topLvl] = [];
+                for(let sub in baseHierarchy[topLvl]) {
+                    let subKey = topLvl + '|||' + sub;
+                    subUsefulMap[subKey] = [];
+                    for(let branch in baseHierarchy[topLvl][sub]) {
+                        let branchKey = subKey + '|||' + branch;
+                        let branchROs = baseHierarchy[topLvl][sub][branch];
+                        let validPcts = branchROs.map(ro => ro.usefulPct).filter(p => p !== null && p !== undefined);
+                        let bPct = validPcts.length > 0 ? validPcts[0] : null;
+                        if (bPct !== null && bPct !== undefined) {
+                            branchUsefulVals[branchKey] = bPct;
+                            subUsefulMap[subKey].push(bPct);
+                            topUsefulMap[topLvl].push(bPct);
+                        }
                     }
                 }
-            });
+            }
 
             // PASS 2: Apply Filters
             let targetData = baseOpenData;
