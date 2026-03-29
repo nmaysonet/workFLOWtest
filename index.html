@@ -1024,9 +1024,232 @@
             bSel.value = branches.has(bVal) ? bVal : 'ALL';
         }
 
-        // ==========================================
-        // DATA PROCESSING LOGIC
-        // ==========================================
+        // --- EXPORT HELPERS WITH AUTO-FIT ---
+        function autoFitColumns(ws, data) {
+            if (!data || data.length === 0) return;
+            const keys = Object.keys(data[0]);
+            ws['!cols'] = keys.map(key => {
+                let maxLen = key.length;
+                data.forEach(row => {
+                    if (row[key] !== null && row[key] !== undefined) {
+                        const valStr = String(row[key]);
+                        maxLen = Math.max(maxLen, Math.min(valStr.length, 60)); // Cap width at 60 chars
+                    }
+                });
+                return { wch: maxLen + 2 };
+            });
+            ws['!autofilter'] = { ref: XLSX.utils.encode_range(XLSX.utils.decode_range(ws['!ref'])) };
+        }
+
+        function exportDrilldownToExcel() {
+            if (!currentOwnerView || processedData.length === 0) return;
+            
+            let ownerDataAll = processedData;
+            // Use drilldownOwners to match the view
+            if (currentOwnerView === 'ALL_PM') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => pmOwners.includes(o)));
+            else if (currentOwnerView === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => vendedOwners.includes(o)));
+            else if (currentOwnerView === 'ALL_ERS') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => ersOwners.includes(o)));
+            else ownerDataAll = processedData.filter(ro => ro.drilldownOwners.includes(String(currentOwnerView)));
+            
+            if (currentCustomerFilter !== 'ALL') {
+                ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
+            }
+
+            let rVal = document.getElementById('dd-region').value;
+            let sVal = document.getElementById('dd-subregion').value;
+            let bVal = document.getElementById('dd-branch').value;
+
+            ownerDataAll = ownerDataAll.filter(ro => {
+                if (rVal !== 'ALL' && ro.region !== rVal) return false;
+                if (sVal !== 'ALL' && ro.subregion !== sVal) return false;
+                if (bVal !== 'ALL' && ro.branch !== bVal) return false;
+                return true;
+            });
+
+            let isPM = currentOwnerView === 'ALL_PM' || pmOwners.includes(currentOwnerView);
+            let targetData = ownerDataAll.filter(ro => ro.isOpen);
+            if(currentFilter === 'OOS' && !isPM) {
+                targetData = targetData.filter(ro => ro.isOOS);
+            } else if(currentFilter === 'PRIORITY' && !isPM) {
+                targetData = targetData.filter(ro => isPriority(ro));
+            }
+
+            if (targetData.length === 0) { alert("No data available to export."); return; }
+
+            const excelRows = targetData.map(ro => {
+                let usefulText = "N/A";
+                let typePct = null;
+                if (ro.unitType === 'LTS') typePct = ro.usefulPctObj ? ro.usefulPctObj.LTS : null;
+                else if (ro.unitType === 'ST') typePct = ro.usefulPctObj ? ro.usefulPctObj.ST : null;
+                else if (ro.unitType === 'SHUTTLE') typePct = ro.usefulPctObj ? ro.usefulPctObj.SHUTTLE : null;
+
+                if (typePct !== null && !isNaN(typePct)) {
+                    usefulText = Math.round(typePct * 100) + '%';
+                } else if(ro.usefulPct !== null) {
+                    usefulText = Math.round(ro.usefulPct * 100) + '% (Total)';
+                }
+
+                return {
+                    "AFS RO #": ro.roNum.startsWith('NO RO') ? "NO ACTIVE RO" : ro.roNum, 
+                    "Unit No": ro.unitNo, 
+                    "OOS Status": ro.isOOS ? "OOS" : "",
+                    "LTS Useful %": (ro.usefulPctObj && ro.usefulPctObj.LTS !== null) ? Math.round(ro.usefulPctObj.LTS * 100) + '%' : "N/A",
+                    "ST Useful %": (ro.usefulPctObj && ro.usefulPctObj.ST !== null) ? Math.round(ro.usefulPctObj.ST * 100) + '%' : "N/A",
+                    "Shuttle Useful %": (ro.usefulPctObj && ro.usefulPctObj.SHUTTLE !== null) ? Math.round(ro.usefulPctObj.SHUTTLE * 100) + '%' : "N/A",
+                    "Opened Date": ro.openedFormatted,
+                    "Status": ro.status, "ECD": ro.ecdFormatted,
+                    "Customer Group": ro.drillTopLevel, "Subregion": ro.subregion, "Branch": ro.branch
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+            autoFitColumns(worksheet, excelRows);
+            
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered ROs");
+            XLSX.writeFile(workbook, `workflow_export_${String(currentOwnerView).replace(/\s+/g, '_')}_${currentFilter.toLowerCase()}.xlsx`);
+        }
+
+        function exportSearchToExcel() {
+            const searchTerm = document.getElementById('global-search').value.toLowerCase();
+            if(!searchTerm) return;
+            
+            const results = processedData.filter(ro => ro.unitNo.toLowerCase().includes(searchTerm));
+            if(results.length === 0) { alert("No data to export."); return; }
+            
+            const excelRows = results.map(ro => {
+                return {
+                    "AFS RO #": ro.roNum.startsWith('NO RO') ? "NO ACTIVE RO" : ro.roNum, 
+                    "Unit No": ro.unitNo, 
+                    "Priority Status": isPriority(ro) ? "Priority" : "Normal",
+                    "OOS Status": ro.isOOS ? "OOS" : "",
+                    "LTS Useful %": (ro.usefulPctObj && ro.usefulPctObj.LTS !== null) ? Math.round(ro.usefulPctObj.LTS * 100) + '%' : "N/A",
+                    "ST Useful %": (ro.usefulPctObj && ro.usefulPctObj.ST !== null) ? Math.round(ro.usefulPctObj.ST * 100) + '%' : "N/A",
+                    "Shuttle Useful %": (ro.usefulPctObj && ro.usefulPctObj.SHUTTLE !== null) ? Math.round(ro.usefulPctObj.SHUTTLE * 100) + '%' : "N/A",
+                    "Opened Date": ro.openedFormatted,
+                    "Owner": ro.owner, "Status": ro.status, "ECD": ro.ecdFormatted
+                };
+            });
+            
+            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+            autoFitColumns(worksheet, excelRows);
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Search Results");
+            XLSX.writeFile(workbook, `workflow_search_${searchTerm}.xlsx`);
+        }
+
+        window.exportSummaryToExcel = function() {
+            let rVal = document.getElementById('sum-region').value;
+            let sVal = document.getElementById('sum-subregion').value;
+            let bVal = document.getElementById('sum-branch').value;
+
+            // Tab 1: Consolidation Summary
+            let sumRows = [];
+            for (let reg of Object.keys(summaryTree).sort()) {
+                if (rVal !== 'ALL' && reg !== rVal) continue;
+
+                let rData = summaryTree[reg];
+                let rActive = Math.max(0, rData.totalUnits - rData.oos);
+                let rPct = rData.maxRoutes > 0 ? (rActive / rData.maxRoutes) : 0;
+                
+                sumRows.push({
+                    "Level": "Region", "Name": reg, "Max Routes": rData.maxRoutes, 
+                    "Total Units": rData.totalUnits, "OOS": rData.oos, 
+                    "Useful %": rData.maxRoutes > 0 ? Math.round(rPct * 100) + '%' : '0%', 
+                    "DoD OOS": rData.dodOos, 
+                    "DoD Change": rData.oos - rData.dodOos
+                });
+                
+                for (let sub of Object.keys(rData.subs).sort()) {
+                    if (sVal !== 'ALL' && sub !== sVal) continue;
+
+                    let sData = rData.subs[sub];
+                    let sActive = Math.max(0, sData.totalUnits - sData.oos);
+                    let sPct = sData.maxRoutes > 0 ? (sActive / sData.maxRoutes) : 0;
+                    
+                    sumRows.push({
+                        "Level": "Sub Region", "Name": sub, "Max Routes": sData.maxRoutes, 
+                        "Total Units": sData.totalUnits, "OOS": sData.oos, 
+                        "Useful %": sData.maxRoutes > 0 ? Math.round(sPct * 100) + '%' : '0%', 
+                        "DoD OOS": sData.dodOos, 
+                        "DoD Change": sData.oos - sData.dodOos
+                    });
+                    
+                    for (let bra of Object.keys(sData.branches).sort()) {
+                        if (bVal !== 'ALL' && bra !== bVal) continue;
+
+                        let bData = sData.branches[bra];
+                        let bActive = Math.max(0, bData.totalUnits - bData.oos);
+                        let bPct = bData.maxRoutes > 0 ? (bActive / bData.maxRoutes) : 0;
+                        
+                        sumRows.push({
+                            "Level": "Branch", "Name": bra, "Max Routes": bData.maxRoutes, 
+                            "Total Units": bData.totalUnits, "OOS": bData.oos, 
+                            "Useful %": bData.maxRoutes > 0 ? Math.round(bPct * 100) + '%' : '0%', 
+                            "DoD OOS": bData.dodOos, 
+                            "DoD Change": bData.oos - bData.dodOos
+                        });
+                    }
+                }
+            }
+            
+            const wsConsolidation = XLSX.utils.json_to_sheet(sumRows);
+            autoFitColumns(wsConsolidation, sumRows);
+
+            // Tab 2: Amerit OOS Units
+            let oosRows = [];
+            const tbody = document.getElementById("amerit-oos-table-body");
+            Array.from(tbody.rows).forEach(row => {
+                if (row.cells.length > 1) {
+                    oosRows.push({
+                        "Region": row.cells[0].innerText.trim(),
+                        "Sub Region": row.cells[1].innerText.trim(),
+                        "Branch": row.cells[2].innerText.trim(),
+                        "Truck #": row.cells[3].innerText.trim(),
+                        "Max ECD": row.cells[4].innerText.trim(),
+                        "Notes": row.cells[5].innerText.trim()
+                    });
+                }
+            });
+            
+            const wsAmerit = XLSX.utils.json_to_sheet(oosRows);
+            autoFitColumns(wsAmerit, oosRows);
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, wsConsolidation, "Consolidation Summary");
+            XLSX.utils.book_append_sheet(workbook, wsAmerit, "Amerit OOS Units");
+            XLSX.writeFile(workbook, "VDR_Consolidation_Summary.xlsx");
+        }
+
+        function setFilter(val) {
+            currentFilter = val;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.filter === val) { btn.classList.add('active'); btn.style.background = 'var(--gold)'; } 
+                else { btn.classList.remove('active'); btn.style.background = '#e0e0e0'; }
+            });
+            triggerViewUpdate();
+        }
+
+        function setCustomerFilter(val) {
+            currentCustomerFilter = val;
+            document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = val; });
+            triggerViewUpdate();
+        }
+
+        function triggerViewUpdate() {
+            let activeView = document.querySelector('.view-section.active').id;
+            if(activeView === 'home-view') renderHomeDashboard();
+            else if(activeView === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
+            else if(activeView === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
+            else if(activeView === 'ers-view') renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
+            else if(activeView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView, true); }
+            else if(activeView === 'summary-view') {
+                renderSummary();
+                renderAmeritOos();
+            }
+        }
+
         function processExcelData(vroRaw, resourceRawAOA, oosRawAOA, usefulRawAOA, dodRawAOA) {
             const today = new Date(); today.setHours(0, 0, 0, 0);
             
@@ -1180,7 +1403,7 @@
 
                 allCustSet.add(custKey);
 
-                // --- KPI VS VISIBILITY LOGIC (THE KEVIN FIX) ---
+                // --- KPI VS VISIBILITY LOGIC ---
                 let kpiOwners = new Set();
                 let drilldownOwners = new Set();
                 
@@ -1190,7 +1413,7 @@
                 let creatorInfo = resourceMap[ownerEmail];
                 let isCreatorSpecial = false;
 
-                if (creatorInfo && (creatorInfo.team === 'ERS' || creatorInfo.team === 'PM')) {
+                if (creatorInfo && (creatorInfo.team === 'ERS' || creatorInfo.team === 'PM' || (creatorInfo.team === 'VENDED REPAIR' && !creatorInfo.hasBranch))) {
                     isCreatorSpecial = true;
                     if (creatorInfo.name) {
                         kpiOwners.add(creatorInfo.name);
@@ -1210,7 +1433,6 @@
                         drilldownOwners.add(validBranchOwner);
                     }
                 }
-                // ------------------------------------------------
 
                 let bCode = extractGardaCode(mUnit.branch) || normalizeBranchStr(mUnit.branch);
                 let pcts = branchUsefulMap[bCode] || { LTS: null, ST: null, SHUTTLE: null, TOTAL: null };
@@ -1243,7 +1465,7 @@
                     owner: Array.from(drilldownOwners).join(', '), 
                     kpiOwners: Array.from(kpiOwners),
                     drilldownOwners: Array.from(drilldownOwners),
-                    tileOwners: Array.from(drilldownOwners), 
+                    tileOwners: Array.from(drilldownOwners), // Used as fallback if needed elsewhere
                     unitNo: unit, unitType: mUnit.type, status: statusStr, vmrs, 
                     isOOS: mUnit.isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, 
                     subregion: mUnit.subregion, branch: mUnit.branch, 
@@ -1410,14 +1632,11 @@
             updateAllNoteButtons(); 
         }
 
-        // ==========================================
-        // UI RENDERING
-        // ==========================================
         function renderAmeritOos() {
             let rVal = document.getElementById('sum-region').value;
             let sVal = document.getElementById('sum-subregion').value;
             let bVal = document.getElementById('sum-branch').value;
-            let notesOnly = document.getElementById('sum-notes-only').checked;
+            let notesOnly = document.getElementById('report-notes-only').checked;
 
             let unitRoGroups = {};
             processedData.forEach(ro => {
@@ -1626,30 +1845,6 @@
             document.getElementById('summary-table-body').innerHTML = html || '<tr><td colspan="7" style="text-align:center; padding: 20px;">No data available</td></tr>';
         }
 
-        function renderVendorLookup() {
-            const customer = document.getElementById('vendor-customer-select').value;
-            const search = document.getElementById('vendor-search-text').value.toLowerCase();
-            const tbody = document.getElementById('vendor-table-body');
-            
-            let data = vendorStore[customer] || [];
-            let html = '';
-            
-            data.filter(v => {
-                let group = String(v.Group || '').toLowerCase();
-                let name = String(v.Vendor || '').toLowerCase();
-                return group.includes(search) || name.includes(search);
-            }).forEach(v => {
-                html += `<tr>
-                    <td style="font-weight:700;">${v.Group}</td>
-                    <td>${v.Vendor}</td>
-                    <td><a href="mailto:${v['Contact Email'] || ''}">${v['Contact Email'] || ''}</a></td>
-                    <td>${v['Contact Phone#'] || ''}</td>
-                </tr>`;
-            });
-            
-            tbody.innerHTML = html || '<tr><td colspan="4" align="center" style="padding: 20px; color:#888;">No vendors found matching your search.</td></tr>';
-        }
-
         function formatUsefulBadge(label, val) {
             if(val === null || val === undefined || isNaN(val) || val === '') return '';
             let pct = Math.round(val * 100);
@@ -1785,6 +1980,7 @@
                 aggData = aggData.filter(ro => ro.custKey === currentCustomerFilter);
             }
 
+            // Dashboard aggregates use kpiOwners
             let pmData = aggData.filter(ro => ro.kpiOwners.some(o => pmOwners.includes(o)));
             let vendedData = aggData.filter(ro => ro.kpiOwners.some(o => vendedOwners.includes(o)));
             let ersRoData = aggData.filter(ro => ro.kpiOwners.some(o => ersOwners.includes(o)));
@@ -1812,6 +2008,7 @@
             let isPM = containerId === 'pm-kpi-container';
 
             ownersList.forEach(owner => {
+                // Tiles use kpiOwners ONLY to generate the counts
                 let ownerDataAll = processedData.filter(ro => ro.kpiOwners.includes(owner));
                 
                 if (currentCustomerFilter !== 'ALL') {
@@ -1930,7 +2127,7 @@
                             unitsMap[ro.unitNo].roNums.push(ro.roNum);
                             unitsMap[ro.unitNo].dupFlags.push(ro.possibleDuplicate);
                             
-                            let dupBadge = ro.possibleDuplicate ? ' <span class="badge badge-dup" title="Multiple open orders share similar tasks for this unit.">⚠️ DUP?</span>' : '';
+                            let dupBadge = ro.possibleDuplicate ? ' <span class="badge" style="background-color:#ffe082; color:#854d0e; font-size:9px; padding:2px 4px; border:1px solid #f59e0b; margin-left:5px; white-space:nowrap;" title="Multiple open orders share similar tasks for this unit.">⚠️ DUP?</span>' : '';
 
                             let roLinkHtml = ro.roNum.startsWith('NO RO') 
                                 ? `<span style="font-weight: 800; color: var(--urgent-red);">NO ACTIVE RO</span>` 
@@ -2028,6 +2225,8 @@
             }
 
             let ownerDataAll = processedData;
+            
+            // Drilldowns use drilldownOwners so Branch Managers can see ERS/PM work occurring in their yard
             if (owner === 'ALL_PM') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => pmOwners.includes(o)));
             else if (owner === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => vendedOwners.includes(o)));
             else if (owner === 'ALL_ERS') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => ersOwners.includes(o)));
@@ -2105,7 +2304,7 @@
                         searchUnitsMap[ro.unitNo].roNums.push(ro.roNum);
                         searchUnitsMap[ro.unitNo].dupFlags.push(ro.possibleDuplicate);
                         
-                        let dupBadge = ro.possibleDuplicate ? ' <span class="badge badge-dup" title="Multiple open orders share similar tasks for this unit.">⚠️ DUP?</span>' : '';
+                        let dupBadge = ro.possibleDuplicate ? ' <span class="badge" style="background-color:#ffe082; color:#854d0e; font-size:9px; padding:2px 4px; border:1px solid #f59e0b; margin-left:5px; white-space:nowrap;" title="Multiple open orders share similar tasks for this unit.">⚠️ DUP?</span>' : '';
 
                         let roLinkHtml = ro.roNum.startsWith('NO RO') 
                             ? `<span style="font-weight: 800; color: var(--urgent-red);">NO ACTIVE RO</span>` 
@@ -2193,9 +2392,6 @@
             else if (viewId === 'summary-view') {
                 renderSummary();
                 renderAmeritOos();
-            }
-            else if (viewId === 'vendor-view') {
-                renderVendorLookup();
             }
         }
     </script>
