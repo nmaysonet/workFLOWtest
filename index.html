@@ -21,8 +21,8 @@
         :root {
             --sidebar-bg: #3a3b40;
             --sidebar-hover: #4a4b50;
-            --gold: #dfb122;
-            --gold-hover: #c49a1d;
+            --gold: #FFC600; 
+            --gold-hover: #e5b200;
             --urgent-red: #d9534f;
             --medium-yellow: #f0ad4e;
             --low-green: #5cb85c;
@@ -30,7 +30,7 @@
             --border: #e0e0e0;
         }
 
-        /* Sidebar */
+        /* Sidebar Design */
         .sidebar { width: 280px; background-color: var(--sidebar-bg); color: var(--text-light); display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 20px; font-size: 24px; font-weight: bold; display: flex; align-items: center; border-bottom: 1px solid #2a2b30; color: var(--gold); }
         .sidebar-header .logo-text { color: white; margin-left: 8px; font-weight: 800; letter-spacing: 0.5px; }
@@ -39,10 +39,8 @@
         .menu-item { padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #4a4b50; font-size: 14px; font-weight: 600; transition: 0.2s;}
         .menu-item:hover, .menu-item.active { background-color: var(--sidebar-hover); color: var(--gold); }
         
-        /* Sidebar Truck Graphic */
         .sidebar-truck { margin-top: auto; padding: 30px; text-align: center; border-top: 1px solid #4a4b50; background: #2a2b30; }
 
-        /* Animations CSS */
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes bump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
         @keyframes moveRoad { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 15; } }
@@ -54,19 +52,16 @@
 
         /* Main Content Area */
         .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
-        
-        /* Top Navigation Bar & Dropdowns */
         .top-bar { background: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; flex-shrink: 0; }
         .search-container input { padding: 10px 15px; width: 300px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; }
         .top-actions { display: flex; gap: 15px; align-items: center; }
         
-        .btn-action { background-color: var(--gold); color: #fff; padding: 10px 20px; border-radius: 4px; font-weight: bold; transition: 0.2s; border: none; cursor: pointer; font-size: 13px;}
-        .btn-action:hover { background-color: var(--gold-hover); }
+        .btn-action { background-color: var(--gold); color: #333; padding: 10px 20px; border-radius: 4px; font-weight: bold; transition: 0.2s; border: none; cursor: pointer; font-size: 13px;}
+        .btn-action:hover { background-color: var(--gold-hover); color: #111; }
         
         .btn-green { background-color: #5cb85c; color: #fff; padding: 8px 15px; border-radius: 4px; font-weight: bold; transition: 0.2s; border: none; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 5px;}
-        .btn-green:hover { background-color: #4cae4c; }
+        .btn-green:hover { background-color: #4cae4c; color: white;}
 
-        /* Vendor Maps Dropdown Styling */
         .dropdown { position: relative; display: inline-block; }
         .dropdown-content { 
             display: none; position: absolute; right: 0; top: 100%; background-color: #fff; 
@@ -77,11 +72,10 @@
         .dropdown-content a:hover { background-color: #f9f9f9; color: var(--gold); }
         .dropdown:hover .dropdown-content { display: block; margin-top: -2px; padding-top: 2px; }
 
-        /* Views */
         .view-section { padding: 30px; display: none; }
         .view-section.active { display: block; }
 
-        /* Home View & File Upload */
+        /* Home View & Upload */
         .home-title { font-size: 36px; font-weight: 300; margin-bottom: 5px; color: #444; }
         .home-subtitle { font-size: 16px; color: #777; margin-bottom: 30px; }
         
@@ -93,40 +87,49 @@
         .upload-btn:hover { background-color: #222; }
         #upload-status { margin-top: 15px; font-size: 14px; font-weight: bold; color: #2e7d32; }
 
-        /* Filter Tabs */
-        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-        .filter-btn { padding: 10px 20px; border: none; background-color: #e0e0e0; color: #333; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; }
-        .filter-btn:hover { background-color: #d0d0d0; }
-        .filter-btn.active { background-color: var(--gold); color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .filter-btn.active:hover { background-color: var(--gold-hover); }
-
-        /* General KPI Tiles Grid */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
-        .kpi-tile { background: #fff; padding: 25px 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); cursor: pointer; border-top: 4px solid var(--gold); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column;}
-        .kpi-tile:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        /* KPI Tiles Grid */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; padding-top: 10px;}
+        .kpi-tile { 
+            background: #fff; padding: 25px 20px; border-radius: 8px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; 
+            border-top: 4px solid var(--gold) !important; 
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-top-color 0.2s ease; 
+            display: flex; flex-direction: column;
+        }
+        .kpi-tile:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 12px 20px rgba(0,0,0,0.12); 
+            border-top-color: #000000 !important; 
+        }
         .kpi-name { font-size: 20px; font-weight: 800; margin-bottom: 15px; color: #333; }
         
-        /* Master Dashboard Container & Layout */
-        .home-dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); flex-wrap: wrap; gap: 15px;}
-        .filter-select { padding: 8px 15px; border-radius: 4px; border: 1px solid #ccc; font-weight: 700; font-size: 14px; background: #fff;}
+        .home-dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 2px solid var(--border); flex-wrap: wrap; gap: 15px;}
+        .home-kpi-container { display: flex; gap: 15px; flex-wrap: nowrap; width: 100%; overflow-x: auto; padding-top: 10px; padding-bottom: 15px; }
         
-        .home-kpi-container { display: flex; gap: 15px; flex-wrap: nowrap; width: 100%; overflow-x: auto; padding-bottom: 15px; }
-        
-        .home-master-tile { flex: 1; min-width: 360px; padding: 20px; cursor: pointer; border-top: 4px solid #333 !important; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;}
-        .home-master-tile:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-top-color: var(--gold) !important; }
+        .home-master-tile { 
+            flex: 1; min-width: 360px; padding: 20px; cursor: pointer; 
+            border-top: 4px solid var(--gold) !important; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-top-color 0.2s ease;
+        }
+        .home-master-tile:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 12px 20px rgba(0,0,0,0.12); 
+            border-top-color: #000000 !important; 
+        }
         .home-master-tile .kpi-name { font-size: 18px; margin-bottom: 15px; }
 
-        /* KPI Layout - Master Highlight Boxes */
         .kpi-top-metrics { display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch; }
         .highlight-box { flex: 1; background: #fffaf0; border: 1px solid var(--gold); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; justify-content: center;}
         .highlight-box.urgent-box { background: #fff0f0; border-color: var(--urgent-red); }
+        .highlight-box.oos-box { background: #fffde7; border-color: var(--medium-yellow); }
+        .highlight-box.oos-box .num { color: var(--medium-yellow); }
         .highlight-box .title { font-size: 12px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 5px; text-align: left; }
         .highlight-box .num { font-size: 26px; font-weight: 800; color: var(--gold); line-height: 1; text-align: right; }
         .highlight-box.urgent-box .num { color: var(--urgent-red); }
 
-        .chart-box { width: 50px; height: 50px; flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: margin: auto 5px; }
+        .chart-box { width: 50px; height: 50px; flex-shrink: 0; position: relative; display: flex; align-items: center; justify-content: center; margin: auto 5px; }
 
-        /* KPI Layout - Bottom Row */
         .kpi-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; border-top: 1px solid #eee; padding-top: 15px; width: 100%;}
         .stat-box { background: #f9f9f9; padding: 10px 5px; border-radius: 4px; text-align: center; }
         .stat-box .title { font-size: 10px; color: #666; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
@@ -138,14 +141,29 @@
         .home-master-tile .stat-box .title { font-size: 11px; }
         .home-master-tile .stat-box .num { font-size: 18px; }
 
-        /* Data Table & Drilldown Elements */
+        /* Filters and Tabs */
+        .filter-bar { display: flex; gap: 10px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center; }
+        .filter-btn { padding: 10px 20px; border: none; background-color: #e0e0e0; color: #333; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; }
+        .filter-btn:hover { background-color: #d0d0d0; }
+        .filter-btn.active { background-color: var(--gold); color: #333; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .filter-btn.active:hover { background-color: var(--gold-hover); }
+        .filter-select { padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; font-weight: 600; font-size: 13px; background: #fff;}
+
+        .sub-tabs-container { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 0px; }
+        .sub-tab { padding: 12px 20px; background: transparent; border: none; font-size: 14px; font-weight: 700; color: #64748b; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.5px; }
+        .sub-tab:hover { color: #333; }
+        .sub-tab.active { color: var(--gold-hover); border-bottom: 3px solid var(--gold); }
+        .sub-section { display: none; }
+        .sub-section.active { display: block; }
+
+        /* Drilldown Tables */
         .view-title { font-size: 24px; margin-bottom: 15px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
         .controls-group button { padding: 8px 15px; margin-left: 10px; cursor: pointer; background: #666; color: #fff; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
         .controls-group button:hover { background: #444; }
         
         .drilldown-container { background: #fff; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); padding: 20px; margin-top: 10px; }
         details { margin-bottom: 10px; }
-        summary { font-weight: 700; padding: 10px; background-color: #f9fafc; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; user-select: none; display: flex; align-items: center;}
+        summary { font-weight: 700; padding: 10px; background-color: #f9fafc; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between;}
         summary:hover { background-color: #f1f3f6; }
         details details { margin-left: 20px; margin-top: 5px; }
         details details summary { background-color: #fff; color: #555; border-left: 3px solid var(--gold); }
@@ -161,11 +179,14 @@
 
         .ro-link { color: #0066cc; font-weight: 700; }
         .ro-link:hover { text-decoration: underline; }
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-block;}
+        
+        /* Badges & Colors */
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; display: inline-block; white-space: nowrap;}
         .badge-oos { background-color: var(--urgent-red); color: white; }
         .badge-active { background-color: var(--low-green); color: white; }
         .badge-urgent { background-color: var(--urgent-red); color: white; }
         .badge-low { background-color: var(--low-green); color: white; }
+        .badge-dup { background-color: #ffe082; color: #854d0e; border: 1px solid #f59e0b; margin-left: 5px; cursor: help; }
         
         .ecd-red { color: #d9534f; font-weight: 800; }
         .ecd-green { color: #5cb85c; font-weight: 800; }
@@ -180,7 +201,7 @@
         /* Notes UI Elements */
         .note-btn { background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; padding: 2px 6px; font-size: 12px; transition: 0.2s; opacity: 0.7;}
         .note-btn:hover { background: #e0e0e0; opacity: 1; }
-        .note-btn.has-note { background: var(--gold); color: white; border-color: var(--gold-hover); opacity: 1; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .note-btn.has-note { background: var(--gold); color: #333; border-color: var(--gold-hover); opacity: 1; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal-box { background: white; padding: 20px; border-radius: 8px; width: 450px; max-width: 90%; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
@@ -192,6 +213,12 @@
 
         .grouped-ro-item { margin-bottom: 8px; }
         .grouped-ro-item:last-child { margin-bottom: 0; }
+
+        /* Vendor Search Specifics */
+        .vendor-controls { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px; display: flex; gap: 20px; align-items: flex-end; }
+        .vendor-input-group { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .vendor-input-group label { font-size: 12px; font-weight: 800; color: #666; text-transform: uppercase; }
+        .vendor-search-box { padding: 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; width: 100%; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -216,6 +243,8 @@
         <div class="menu-item" id="menu-pm" onclick="navigate('pm-view', this)">PM Queue</div>
         <div class="menu-item" id="menu-vended" onclick="navigate('vended-view', this)">Vended Repair Queue</div>
         <div class="menu-item" id="menu-ers" onclick="navigate('ers-view', this)">ERS Queue</div>
+        <div class="menu-item" id="menu-summary" onclick="navigate('summary-view', this)">Consolidation Summary</div>
+        <div class="menu-item" id="menu-vendor" onclick="navigate('vendor-view', this)">Vendor Lookup</div>
         
         <div class="sidebar-truck">
             <svg width="140" height="70" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" class="moving-truck-svg">
@@ -251,33 +280,40 @@
     </div>
 
     <div class="main-content">
+        
         <div class="top-bar">
             <div class="search-container">
                 <input type="text" id="global-search" placeholder="Search by Unit No..." onkeyup="handleSearch()">
             </div>
             <div class="top-actions">
+                <div style="font-weight: 800; font-size: 18px; color: var(--gold); letter-spacing: 0.5px; margin-right: 20px;">
+                    KEEP ON ROLLING™
+                </div>
                 <div class="dropdown">
                     <button class="btn-action dropbtn">VENDOR MAPS ▼</button>
                     <div class="dropdown-content">
-                        <a href="https://app.mapline.com/map/map_282c81fe/TWZ2TzJHRGcrd3BjaG1QMDNPekVGYUhxNThJd080SUZTK2MwZG" target="_blank">Garda</a>
+                        <a href="https://app.mapline.com/map/map_282c81fe/TWZ2TzJHRGcrd3BjaG1QMDNPekVGYUhxNThJd080SUZTK2MwZG" target="_blank">Armored</a>
                     </div>
                 </div>
-                <a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/CreateVRO" target="_blank" class="btn-action">CREATE A VRO</a>
+                <button class="btn-action" onclick="window.open('https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/CreateVRO', '_blank')">CREATE A VRO</button>
             </div>
         </div>
 
         <div id="home-view" class="view-section active">
             <h1 class="home-title">Welcome to workFLOW +</h1>
+            
             <div class="upload-container" id="upload-box">
                 <h3>Loading Dashboard Data</h3>
-                <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Attempting to fetch <b>master_workFLOW.xlsx</b> from local directory...</p>
+                <p style="color: #666; margin-bottom: 15px; font-size: 14px;">Attempting to fetch data automatically...</p>
                 <div id="upload-status" style="font-size: 15px; font-weight: bold; color: #888;">Initializing...</div>
+                
                 <div id="manual-upload-section" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ccc;">
                     <p style="font-size: 13px; color: #888; margin-bottom: 10px;">Fallback: File not found. Upload manually below.</p>
                     <label for="excelFileInput" class="upload-btn">Browse Files</label>
                     <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" multiple />
                 </div>
             </div>
+
             <div id="home-dashboard" style="display:none;">
                 <div class="home-dashboard-header">
                     <h2 style="margin:0;">Aggregate Performance Overview</h2>
@@ -314,6 +350,7 @@
             </div>
             <div class="filter-bar">
                 <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
+                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">Only OOS</button>
                 <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
             </div>
             <div class="kpi-grid" id="vended-kpi-container"></div>
@@ -330,6 +367,7 @@
             </div>
             <div class="filter-bar">
                 <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
+                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">Only OOS</button>
                 <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
             </div>
             <div class="kpi-grid" id="ers-kpi-container"></div>
@@ -344,17 +382,152 @@
                     </select>
                 </div>
                 <div class="controls-group" style="display: flex; align-items: center;">
-                    <button class="btn-green" onclick="exportDrilldownToExcel()">&#11139; Export to XLSX</button>
+                    <button class="btn-green" onclick="exportDrilldownToExcel()">📥 Export to XLSX</button>
                     <button onclick="toggleAllDetails(true)">Expand All</button>
                     <button onclick="toggleAllDetails(false)">Collapse All</button>
                     <button id="dynamic-back-btn">&larr; Back</button>
                 </div>
             </div>
+
             <div class="filter-bar" id="standard-drilldown-filters">
                 <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL')">All Units</button>
+                <button class="filter-btn" data-filter="OOS" onclick="setFilter('OOS')">Only OOS</button>
                 <button class="filter-btn" data-filter="PRIORITY" onclick="setFilter('PRIORITY')">Priority</button>
+                
+                <span style="color:#aaa; margin:0 5px;">|</span>
+                
+                <select id="dd-region" class="filter-select" onchange="triggerDrilldownFilter()">
+                    <option value="ALL">All Regions</option>
+                </select>
+                <select id="dd-subregion" class="filter-select" onchange="triggerDrilldownFilter()">
+                    <option value="ALL">All Subregions</option>
+                </select>
+                <select id="dd-branch" class="filter-select" onchange="triggerDrilldownFilter()">
+                    <option value="ALL">All Branches</option>
+                </select>
             </div>
+
             <div class="drilldown-container" id="drilldown-body"></div>
+        </div>
+
+        <div id="summary-view" class="view-section">
+            <div class="view-title">
+                <span style="font-weight: 700;">Consolidation Summary</span>
+                <div class="controls-group" style="display: flex; align-items: center;" id="summary-tree-controls">
+                    <button class="btn-green" onclick="exportSummaryToExcel()">📥 Export to XLSX</button>
+                    <button onclick="toggleAllSummary(true)">Expand All</button>
+                    <button onclick="toggleAllSummary(false)">Collapse All</button>
+                </div>
+            </div>
+            
+            <div class="filter-bar" style="align-items: center;">
+                <select id="sum-region" class="filter-select" style="margin-right: 10px;" onchange="updateSummaryFilters()">
+                    <option value="ALL">All Regions</option>
+                </select>
+                <select id="sum-subregion" class="filter-select" style="margin-right: 10px;" onchange="updateSummaryFilters()">
+                    <option value="ALL">All Subregions</option>
+                </select>
+                <select id="sum-branch" class="filter-select" style="margin-right: 15px;" onchange="updateSummaryFilters()">
+                    <option value="ALL">All Branches</option>
+                </select>
+                
+                <label style="margin-right: 15px; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                    <input type="checkbox" id="sum-notes-only" style="cursor: pointer;" onchange="updateSummaryFilters()"> Has Notes Only
+                </label>
+            </div>
+
+            <div class="sub-tabs-container">
+                <button class="sub-tab active" onclick="switchSummaryTab('sub-summary', this)">VDR Consolidation Summary</button>
+                <button class="sub-tab" onclick="switchSummaryTab('sub-amerit-oos', this)">Amerit OOS Trucks</button>
+            </div>
+
+            <div id="sub-summary" class="sub-section active">
+                <div class="drilldown-container table-wrapper">
+                    <table id="summaryTable">
+                        <colgroup>
+                            <col style="width: 35%;">
+                            <col style="width: 10%;">
+                            <col style="width: 10%;">
+                            <col style="width: 10%;">
+                            <col style="width: 10%;">
+                            <col style="width: 10%;">
+                            <col style="width: 15%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Region / Subregion / Branch</th>
+                                <th style="text-align:right;">Max Routes</th>
+                                <th style="text-align:right;">Total Units</th>
+                                <th style="text-align:right;">OOS</th>
+                                <th style="text-align:right;">Useful %</th>
+                                <th style="text-align:right;">DoD OOS</th>
+                                <th style="text-align:right;">DoD Change</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summary-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="sub-amerit-oos" class="sub-section">
+                <div class="drilldown-container table-wrapper">
+                    <table id="ameritOosTable">
+                        <colgroup>
+                            <col style="width: 12%;">
+                            <col style="width: 15%;">
+                            <col style="width: 23%;">
+                            <col style="width: 10%;">
+                            <col style="width: 10%;">
+                            <col style="width: 30%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th onclick="sortAmeritOos(0, 'string')">Region ↕</th>
+                                <th onclick="sortAmeritOos(1, 'string')">Sub Region ↕</th>
+                                <th onclick="sortAmeritOos(2, 'string')">Branch ↕</th>
+                                <th onclick="sortAmeritOos(3, 'string')">Truck # ↕</th>
+                                <th onclick="sortAmeritOos(4, 'date')">Max ECD ↕</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="amerit-oos-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="vendor-view" class="view-section">
+            <h2 class="home-title" style="font-size: 28px; margin-bottom: 20px;">Vendor Lookup Engine</h2>
+            
+            <div class="vendor-controls">
+                <div class="vendor-input-group">
+                    <label>Customer</label>
+                    <select id="vendor-customer-select" class="vendor-search-box" onchange="renderVendorLookup()">
+                        <option value="Garda">Garda</option>
+                        <option value="Brinks">Brinks</option>
+                    </select>
+                </div>
+                <div class="vendor-input-group" style="flex: 2;">
+                    <label>Search Location or Branch Code</label>
+                    <input type="text" id="vendor-search-text" class="vendor-search-box" placeholder="e.g., Akron or 140-31" onkeyup="renderVendorLookup()">
+                </div>
+            </div>
+
+            <div class="drilldown-container table-wrapper">
+                <table id="vendor-table">
+                    <thead>
+                        <tr>
+                            <th>Group / Location</th>
+                            <th>Vendor Name</th>
+                            <th>Contact Email</th>
+                            <th>Contact Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vendor-table-body">
+                        <tr><td colspan="4" style="text-align:center; padding: 20px;">Use the search bar above to find vendors.</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div id="search-view" class="view-section">
@@ -363,7 +536,7 @@
                     <span style="font-weight: 700;">Search Results: <span id="search-term-display"></span></span>
                 </div>
                 <div class="controls-group" style="display: flex; align-items: center;">
-                    <button class="btn-green" onclick="exportSearchToExcel()">&#11139; Export to XLSX</button>
+                    <button class="btn-green" onclick="exportSearchToExcel()">📥 Export to XLSX</button>
                     <button onclick="navigate(lastActiveView, null, true)">&larr; Back</button>
                 </div>
             </div>
@@ -376,8 +549,12 @@
                     </colgroup>
                     <thead>
                         <tr>
-                            <th>AFS RO # & Dispatch</th><th>Unit No</th><th>Priority Status</th>
-                            <th>OOS Status</th><th>Opened Date</th><th>Owner</th>
+                            <th>AFS RO # & Dispatch</th>
+                            <th>Unit No</th>
+                            <th>Priority Status</th>
+                            <th>OOS Status</th>
+                            <th>Opened Date</th>
+                            <th>Owner</th>
                             <th>Status & ECD</th>
                         </tr>
                     </thead>
@@ -395,54 +572,88 @@
             </div>
             <textarea id="note-textarea" class="modal-textarea" placeholder="Type your note here..."></textarea>
             <div class="modal-actions">
-                <button class="btn-cancel" onclick="closeNoteModal()">Cancel</button>
-                <button class="btn-save" onclick="saveNote()">Save Note</button>
+                <button class="btn-cancel" style="padding:8px 15px; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer; font-weight:bold;" onclick="closeNoteModal()">Cancel</button>
+                <button class="btn-save btn-green" onclick="saveNote()">Save Note</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- SECURE FIREBASE SYNC ENGINE (Wrapped in Try/Catch to prevent Firewall Crash) ---
+        // ==========================================
+        // GLOBAL VARIABLES & STORES
+        // ==========================================
         let db = null;
         let globalRoCheckState = {};
         let globalRoNotesState = {};
+        
+        let processedData = []; 
+        let masterUnits = {}; 
+        let summaryTree = {}; 
+        let expandedSummaryState = {};
+        
+        let currentFilter = 'ALL';
+        let currentCustomerFilter = 'ALL';
+        let currentOwnerView = '';
+        let currentParentView = '';
+        let lastActiveView = 'home-view';
+        let searchTimeout = null;
+        let globalChartInstances = {}; 
 
+        let pmOwners = [];
+        let vendedOwners = [];
+        let ersOwners = [];
+
+        let branchUsefulMap = {}; 
+        let branchMetricsMap = {}; 
+        let ownerNameToTeam = {};
+        
+        let vendorStore = { Garda: [], Brinks: [] };
+
+        const excludedStatuses = [
+            'COMPLETED', 
+            'FINAL CHARGES SUBMITTED'
+        ];
+
+        // ==========================================
+        // FIREBASE INITIALIZATION & LOGIC
+        // ==========================================
         try {
             globalRoCheckState = JSON.parse(localStorage.getItem('workflow_checks') || '{}');
             globalRoNotesState = JSON.parse(localStorage.getItem('workflow_notes') || '{}');
         } catch(e) {}
 
-        try {
-            if (typeof firebase !== 'undefined') {
-                const firebaseConfig = {
-                    apiKey: "AIzaSyCr3VAldI-pPCb7APx3rJAEZvf_nl0iz1g",
-                    authDomain: "workflow-dashboard-e6134.firebaseapp.com",
-                    databaseURL: "https://workflow-dashboard-e6134-default-rtdb.firebaseio.com",
-                    projectId: "workflow-dashboard-e6134",
-                    storageBucket: "workflow-dashboard-e6134.firebasestorage.app",
-                    messagingSenderId: "641710248116",
-                    appId: "1:641710248116:web:1546701879d573041447e1"
-                };
-                firebase.initializeApp(firebaseConfig);
-                db = firebase.database();
+        function initFirebaseSync() {
+            try {
+                if (typeof firebase !== 'undefined') {
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyCr3VAldI-pPCb7APx3rJAEZvf_nl0iz1g",
+                        authDomain: "workflow-dashboard-e6134.firebaseapp.com",
+                        databaseURL: "https://workflow-dashboard-e6134-default-rtdb.firebaseio.com",
+                        projectId: "workflow-dashboard-e6134",
+                        storageBucket: "workflow-dashboard-e6134.firebasestorage.app",
+                        messagingSenderId: "641710248116",
+                        appId: "1:641710248116:web:1546701879d573041447e1"
+                    };
+                    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+                    db = firebase.database();
 
-                db.ref('roChecks').on('value', (snapshot) => {
-                    globalRoCheckState = snapshot.val() || {};
-                    try { localStorage.setItem('workflow_checks', JSON.stringify(globalRoCheckState)); } catch(e) {}
-                    updateAllStatusBadges();
-                });
+                    db.ref('roChecks').on('value', (snapshot) => {
+                        globalRoCheckState = snapshot.val() || {};
+                        try { localStorage.setItem('workflow_checks', JSON.stringify(globalRoCheckState)); } catch(e) {}
+                        updateAllStatusBadges();
+                    });
 
-                db.ref('roNotes').on('value', (snapshot) => {
-                    globalRoNotesState = snapshot.val() || {};
-                    try { localStorage.setItem('workflow_notes', JSON.stringify(globalRoNotesState)); } catch(e) {}
-                    updateAllNoteButtons();
-                });
+                    db.ref('roNotes').on('value', (snapshot) => {
+                        globalRoNotesState = snapshot.val() || {};
+                        try { localStorage.setItem('workflow_notes', JSON.stringify(globalRoNotesState)); } catch(e) {}
+                        updateAllNoteButtons();
+                    });
+                }
+            } catch (error) {
+                console.warn("Firebase Init blocked.", error);
             }
-        } catch (error) {
-            console.warn("Firebase Init blocked by network. Running locally.");
         }
 
-        // Status Button Engine
         function updateAllStatusBadges() {
             document.querySelectorAll('.status-toggle').forEach(btn => {
                 let ro = btn.getAttribute('data-ro');
@@ -470,7 +681,6 @@
             }
         }
 
-        // Notes Engine
         let currentEditingRo = null;
 
         function updateAllNoteButtons() {
@@ -485,6 +695,9 @@
                     btn.title = 'Add Note';
                 }
             });
+            if (document.getElementById('summary-view').classList.contains('active')) {
+                renderAmeritOos();
+            }
         }
 
         window.openNoteModal = function(safeRo, roNum) {
@@ -513,79 +726,24 @@
             closeNoteModal();
         }
 
-        // --- GLOBAL DATA ---
-        let processedData = []; 
-        let currentFilter = 'ALL';
-        let currentCustomerFilter = 'ALL';
-        let currentOwnerView = '';
-        let currentParentView = '';
-        let globalChartInstances = {}; 
-        let searchTimeout = null;
 
-        let pmOwners = [];
-        let vendedOwners = [];
-        let ersOwners = [];
-
-        let branchUsefulMap = {}; 
-        let branchMasterInfo = {}; 
-        let oosMap = {};
-        let dedicatedBranches = new Set();
-
-        const excludedStatuses = [
-            'COMPLETED', 
-            'FINAL CHARGES SUBMITTED'
-        ];
-
-        const specificCreators = [
-            "aarmes@ameritfleet.com", "ccaylor@ameritfleet.com", "cchristianson@ameritfleet.com",
-            "cdecker@ameritfleet.com", "dnicholson@ameritfleet.com", "fbeardslee@ameritfleet.com",
-            "fmendozacruz@ameritfleet.com", "jkennedy2@ameritfleet.com", "jmccormick@ameritfleet.com",
-            "kanguzza@ameritfleet.com", "khulbert@ameritfleet.com", "ljohnson@ameritfleet.com",
-            "mmcclain2@ameritfleet.com", "pgallagher@ameritfleet.com", "rcastillo@ameritfleet.com",
-            "sgerdes@ameritfleet.com", "swooton@ameritfleet.com", "tblake@ameritfleet.com",
-            "tforrester@ameritfleet.com", "ttodd@ameritfleet.com", "wvaught@ameritfleet.com"
-        ];
-        
-        let lastActiveView = 'home-view';
-
-        function normalizeName(str) {
-            if (!str) return '';
-            let n = String(str).trim().replace(/\s+/g, ' '); 
-            let lower = n.toLowerCase();
-            if (lower === 'kevin a' || lower.includes('kanguzza') || lower === 'kevin anguzza') return 'Kevin Anguzza';
-            return n;
-        }
-
-        function normalizeBranchStr(str) {
-            if (!str) return null;
-            return String(str).toUpperCase().replace(/\d{3}[- ]?\d{2}/g, '').replace(/[^A-Z0-9]/ig, '');
-        }
-
-        function extractGardaCode(str) {
-            if (!str) return null;
-            let match = String(str).match(/(\d{3})[- ]?(\d{2})/);
-            if (match) return match[1] + match[2];
-            return null;
-        }
-
-        // --- ROBUST STARTUP AND FETCHING LOGIC ---
+        // ==========================================
+        // DATA FETCHING & PARSING
+        // ==========================================
         function startAppOnce() {
             if (window.__workflowStarted) return;
             window.__workflowStarted = true;
             fetchData();
         }
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', startAppOnce, { once: true });
-        } else {
-            startAppOnce();
-        }
+        window.addEventListener('DOMContentLoaded', startAppOnce, { once: true });
 
-        async function fetchWorkbookBuffer() {
+        async function fetchWorkbookBuffer(filename) {
             const candidates = [
-                new URL('./master_workFLOW.xlsx', window.location.href).href,
-                `${window.location.origin}/master_workFLOW.xlsx`,
-                'master_workFLOW.xlsx'
+                new URL('./' + filename, window.location.href).href,
+                `${window.location.origin}${window.location.pathname.replace(/\/[^/]*$/, '/') }${filename}`,
+                `${window.location.origin}/${filename}`,
+                filename
             ];
 
             let lastError = null;
@@ -613,21 +771,17 @@
                         throw new Error('Empty or invalid file response.');
                     }
 
-                    const sig = new Uint8Array(data.slice(0, 2));
-                    const isZip = sig[0] === 0x50 && sig[1] === 0x4B; 
-                    if (!isZip) {
-                        throw new Error('Response is not a valid XLSX file.');
-                    }
-
                     return data;
                 } catch (err) {
                     clearTimeout(timeout);
-                    lastError = new Error(`${rawUrl} -> ${err.name === 'AbortError' ? 'Request timed out' : err.message}`);
+                    lastError = new Error(
+                        `${rawUrl} -> ${err.name === 'AbortError' ? 'Request timed out' : err.message}`
+                    );
                     console.warn('Workbook fetch failed:', lastError.message);
                 }
             }
 
-            throw lastError || new Error('Unable to locate master_workFLOW.xlsx');
+            throw lastError || new Error(`Unable to locate ${filename}`);
         }
 
         async function fetchData() {
@@ -640,92 +794,29 @@
             dashboard.style.display = 'none';
             manualUpload.style.display = 'none';
 
-            statusEl.innerText = 'Fetching local database file...';
+            statusEl.innerText = 'Fetching master_workFLOW.xlsx...';
             statusEl.style.color = '#888';
 
             try {
-                const data = await fetchWorkbookBuffer();
-
-                statusEl.innerText = 'File found! Processing data...';
-
-                await new Promise(resolve => requestAnimationFrame(resolve));
-
+                // Fetch Master Data
+                const data = await fetchWorkbookBuffer('master_workFLOW.xlsx');
+                statusEl.innerText = 'Master Data found. Parsing...';
+                
                 const workbook = XLSX.read(data, { type: 'array' });
+                loadWorkbookIntoDashboard(workbook);
 
-                let vroRaw = [], resourceRaw = [], oosRaw = [], usefulRaw = [];
+                // Fetch Vendor Lookup File
+                try {
+                    statusEl.innerText = 'Fetching vendor_locator.xlsx...';
+                    const vendorData = await fetchWorkbookBuffer('vendor_locator.xlsx');
+                    const vendorWorkbook = XLSX.read(vendorData, { type: 'array' });
+                    processVendorData(vendorWorkbook);
+                } catch (vendorError) {
+                    console.warn("Vendor Locator file not found or failed to load. Vendor lookup will be empty.", vendorError);
+                }
 
-                workbook.SheetNames.forEach(sheetName => {
-                    try {
-                        const aoa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: '' });
-                        if (!aoa || aoa.length === 0) return;
-
-                        let headerIdx = -1;
-                        let tabType = 'UNKNOWN';
-
-                        for (let i = 0; i < Math.min(20, aoa.length); i++) {
-                            if (!aoa[i] || !Array.isArray(aoa[i])) continue;
-
-                            const rowStr = aoa[i]
-                                .map(c => c ? String(c).toLowerCase().replace(/[^a-z0-9]/g, '') : '')
-                                .join('');
-
-                            if (!rowStr) continue;
-
-                            if (rowStr.includes('createdby') || (rowStr.includes('unitnumber') && rowStr.includes('team'))) {
-                                headerIdx = i; tabType = 'RESOURCE'; break;
-                            } else if (rowStr.includes('gardaregion') && rowStr.includes('oosflag')) {
-                                headerIdx = i; tabType = 'OOS'; break;
-                            } else if (rowStr.includes('gardaregion') && rowStr.includes('branch') && rowStr.includes('useful')) {
-                                headerIdx = i; tabType = 'USEFUL'; break;
-                            } else if (rowStr.includes('ronumber') || rowStr.includes('order') || rowStr.includes('estimaterequesteddate') || rowStr.includes('customer')) {
-                                headerIdx = i; tabType = 'VRO'; break;
-                            }
-                        }
-
-                        if (headerIdx !== -1) {
-                            const headers = aoa[headerIdx];
-                            const sheetData = [];
-
-                            for (let i = headerIdx + 1; i < aoa.length; i++) {
-                                if (!aoa[i] || !Array.isArray(aoa[i])) continue;
-
-                                const obj = {};
-                                let hasData = false;
-
-                                headers.forEach((h, j) => {
-                                    let key = h ? String(h).trim() : '';
-                                    if (!key) return;
-
-                                    if (obj[key] !== undefined) {
-                                        let c = 1;
-                                        while (obj[key + '_' + c] !== undefined) c++;
-                                        key = key + '_' + c;
-                                    }
-
-                                    obj[key] = aoa[i][j];
-
-                                    if (aoa[i][j] !== '' && aoa[i][j] !== undefined && aoa[i][j] !== null) {
-                                        hasData = true;
-                                    }
-                                });
-
-                                if (hasData) sheetData.push(obj);
-                            }
-
-                            if (tabType === 'RESOURCE') resourceRaw = resourceRaw.concat(sheetData);
-                            else if (tabType === 'OOS') oosRaw = oosRaw.concat(sheetData);
-                            else if (tabType === 'USEFUL') usefulRaw = usefulRaw.concat(sheetData);
-                            else if (tabType === 'VRO') vroRaw = vroRaw.concat(sheetData);
-                        }
-                    } catch (err) {
-                        console.warn('Skipped sheet due to parsing error:', sheetName, err);
-                    }
-                });
-
-                statusEl.innerText = 'Building dashboards...';
-                await new Promise(resolve => requestAnimationFrame(resolve));
-                processExcelData(vroRaw, resourceRaw, oosRaw, usefulRaw);
-
+                statusEl.innerText = 'Dashboard loaded successfully.';
+                statusEl.style.color = '#2e7d32';
             } catch (error) {
                 console.error('Fetch failed:', error);
                 statusEl.innerText = `Failed to load live data. ${error.message}`;
@@ -734,523 +825,334 @@
             }
         }
 
-        document.getElementById('excelFileInput').addEventListener('change', async function(e) {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
-            const statusEl = document.getElementById('upload-status');
-            statusEl.innerText = "Reading manual upload...";
-            
-            let vroRaw = [], resourceRaw = [], oosRaw = [], usefulRaw = [];
-            
-            try {
-                for(let file of files) {
-                    const data = await file.arrayBuffer();
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    workbook.SheetNames.forEach(sheetName => {
-                        try {
-                            const aoa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1, defval: ''});
-                            if (!aoa || aoa.length === 0) return;
-                            
-                            let headerIdx = -1;
-                            let tabType = 'UNKNOWN';
-                            
-                            for(let i=0; i < Math.min(20, aoa.length); i++) {
-                                if (!aoa[i] || !Array.isArray(aoa[i])) continue;
-                                let rowStr = aoa[i].map(c => c ? String(c).toLowerCase().replace(/[^a-z0-9]/g, '') : '').join('');
-                                if (!rowStr) continue;
+        document.getElementById('excelFileInput').addEventListener('change', async function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-                                if (rowStr.includes('createdby') || (rowStr.includes('unitnumber') && rowStr.includes('team'))) {
-                                    headerIdx = i; tabType = 'RESOURCE'; break;
-                                } else if (rowStr.includes('gardaregion') && rowStr.includes('oosflag')) {
-                                    headerIdx = i; tabType = 'OOS'; break;
-                                } else if (rowStr.includes('gardaregion') && rowStr.includes('branch') && rowStr.includes('useful')) {
-                                    headerIdx = i; tabType = 'USEFUL'; break;
-                                } else if (rowStr.includes('ronumber') || rowStr.includes('order') || rowStr.includes('estimaterequesteddate') || rowStr.includes('customer')) {
-                                    headerIdx = i; tabType = 'VRO'; break;
-                                }
-                            }
-                            
-                            if (headerIdx !== -1) {
-                                let headers = aoa[headerIdx];
-                                let sheetData = [];
-                                for(let i = headerIdx + 1; i < aoa.length; i++) {
-                                    if (!aoa[i] || !Array.isArray(aoa[i])) continue;
-                                    let obj = {};
-                                    let hasData = false;
-                                    headers.forEach((h, j) => {
-                                        let key = h ? String(h).trim() : '';
-                                        if (key) {
-                                            if (obj[key] !== undefined) {
-                                                let c = 1;
-                                                while(obj[key + '_' + c] !== undefined) c++;
-                                                key = key + '_' + c;
-                                            }
-                                            obj[key] = aoa[i][j];
-                                            if (aoa[i][j] !== '' && aoa[i][j] !== undefined && aoa[i][j] !== null) hasData = true;
-                                        }
-                                    });
-                                    if (hasData) sheetData.push(obj);
-                                }
-                                
-                                if (tabType === 'RESOURCE') resourceRaw = resourceRaw.concat(sheetData);
-                                else if (tabType === 'OOS') oosRaw = oosRaw.concat(sheetData);
-                                else if (tabType === 'USEFUL') usefulRaw = usefulRaw.concat(sheetData);
-                                else if (tabType === 'VRO') vroRaw = vroRaw.concat(sheetData);
-                            }
-                        } catch(err) {
-                            console.warn("Skipped sheet", sheetName, err);
-                        }
-                    });
-                }
-                processExcelData(vroRaw, resourceRaw, oosRaw, usefulRaw);
-            } catch (error) { 
-                console.error(error); 
-                statusEl.innerText = "Error parsing files."; 
+            const statusEl = document.getElementById('upload-status');
+            statusEl.innerText = 'Reading manual upload...';
+            statusEl.style.color = '#888';
+
+            try {
+                const data = await file.arrayBuffer();
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                loadWorkbookIntoDashboard(workbook);
+
+                statusEl.innerText = `Loaded ${file.name}`;
+                statusEl.style.color = '#2e7d32';
+            } catch (error) {
+                console.error('Manual upload parse error:', error);
+                statusEl.innerText = `Error parsing file: ${error.message}`;
+                statusEl.style.color = 'red';
             }
         });
 
-        function getCol(row, possibleNames) {
-            const rowKeys = Object.keys(row);
-            for (let name of possibleNames) {
-                const target = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                const foundKey = rowKeys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === target);
-                if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null) return String(row[foundKey]).trim();
-            }
-            return '';
-        }
+        function loadWorkbookIntoDashboard(workbook) {
+            let vroRaw = [];
+            let resourceRawAOA = [];
+            let oosRawAOA = [];
+            let usefulRawAOA = [];
+            let dodRawAOA = [];
 
-        function getCustKey(rawStr) {
-            let c = (rawStr || '').toUpperCase();
-            if (c.includes('FERGUSON')) return 'Ferguson';
-            if (c.includes('AMERIT FLEET SOLUTIONS')) return 'Amerit Fleet Solutions';
-            if (c.includes('BRINKS')) return 'Brinks';
-            if (c.includes('US FOODS')) return 'US Foods';
-            if (c.includes('FRONTIER') || c.includes('CUSTOM TRUCK')) return 'Frontier';
-            if (c.includes('COLONY HARDWARE')) return 'Colony Hardware';
-            if (c.includes('SUKUT CONSTRUCTION')) return 'Sukut Construction';
-            if (c.includes('GARDA')) return 'Garda';
-            return rawStr.split('-')[0].trim() || 'Unknown Customer';
-        }
+            workbook.SheetNames.forEach(sheetName => {
+                try {
+                    const aoa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+                        header: 1,
+                        defval: ''
+                    });
 
-        function exportDrilldownToExcel() {
-            if (!currentOwnerView || processedData.length === 0) return;
-            
-            let ownerDataAll = processedData;
-            if (currentOwnerView === 'ALL_PM') ownerDataAll = processedData.filter(ro => pmOwners.includes(ro.owner));
-            else if (currentOwnerView === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => vendedOwners.includes(ro.owner));
-            else if (currentOwnerView === 'ALL_ERS') ownerDataAll = processedData.filter(ro => ersOwners.includes(ro.owner));
-            else ownerDataAll = processedData.filter(ro => ro.owner === String(currentOwnerView));
-            
-            if (currentCustomerFilter !== 'ALL') {
-                ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
-            }
+                    if (!aoa || aoa.length === 0) return;
 
-            let isPM = currentOwnerView === 'ALL_PM' || pmOwners.includes(currentOwnerView);
-            let targetData = ownerDataAll.filter(ro => ro.isOpen);
-            if(!isPM && currentFilter === 'PRIORITY') {
-                targetData = targetData.filter(ro => ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
-            }
+                    const sheetNameLower = sheetName.toLowerCase();
 
-            if (targetData.length === 0) { alert("No data available to export."); return; }
+                    if (sheetNameLower.includes('dod') || sheetNameLower.includes('day over day')) {
+                        dodRawAOA = aoa;
+                    } else if (sheetNameLower.includes('useful')) {
+                        usefulRawAOA = aoa;
+                    } else if (sheetNameLower.includes('resource') || sheetNameLower.includes('team')) {
+                        resourceRawAOA = aoa;
+                    } else if (sheetNameLower.includes('oos garda') || sheetNameLower.includes('national')) {
+                        oosRawAOA = aoa;
+                    } else if (
+                        sheetNameLower.includes('vro export') ||
+                        sheetNameLower.includes('ro detail') ||
+                        sheetNameLower.includes('rodetail')
+                    ) {
+                        let headerIdx = -1;
 
-            const excelRows = targetData.map(ro => ({
-                "AFS RO #": ro.roNum, "Unit No": ro.unitNo, 
-                "OOS Status": ro.isOOS ? "OOS" : "",
-                "Useful %": ro.usefulPct !== null ? Math.round(ro.usefulPct * 100) + '%' : "N/A",
-                "Opened Date": ro.openedFormatted,
-                "Status": ro.status, "ECD": ro.ecdFormatted,
-                "Customer Group": ro.drillTopLevel, "Subregion": ro.subregion, "Branch": ro.branch
-            }));
-
-            const worksheet = XLSX.utils.json_to_sheet(excelRows);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered ROs");
-            XLSX.writeFile(workbook, `workflow_export_${String(currentOwnerView).replace(/\s+/g, '_')}_${currentFilter.toLowerCase()}.xlsx`);
-        }
-
-        function exportSearchToExcel() {
-            const searchTerm = document.getElementById('global-search').value.toLowerCase();
-            if(!searchTerm) return;
-            
-            const results = processedData.filter(ro => ro.unitNo.toLowerCase().includes(searchTerm));
-            if(results.length === 0) { alert("No data to export."); return; }
-            
-            const excelRows = results.map(ro => ({
-                "AFS RO #": ro.roNum, "Unit No": ro.unitNo, 
-                "Priority Status": (ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100) ? "Priority" : "Normal",
-                "OOS Status": ro.isOOS ? "OOS" : "",
-                "Opened Date": ro.openedFormatted,
-                "Owner": ro.owner, "Status": ro.status, "ECD": ro.ecdFormatted
-            }));
-            const worksheet = XLSX.utils.json_to_sheet(excelRows);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Search Results");
-            XLSX.writeFile(workbook, `workflow_search_${searchTerm}.xlsx`);
-        }
-
-        function setFilter(val) {
-            currentFilter = val;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                if(btn.dataset.filter === val) { btn.classList.add('active'); btn.style.background = 'var(--gold)'; } 
-                else { btn.classList.remove('active'); btn.style.background = '#e0e0e0'; }
-            });
-            triggerViewUpdate();
-        }
-
-        function setCustomerFilter(val) {
-            currentCustomerFilter = val;
-            document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = val; });
-            triggerViewUpdate();
-        }
-
-        function triggerViewUpdate() {
-            let activeView = document.querySelector('.view-section.active').id;
-            if(activeView === 'home-view') renderHomeDashboard();
-            else if(activeView === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
-            else if(activeView === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
-            else if(activeView === 'ers-view') renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
-            else if(activeView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView); }
-        }
-
-        function processExcelData(vroRaw, resourceRaw, oosRaw, usefulRaw) {
-            const today = new Date(); today.setHours(0, 0, 0, 0);
-            
-            branchMasterInfo = {}; 
-            branchUsefulMap = {};
-            
-            oosRaw.forEach(row => {
-                let region = getCol(row, ['GARDA REGION']);
-                let subregion = getCol(row, ['GARDA SUBREGION']);
-                let branch = getCol(row, ['Branch', 'GARDA SHOPNAME']);
-                if (branch) {
-                    let bCode = extractGardaCode(branch);
-                    let info = {
-                        region: String(region || 'Unspecified Region').trim(),
-                        subregion: String(subregion || 'Unspecified Subregion').trim(),
-                        branch: String(branch).trim()
-                    };
-                    if (bCode) branchMasterInfo[bCode] = info;
-                    let bNorm = normalizeBranchStr(branch);
-                    if (bNorm) branchMasterInfo[bNorm] = info;
-                }
-            });
-
-            if (usefulRaw && usefulRaw.length > 0) {
-                usefulRaw.forEach(row => {
-                    let rKey = Object.keys(row).find(k => k.trim().toLowerCase().includes('region'));
-                    let subKey = Object.keys(row).find(k => k.trim().toLowerCase().includes('subregion'));
-                    let bKey = Object.keys(row).find(k => k.trim().toLowerCase() === 'branch');
-                    
-                    let r = rKey ? row[rKey] : null;
-                    let s = subKey ? row[subKey] : null;
-                    let b = bKey ? row[bKey] : null;
-                    
-                    if (b) {
-                        let bCode = extractGardaCode(b);
-                        let info = {
-                            region: String(r || 'Unspecified Region').trim(),
-                            subregion: String(s || 'Unspecified Subregion').trim(),
-                            branch: String(b).trim()
-                        };
-                        
-                        if (bCode && !branchMasterInfo[bCode]) branchMasterInfo[bCode] = info;
-                        let bNorm = normalizeBranchStr(b);
-                        if (bNorm && !branchMasterInfo[bNorm]) branchMasterInfo[bNorm] = info;
-
-                        let pct = NaN;
-                        let keys = Object.keys(row);
-                        
-                        let exactUsefulKey = keys.find(k => k.trim().toLowerCase() === 'useful %');
-                        
-                        if (exactUsefulKey && row[exactUsefulKey] !== undefined && row[exactUsefulKey] !== '') {
-                            let valStr = String(row[exactUsefulKey]).trim();
-                            let val = parseFloat(valStr);
-                            if (!isNaN(val)) {
-                                pct = valStr.includes('%') ? val / 100 : val;
-                            }
-                        } else {
-                            let usefulKey = keys.find(k => k.toLowerCase().includes('useful'));
-                            if (usefulKey && row[usefulKey] !== undefined && row[usefulKey] !== '') {
-                                let valStr = String(row[usefulKey]).trim();
-                                let val = parseFloat(valStr);
-                                if (!isNaN(val)) pct = valStr.includes('%') ? val / 100 : val;
+                        for (let i = 0; i < Math.min(20, aoa.length); i++) {
+                            const rowStr = aoa[i].join('').toLowerCase().replace(/[^a-z0-9]/g, '');
+                            if (
+                                rowStr.includes('ronumber') ||
+                                rowStr.includes('order') ||
+                                rowStr.includes('customer')
+                            ) {
+                                headerIdx = i;
+                                break;
                             }
                         }
-                        
-                        if (!isNaN(pct)) {
-                            if (bCode) {
-                                branchUsefulMap[bCode] = pct;
-                                if (bCode === '18055') branchUsefulMap['14095'] = pct;
-                                if (bCode === '14095') branchUsefulMap['18055'] = pct;
+
+                        if (headerIdx !== -1) {
+                            const headers = aoa[headerIdx];
+
+                            for (let i = headerIdx + 1; i < aoa.length; i++) {
+                                if (!aoa[i] || !Array.isArray(aoa[i])) continue;
+
+                                const obj = {};
+                                let hasData = false;
+
+                                headers.forEach((h, j) => {
+                                    const key = h ? String(h).trim() : '';
+                                    if (key) {
+                                        obj[key] = aoa[i][j];
+                                        if (aoa[i][j] !== '') hasData = true;
+                                    }
+                                });
+
+                                if (hasData) vroRaw.push(obj);
                             }
-                            if (bNorm) branchUsefulMap[bNorm] = pct;
                         }
                     }
-                });
-            }
-
-            let unitToLocation = {};
-            oosMap = {};
-            
-            oosRaw.forEach(row => {
-                let unit = getCol(row, ['UNITNUMBER', 'Unit No', 'Vehicle', 'UNIT #']);
-                let oosFlag = getCol(row, ['OOS Flag', 'Open RO Category', 'OOS FLAG']);
-                let region = getCol(row, ['GARDA REGION']);
-                let subregion = getCol(row, ['GARDA SUBREGION']);
-                let branch = getCol(row, ['Branch', 'GARDA SHOPNAME']);
-                
-                if(unit) {
-                    let u = unit.toUpperCase().trim();
-                    let isOOS = (String(oosFlag).toUpperCase().trim() === 'OOS');
-                    oosMap[u] = isOOS;
-
-                    unitToLocation[u] = { 
-                        region: String(region || 'Unspecified Region').trim(), 
-                        subregion: String(subregion || 'Unspecified Subregion').trim(), 
-                        branch: String(branch || 'Unspecified Branch').trim() 
-                    };
+                } catch (err) {
+                    console.warn('Skipped sheet due to parsing error:', sheetName, err);
                 }
             });
 
-            let unitOwnerMap = {};
-            let creatorMap = {};
-            let globalOwnerMap = {}; 
+            if (!usefulRawAOA.length && !resourceRawAOA.length && !oosRawAOA.length && !vroRaw.length) {
+                throw new Error(
+                    'Workbook loaded, but no expected sheets were recognized. Check tab names in master_workFLOW.xlsx.'
+                );
+            }
+
+            processExcelData(vroRaw, resourceRawAOA, oosRawAOA, usefulRawAOA, dodRawAOA);
+            setTimeout(initFirebaseSync, 500);
+        }
+
+        function processVendorData(workbook) {
+            workbook.SheetNames.forEach(sheetName => {
+                try {
+                    const aoa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                    if (!aoa || aoa.length === 0) return;
+
+                    if (sheetName.toLowerCase().includes('brinks')) {
+                        vendorStore.Brinks = aoa;
+                    } else if (sheetName.toLowerCase().includes('garda')) {
+                        vendorStore.Garda = aoa;
+                    }
+                } catch (err) {
+                    console.warn('Skipped vendor sheet due to parsing error:', sheetName, err);
+                }
+            });
+        }
+
+
+        // ==========================================
+        // DATA PROCESSING & LOGIC ENGINE
+        // ==========================================
+        function processExcelData(vroRaw, resourceRawAOA, oosRawAOA, usefulRawAOA, dodRawAOA) {
+            const today = new Date(); 
+            today.setHours(0, 0, 0, 0);
             
+            branchUsefulMap = {};
+            branchMetricsMap = {};
+
+            // 1. Parse DoD Tab (Starts at Row 3)
+            for (let i = 2; i < dodRawAOA.length; i++) {
+                let row = dodRawAOA[i];
+                if (!row || row.length < 3) continue;
+                let branch = row[2];
+                if (branch && String(branch).trim() !== '') {
+                    let bCode = extractGardaCode(branch) || normalizeBranchStr(branch);
+                    let dodOos = parseFloat(row[24]);
+                    if (isNaN(dodOos)) dodOos = 0;
+                    if (!branchMetricsMap[bCode]) branchMetricsMap[bCode] = { maxRoutes:0, dodOos:0 };
+                    branchMetricsMap[bCode].dodOos = dodOos;
+                }
+            }
+            
+            // 2. Parse Useful % Tab (Starts at Row 3)
+            for (let i = 2; i < usefulRawAOA.length; i++) {
+                let row = usefulRawAOA[i];
+                if (!row || row.length < 3) continue;
+                let branch = row[2]; 
+                if (branch && String(branch).trim() !== '') {
+                    let bCode = extractGardaCode(branch) || normalizeBranchStr(branch);
+                    let maxRoutes = parseFloat(row[22]);
+                    if (isNaN(maxRoutes)) maxRoutes = 0;
+                    
+                    if (!branchMetricsMap[bCode]) branchMetricsMap[bCode] = { maxRoutes:0, dodOos:0 };
+                    branchMetricsMap[bCode].maxRoutes = maxRoutes;
+
+                    let parsePct = (val) => {
+                        if (val === undefined || val === null || val === '') return null;
+                        let v = parseFloat(String(val).trim());
+                        if (isNaN(v)) return null;
+                        return String(val).includes('%') ? v / 100 : v;
+                    };
+                    
+                    let pcts = {
+                        LTS: parsePct(row[9]),     
+                        ST: parsePct(row[15]),     
+                        SHUTTLE: parsePct(row[21]),
+                        TOTAL: parsePct(row[27])   
+                    };
+                    
+                    branchUsefulMap[bCode] = pcts;
+                }
+            }
+
+            // 3. Parse Resource Table
+            let resourceMap = {};
+            ownerNameToTeam = {};
+            
+            // Hardcode Kevin Anguzza rule
+            resourceMap['kanguzza@ameritfleet.com'] = { name: 'Kevin Anguzza', team: 'PM', hasBranch: false };
+            ownerNameToTeam['Kevin Anguzza'] = 'PM';
+
+            let resHeaderIdx = -1;
+            for (let i = 0; i < 10; i++) {
+                if (resourceRawAOA[i] && resourceRawAOA[i].some(c => String(c).toUpperCase().includes('EMAIL') || String(c).toUpperCase().includes('E-MAIL'))) {
+                    resHeaderIdx = i; break;
+                }
+            }
+            if (resHeaderIdx !== -1) {
+                let resHeaders = resourceRawAOA[resHeaderIdx] || [];
+                let hShop = resHeaders.findIndex(h => String(h).toUpperCase().includes('SHOP') || String(h).toUpperCase().includes('BRANCH'));
+                let hOwner = resHeaders.findIndex(h => String(h).toUpperCase().includes('OWNER') || String(h).toUpperCase().includes('NAME'));
+                let hEmail = resHeaders.findIndex(h => String(h).toUpperCase().includes('EMAIL') || String(h).toUpperCase().includes('E-MAIL'));
+                let hTeam = resHeaders.findIndex(h => String(h).toUpperCase().includes('TEAM'));
+                
+                for (let i = resHeaderIdx + 1; i < resourceRawAOA.length; i++) {
+                    let row = resourceRawAOA[i];
+                    if (!row) continue;
+                    let shop = hShop >= 0 ? row[hShop] : '';
+                    let owner = hOwner >= 0 ? row[hOwner] : '';
+                    let email = hEmail >= 0 ? row[hEmail] : '';
+                    let team = hTeam >= 0 ? row[hTeam] : '';
+                    
+                    if (owner && team) {
+                        ownerNameToTeam[String(owner).trim()] = String(team).trim().toUpperCase();
+                    }
+                    if (email) {
+                        email = String(email).toLowerCase().trim();
+                        if (!resourceMap[email]) {
+                            resourceMap[email] = { name: owner ? String(owner).trim() : '', team: team ? String(team).trim().toUpperCase() : '', hasBranch: false };
+                        }
+                        if (shop && String(shop).trim() !== '') {
+                            resourceMap[email].hasBranch = true;
+                        }
+                    }
+                }
+            }
+
+            // 4. Parse OOS Garda (Master Units)
+            masterUnits = {};
+            for (let i = 1; i < oosRawAOA.length; i++) {
+                let row = oosRawAOA[i];
+                if (!row || row.length < 4) continue;
+                
+                let region = String(row[0] || '').trim();
+                let subregion = String(row[1] || '').trim();
+                let branch = String(row[2] || '').trim();
+                let unit = String(row[3] || '').toUpperCase().trim();
+                let unitType = String(row[4] || '').toUpperCase().trim(); 
+                let oosFlag = String(row[8] || '').toUpperCase().trim();
+                let owner = String(row[13] || '').trim();
+                
+                if (!unit) continue;
+                // Scrub Dedicated from existence
+                if (owner.toUpperCase() === 'DEDICATED') continue; 
+                
+                if (!owner) owner = 'Unassigned';
+                
+                masterUnits[unit] = {
+                    region: region,
+                    subregion: subregion,
+                    branch: branch,
+                    type: unitType,
+                    isOOS: (oosFlag === 'OOS'),
+                    owner: owner
+                };
+            }
+
+            // 5. Process Repair Orders
             let activePM = new Set();
             let activeVended = new Set();
             let activeERS = new Set();
-            let pmKeywords = [];
-            
-            dedicatedBranches = new Set();
-
-            resourceRaw.forEach(row => {
-                let keys = Object.keys(row);
-                
-                let bVal = getCol(row, ['Branch']);
-                let oVal = getCol(row, ['Owner']);
-                if (bVal && String(oVal).toUpperCase().trim() === 'DEDICATED') {
-                    let bCode = extractGardaCode(bVal);
-                    if (bCode) dedicatedBranches.add(bCode);
-                    let bNorm = normalizeBranchStr(bVal);
-                    if (bNorm) dedicatedBranches.add(bNorm);
-                }
-
-                let unitKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === 'unitnumber');
-                let teamKeys = keys.filter(k => k.toLowerCase().replace(/[^a-z0-9]/g, '').includes('team'));
-                let unitTeamKey = teamKeys[0]; 
-                
-                if (unitKey && row[unitKey]) {
-                    let u = String(row[unitKey]).toUpperCase().trim();
-                    let o = oVal ? String(oVal).trim() : '';
-                    let t = row[unitTeamKey] ? String(row[unitTeamKey]).toUpperCase().trim() : 'VENDED REPAIR';
-                    unitOwnerMap[u] = { owner: o, team: t };
-                }
-
-                let creatorKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === 'createdby');
-                let nameKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === 'name');
-                let statusKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === 'status');
-                let creatorTeamKey = teamKeys.length > 1 ? teamKeys[1] : teamKeys[0];
-                let pmComp = getCol(row, ['PM Comp:']);
-
-                if (creatorKey && row[creatorKey]) {
-                    let cEmail = String(row[creatorKey]).toLowerCase().trim();
-                    let cName = row[nameKey] ? String(row[nameKey]).trim() : cEmail;
-                    let cTeam = row[creatorTeamKey] ? String(row[creatorTeamKey]).toUpperCase().trim() : 'ERS';
-                    let cStatus = row[statusKey] ? String(row[statusKey]).toUpperCase().trim() : 'INACTIVE';
-                    
-                    creatorMap[cEmail] = { name: cName, team: cTeam };
-                    globalOwnerMap[cEmail] = { name: cName, status: cStatus, team: cTeam };
-                }
-                
-                if (pmComp && pmComp.toUpperCase() !== 'PM COMP:' && pmComp.trim() !== '') {
-                    pmKeywords.push(pmComp.toLowerCase().trim());
-                }
-            });
-
-            pmKeywords = [...new Set(pmKeywords)]; 
-
             let allCustSet = new Set();
+            let openROsInUnits = new Set();
 
             processedData = vroRaw.map(row => {
                 let roNum = getCol(row, ['Order', 'RO Number', 'RONum', 'AFS RO #']).toUpperCase().trim();
-                let customerRaw = getCol(row, ['Customer', 'CUSTOMERNAME', 'Customer Name']); 
-                let rawOwnerEmail = getCol(row, ['Owner', 'Created By', 'Email']); 
+                if (!roNum) return null;
+                
                 let unit = getCol(row, ['Unit No', 'UNITNUMBER', 'Vehicle']).toUpperCase().trim();
-                let status = getCol(row, ['Status']);
+                let mUnit = masterUnits[unit];
+                if (!mUnit) return null; // Dropped if not in OOS Garda
+
+                let ownerEmail = getCol(row, ['Owner', 'Created By', 'Email']).toLowerCase().trim(); 
+                let statusStr = getCol(row, ['Status']).toUpperCase().trim();
                 let vmrs = getCol(row, ['Task', 'DESCRIP', 'VMRS Description']);
                 let openedRaw = getCol(row, ['Opened', 'ROOpenedDate']);
                 let dueRaw = getCol(row, ['Unit Due Date', 'Estimate Due Date', 'Due Date', 'L']);
                 let compRaw = getCol(row, ['Completed Date', 'Completed', 'P']);
+                
+                let isOpen = !excludedStatuses.includes(statusStr);
+                if (isOpen) openROsInUnits.add(unit);
 
                 let openedDate = new Date(openedRaw);
                 let openedDT = isNaN(openedDate.getTime()) ? null : openedDate;
                 let openedFormatted = openedDT ? `${openedDT.getMonth()+1}/${openedDT.getDate()}/${openedDT.getFullYear()}` : 'N/A';
 
-                let customerFixed = String(customerRaw || '').toUpperCase().replace('MRTLE', 'MYRTLE');
-                if (customerFixed.includes('HANVER') || customerFixed.includes('HANOVER') || customerFixed.includes('18055') || customerFixed.includes('180-55')) {
-                    customerFixed = 'GARDA - WILKES BARRE, PA 140-95';
-                }
-                if (customerFixed.includes('FONTANA') && !customerFixed.includes('120')) {
-                    customerFixed = 'GARDA - FONTANA, CA 120-14';
-                }
-
-                let customer = customerFixed;
-                let loc = unitToLocation[unit] || { region: 'Unknown Region', subregion: 'Unknown Subregion', branch: 'Unknown Branch' };
-                let custKey = getCustKey(customer);
-                
-                let cStrNorm = customerFixed.replace(/[^A-Z0-9]/ig, '');
-                let cNameOnly = customerFixed.replace(/\d{3}[- ]?\d{2}/g, '').replace(/[^A-Z0-9]/ig, '');
-                let branchCode = extractGardaCode(customer); 
-                if (!branchCode && loc.branch) branchCode = extractGardaCode(loc.branch);
-                
-                if (custKey === 'Garda') {
-                    if (branchCode && branchMasterInfo[branchCode]) {
-                        loc = Object.assign({}, loc, branchMasterInfo[branchCode]);
-                    } else {
-                        for (let bKey in branchMasterInfo) {
-                            if (bKey.length > 4 && cNameOnly.includes(bKey)) {
-                                loc = Object.assign({}, loc, branchMasterInfo[bKey]);
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (loc.region === 'Unknown Region' || loc.region === 'Unspecified Region') {
-                    let locPart = customer;
-                    if(String(customer).includes('-')) locPart = customer.substring(customer.indexOf('-') + 1).trim(); 
-                    
-                    let stateName = 'Unknown State';
-                    let cityName = 'Unknown City';
-
-                    if (locPart.includes(',')) {
-                        let splitComma = locPart.split(','); 
-                        cityName = splitComma[0].trim();
-                        let afterComma = splitComma[1].trim().split(' ').filter(s => s.trim() !== ''); 
-                        if(afterComma.length > 0) stateName = afterComma[0].trim();
-                    } else {
-                        let spaceSplit = locPart.split(' ').filter(s => s.trim() !== '');
-                        if (spaceSplit.length === 1 && spaceSplit[0].length === 2) {
-                            stateName = spaceSplit[0].toUpperCase();
-                            cityName = 'Unknown City';
-                        } else if (spaceSplit.length >= 2) {
-                            let last = spaceSplit[spaceSplit.length - 1].trim();
-                            let secLast = spaceSplit[spaceSplit.length - 2].trim();
-                            if (last.length === 2 && !/\d/.test(last)) {
-                                stateName = last.toUpperCase();
-                                cityName = spaceSplit.slice(0, spaceSplit.length - 1).join(' ');
-                            } else if (secLast.length === 2 && !/\d/.test(secLast)) {
-                                stateName = secLast.toUpperCase();
-                                cityName = spaceSplit.slice(0, spaceSplit.length - 2).join(' ');
-                            } else {
-                                cityName = locPart;
-                            }
-                        } else {
-                            cityName = locPart;
-                        }
-                    }
-                    
-                    loc.region = stateName;
-                    loc.subregion = cityName;
-                    if (loc.branch === 'Unknown Branch' || loc.branch === 'Unspecified Branch') {
-                        loc.branch = String(customerRaw).trim(); 
-                    }
-                }
-                
-                if (custKey === 'Garda') {
-                    if (loc.region === 'PA' || customerFixed.includes(', PA') || customerFixed.includes(' PA ')) {
-                        loc.region = 'East';
-                        loc.subregion = 'Midatlantic';
-                    }
-                }
-                
-                let ownerEmailLower = String(rawOwnerEmail || '').toLowerCase().trim();
-                let finalOwner = '';
-                let finalTeam = 'VENDED REPAIR';
-                let isDedicatedFlag = false;
-
-                if (unitOwnerMap[unit] && unitOwnerMap[unit].owner.toUpperCase() === 'DEDICATED') {
-                    isDedicatedFlag = true;
-                }
-
-                if (specificCreators.includes(ownerEmailLower) && creatorMap[ownerEmailLower]) {
-                    finalOwner = creatorMap[ownerEmailLower].name;
-                    finalTeam = creatorMap[ownerEmailLower].team;
-                } 
-                else if (unitOwnerMap[unit] && !isDedicatedFlag && unitOwnerMap[unit].owner) {
-                    finalOwner = unitOwnerMap[unit].owner;
-                    finalTeam = unitOwnerMap[unit].team;
-                }
-                else {
-                    if (globalOwnerMap[ownerEmailLower]) {
-                        finalOwner = globalOwnerMap[ownerEmailLower].name;
-                        finalTeam = globalOwnerMap[ownerEmailLower].team;
-                    } else if (rawOwnerEmail) {
-                        finalOwner = String(rawOwnerEmail).split('@')[0];
-                        finalOwner = finalOwner.charAt(0).toUpperCase() + finalOwner.slice(1);
-                        finalTeam = 'VENDED REPAIR';
-                    } else {
-                        finalOwner = 'Unassigned';
-                        finalTeam = 'VENDED REPAIR';
-                    }
-                }
-
-                let taskStr = vmrs.toLowerCase();
-                let isPMOrder = false;
-                for (let kw of pmKeywords) {
-                    if (kw && taskStr.includes(kw)) {
-                        isPMOrder = true;
-                        break;
-                    }
-                }
-
-                let drillTopLevel = custKey + (loc.region !== 'Unknown State' && loc.region !== 'Unknown Region' ? ' ' + loc.region : '');
+                let custKey = getCustKey(mUnit.branch);
+                let drillTopLevel = custKey + (mUnit.region !== '' && mUnit.region !== 'Unknown Region' ? ' ' + mUnit.region : '');
                 allCustSet.add(custKey);
 
-                let statusStr = String(status || '').toUpperCase().trim();
-                let isOOS = oosMap[unit] === true; 
-                let isOpen = !excludedStatuses.includes(statusStr);
+                // ** THE KEVIN FIX: Dual-Ownership Logic **
+                let kpiOwners = new Set();
+                let drilldownOwners = new Set();
                 
-                let addTile = false;
-                if (specificCreators.includes(ownerEmailLower)) addTile = true;
-                else if (unitOwnerMap[unit] && !isDedicatedFlag && unitOwnerMap[unit].owner) addTile = true;
-                else if (finalOwner === 'Dedicated' || finalOwner === 'Unassigned') addTile = true;
-                else if (globalOwnerMap[ownerEmailLower] && globalOwnerMap[ownerEmailLower].status === 'ACTIVE') addTile = true;
+                let unitOwner = mUnit.owner;
+                let validBranchOwner = (unitOwner && unitOwner.toUpperCase() !== 'UNASSIGNED') ? unitOwner : null;
 
-                if (addTile && isOpen) {
-                    if (finalTeam === 'PM') activePM.add(finalOwner);
-                    else if (finalTeam === 'ERS') activeERS.add(finalOwner);
-                    else activeVended.add(finalOwner);
+                let creatorInfo = resourceMap[ownerEmail];
+                let isCreatorSpecial = false;
+
+                // Check if creator is PM or ERS
+                if (creatorInfo && (creatorInfo.team === 'ERS' || creatorInfo.team === 'PM')) {
+                    isCreatorSpecial = true;
+                    if (creatorInfo.name) {
+                        kpiOwners.add(creatorInfo.name);
+                        drilldownOwners.add(creatorInfo.name);
+                    }
+                } else if (ownerEmail === 'kanguzza@ameritfleet.com') {
+                    isCreatorSpecial = true;
+                    kpiOwners.add('Kevin Anguzza');
+                    drilldownOwners.add('Kevin Anguzza');
                 }
-                
-                let usefulPct = null;
-                if (branchCode && branchUsefulMap[branchCode] !== undefined) {
-                    usefulPct = branchUsefulMap[branchCode];
+
+                if (isCreatorSpecial) {
+                    // It counts for PM/ERS KPI, but Branch owner still needs to see it in Drilldown
+                    if (validBranchOwner) drilldownOwners.add(validBranchOwner);
                 } else {
-                    for (let bKey in branchUsefulMap) {
-                        if (bKey.length > 4 && cNameOnly.includes(bKey)) {
-                            usefulPct = branchUsefulMap[bKey];
-                            break;
-                        }
+                    // Normal Vended Repair logic
+                    if (validBranchOwner) {
+                        kpiOwners.add(validBranchOwner);
+                        drilldownOwners.add(validBranchOwner);
                     }
                 }
 
-                if (!isDedicatedFlag) {
-                    if (branchCode && dedicatedBranches.has(branchCode)) isDedicatedFlag = true;
-                    else {
-                        for (let bKey of dedicatedBranches) {
-                            if (bKey.length > 4 && cNameOnly.includes(bKey)) {
-                                isDedicatedFlag = true;
-                                break;
-                            }
-                        }
-                    }
-                }
+                let bCode = extractGardaCode(mUnit.branch) || normalizeBranchStr(mUnit.branch);
+                let pcts = branchUsefulMap[bCode] || { LTS: null, ST: null, SHUTTLE: null, TOTAL: null };
 
-                let ecdState = 'missing'; let ecdFormatted = 'NO ECD, UPDATE';
+                let ecdState = 'missing'; 
+                let ecdFormatted = 'NO ECD, UPDATE';
                 let ecdDate = new Date(dueRaw);
+                let ecdMs = 0;
+                
                 if (dueRaw && !isNaN(ecdDate.getTime())) {
+                    ecdMs = ecdDate.getTime();
                     let ecdDay = new Date(ecdDate.getFullYear(), ecdDate.getMonth(), ecdDate.getDate());
                     let todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
                     ecdFormatted = `${ecdDate.getMonth()+1}/${ecdDate.getDate()}/${ecdDate.getFullYear()}`;
@@ -1259,7 +1161,7 @@
                 }
 
                 let isCompletedKPI = false; let isOnTimeKPI = false; let isLateKPI = false;
-                if (excludedStatuses.includes(statusStr) && compRaw !== '') {
+                if (!isOpen && compRaw !== '') {
                     isCompletedKPI = true; let cDate = new Date(compRaw);
                     if (!isNaN(cDate.getTime())) {
                         let dDate = new Date(dueRaw);
@@ -1269,9 +1171,159 @@
                     } else isCompletedKPI = false;
                 }
                 
-                return { roNum, customer, custKey, drillTopLevel, owner: finalOwner, unitNo: unit, status, vmrs, isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, subregion: loc.subregion, branch: loc.branch, ecdState, ecdFormatted, openedDT, openedFormatted, usefulPct, isDedicated: isDedicatedFlag };
-            }).filter(ro => ro.roNum !== '');
+                let roObj = {
+                    roNum, customer: mUnit.branch, custKey, drillTopLevel, 
+                    owner: Array.from(drilldownOwners).join(', '), 
+                    kpiOwners: Array.from(kpiOwners),
+                    drilldownOwners: Array.from(drilldownOwners),
+                    tileOwners: Array.from(drilldownOwners), 
+                    unitNo: unit, unitType: mUnit.type, status: statusStr, vmrs, 
+                    isOOS: mUnit.isOOS, isOpen, isCompletedKPI, isOnTimeKPI, isLateKPI, 
+                    subregion: mUnit.subregion, branch: mUnit.branch, 
+                    ecdState, ecdFormatted, ecdMs, openedDT, openedFormatted, 
+                    usefulPct: pcts.TOTAL, usefulPctObj: pcts, region: mUnit.region,
+                    possibleDuplicate: false
+                };
 
+                if (isOpen) {
+                    roObj.kpiOwners.forEach(o => {
+                        let t = ownerNameToTeam[o] || 'VENDED REPAIR';
+                        if (o === 'Kevin Anguzza') t = 'PM';
+                        if (t === 'PM') activePM.add(o);
+                        else if (t === 'ERS') activeERS.add(o);
+                        else activeVended.add(o);
+                    });
+                }
+
+                return roObj;
+            }).filter(ro => ro !== null);
+
+            // 6. Duplicate Order Detection Engine
+            let unitRoGroups = {};
+            processedData.forEach(ro => {
+                if (ro.isOpen && ro.roNum && !ro.roNum.startsWith('NO RO')) {
+                    if (!unitRoGroups[ro.unitNo]) unitRoGroups[ro.unitNo] = [];
+                    unitRoGroups[ro.unitNo].push(ro);
+                }
+            });
+
+            for (let unit in unitRoGroups) {
+                let ros = unitRoGroups[unit];
+                if (ros.length > 1) {
+                    for (let i = 0; i < ros.length; i++) {
+                        for (let j = i + 1; j < ros.length; j++) {
+                            if (areTasksSimilar(ros[i].vmrs, ros[j].vmrs)) {
+                                ros[i].possibleDuplicate = true;
+                                ros[j].possibleDuplicate = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 7. Ghost RO Injection
+            for (let unit in masterUnits) {
+                let mUnit = masterUnits[unit];
+                if (mUnit.isOOS && !openROsInUnits.has(unit)) {
+                    let custKey = getCustKey(mUnit.branch);
+                    let drillTopLevel = custKey + (mUnit.region !== '' && mUnit.region !== 'Unknown Region' ? ' ' + mUnit.region : '');
+
+                    let kpiOwners = new Set();
+                    let drilldownOwners = new Set();
+                    let unitOwner = mUnit.owner;
+                    if (unitOwner && unitOwner.toUpperCase() !== 'UNASSIGNED') {
+                        kpiOwners.add(unitOwner);
+                        drilldownOwners.add(unitOwner);
+                    }
+
+                    let bCode = extractGardaCode(mUnit.branch) || normalizeBranchStr(mUnit.branch);
+                    let pcts = branchUsefulMap[bCode] || { LTS: null, ST: null, SHUTTLE: null, TOTAL: null };
+
+                    let roObj = {
+                        roNum: 'NO RO - ' + unit,
+                        customer: mUnit.branch,
+                        custKey: custKey,
+                        drillTopLevel: drillTopLevel,
+                        owner: Array.from(drilldownOwners).join(', '),
+                        kpiOwners: Array.from(kpiOwners),
+                        drilldownOwners: Array.from(drilldownOwners),
+                        tileOwners: Array.from(drilldownOwners),
+                        unitNo: unit,
+                        unitType: mUnit.type,
+                        status: 'NO ACTIVE RO',
+                        vmrs: '',
+                        isOOS: true,
+                        isOpen: true,
+                        isCompletedKPI: false,
+                        isOnTimeKPI: false,
+                        isLateKPI: false,
+                        subregion: mUnit.subregion,
+                        branch: mUnit.branch,
+                        ecdState: 'missing',
+                        ecdFormatted: 'N/A',
+                        ecdMs: 0,
+                        openedDT: null,
+                        openedFormatted: 'N/A',
+                        usefulPct: pcts.TOTAL,
+                        usefulPctObj: pcts,
+                        region: mUnit.region,
+                        possibleDuplicate: false
+                    };
+
+                    processedData.push(roObj);
+
+                    roObj.kpiOwners.forEach(o => {
+                        let t = ownerNameToTeam[o] || 'VENDED REPAIR';
+                        if (o === 'Kevin Anguzza') t = 'PM';
+                        if (t === 'PM') activePM.add(o);
+                        else if (t === 'ERS') activeERS.add(o);
+                        else activeVended.add(o);
+                    });
+                    
+                    allCustSet.add(custKey);
+                }
+            }
+
+            // 8. Summary Hierarchy Builder
+            summaryTree = {};
+            for (let unit in masterUnits) {
+                let m = masterUnits[unit];
+                let reg = m.region || 'Unknown Region';
+                let sub = m.subregion || 'Unknown Subregion';
+                let bra = m.branch || 'Unknown Branch';
+
+                if (!summaryTree[reg]) summaryTree[reg] = { maxRoutes:0, totalUnits:0, oos:0, dodOos:0, subs: {} };
+                if (!summaryTree[reg].subs[sub]) summaryTree[reg].subs[sub] = { maxRoutes:0, totalUnits:0, oos:0, dodOos:0, branches: {} };
+                
+                if (!summaryTree[reg].subs[sub].branches[bra]) {
+                    let code = extractGardaCode(bra) || normalizeBranchStr(bra);
+                    let bMetrics = branchMetricsMap[code] || { maxRoutes:0, dodOos:0 };
+                    
+                    summaryTree[reg].subs[sub].branches[bra] = { 
+                        maxRoutes: bMetrics.maxRoutes, 
+                        totalUnits: 0, 
+                        oos: 0, 
+                        dodOos: bMetrics.dodOos 
+                    };
+                    
+                    summaryTree[reg].maxRoutes += bMetrics.maxRoutes;
+                    summaryTree[reg].dodOos += bMetrics.dodOos;
+                    summaryTree[reg].subs[sub].maxRoutes += bMetrics.maxRoutes;
+                    summaryTree[reg].subs[sub].dodOos += bMetrics.dodOos;
+                }
+
+                summaryTree[reg].totalUnits++;
+                summaryTree[reg].subs[sub].totalUnits++;
+                summaryTree[reg].subs[sub].branches[bra].totalUnits++;
+
+                if (m.isOOS) {
+                    summaryTree[reg].oos++;
+                    summaryTree[reg].subs[sub].oos++;
+                    summaryTree[reg].subs[sub].branches[bra].oos++;
+                }
+            }
+
+            // Finalize Data
             pmOwners = Array.from(activePM).sort();
             vendedOwners = Array.from(activeVended).sort();
             ersOwners = Array.from(activeERS).sort();
@@ -1287,6 +1339,8 @@
                 });
             });
 
+            populateSummaryDropdowns();
+
             document.getElementById('upload-box').style.display = 'none';
             document.getElementById('home-dashboard').style.display = 'block';
             
@@ -1294,21 +1348,470 @@
             updateAllNoteButtons(); 
         }
 
-        function getUsefulBadge(usefulArray) {
-            let valid = usefulArray.filter(v => v !== null && v !== undefined && !isNaN(v));
-            if (valid.length === 0) return '';
-            let avg = valid.reduce((a,b) => a+b, 0) / valid.length;
-            let val = Math.round(avg * 100);
-            let bg = 'var(--low-green)';
-            if (val < 100) bg = 'var(--urgent-red)';
-            else if (val === 100) bg = 'var(--medium-yellow)';
-            return `<span class="badge" style="background-color: ${bg}; color: white; margin-left: 10px; font-size: 11px;">Useful: ${val}%</span>`;
+        // ==========================================
+        // HELPERS & EXCEL ENGINE
+        // ==========================================
+        function normalizeBranchStr(str) {
+            if (!str) return null;
+            return String(str).toUpperCase().replace(/\d{3}[- ]?\d{2}/g, '').replace(/[^A-Z0-9]/ig, '');
+        }
+
+        function extractGardaCode(str) {
+            if (!str) return null;
+            let match = String(str).match(/(\d{3})[- ]?(\d{2})/);
+            if (match) return match[1] + match[2];
+            return null;
+        }
+
+        function getCustKey(branch) {
+            const value = String(branch || '').trim();
+            if (!value) return 'UNKNOWN';
+
+            const upper = value.toUpperCase();
+
+            if (upper.includes('GARDA') || extractGardaCode(value)) return 'GARDA';
+            if (upper.includes('BRINK')) return 'BRINKS';
+            if (upper.includes('LOOMIS')) return 'LOOMIS';
+            if (upper.includes('PUROLATOR')) return 'PUROLATOR';
+
+            return 'UNKNOWN';
+        }
+
+        function getCol(row, possibleNames) {
+            const rowKeys = Object.keys(row);
+            for (let name of possibleNames) {
+                const target = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const foundKey = rowKeys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === target);
+                if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null) return String(row[foundKey]).trim();
+            }
+            return '';
+        }
+
+        function isPriority(ro) {
+            if (!ro.isOOS) return false;
+            let u = ro.usefulPctObj;
+            if (!u) return false;
+            
+            let typePct = null;
+            if (ro.unitType === 'LTS') typePct = u.LTS;
+            else if (ro.unitType === 'ST') typePct = u.ST;
+            else if (ro.unitType === 'SHUTTLE') typePct = u.SHUTTLE;
+            
+            if (typePct !== null && !isNaN(typePct)) {
+                return Math.round(typePct * 100) < 100;
+            }
+            
+            if (u.TOTAL !== null && !isNaN(u.TOTAL)) {
+                return Math.round(u.TOTAL * 100) < 100;
+            }
+            return false;
+        }
+
+        function areTasksSimilar(task1, task2) {
+            if (!task1 || !task2) return false;
+            let t1 = task1.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+            let t2 = task2.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+            if (t1 === t2) return true;
+
+            let stopWords = ['repair', 'replace', 'check', 'diagnostics', 'system', 'assembly', 'indicator', 'warning', 'level', 'general', 'accessories', 'and', 'or', 'the', 'for', 'of', 'front', 'rear', 'side', 'left', 'right', 'pm', 'inspection', 'maintenance', 'scheduled', 'unscheduled'];
+            let words1 = t1.split(/\s+/).filter(w => w.length >= 4 && !stopWords.includes(w));
+            let words2 = t2.split(/\s+/).filter(w => w.length >= 4 && !stopWords.includes(w));
+
+            for (let w1 of words1) {
+                for (let w2 of words2) {
+                    if (w1 === w2 || w1 === w2 + 's' || w2 === w1 + 's' || w1 === w2 + 'es' || w2 === w1 + 'es') {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function autoFitColumns(ws, data) {
+            if (!data || data.length === 0) return;
+            const keys = Object.keys(data[0]);
+            ws['!cols'] = keys.map(key => {
+                let maxLen = key.length;
+                data.forEach(row => {
+                    if (row[key] !== null && row[key] !== undefined) {
+                        const valStr = String(row[key]);
+                        // Cap width at 60 to prevent massive notes columns
+                        maxLen = Math.max(maxLen, Math.min(valStr.length, 60)); 
+                    }
+                });
+                return { wch: maxLen + 2 };
+            });
+            ws['!autofilter'] = { ref: XLSX.utils.encode_range(XLSX.utils.decode_range(ws['!ref'])) };
+        }
+
+        // ==========================================
+        // EXPORT FUNCTIONS
+        // ==========================================
+        function exportDrilldownToExcel() {
+            if (!currentOwnerView || processedData.length === 0) return;
+            
+            let ownerDataAll = processedData;
+            if (currentOwnerView === 'ALL_PM') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => pmOwners.includes(o)));
+            else if (currentOwnerView === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => vendedOwners.includes(o)));
+            else if (currentOwnerView === 'ALL_ERS') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => ersOwners.includes(o)));
+            else ownerDataAll = processedData.filter(ro => ro.drilldownOwners.includes(String(currentOwnerView)));
+            
+            if (currentCustomerFilter !== 'ALL') {
+                ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
+            }
+
+            let rVal = document.getElementById('dd-region').value;
+            let sVal = document.getElementById('dd-subregion').value;
+            let bVal = document.getElementById('dd-branch').value;
+
+            ownerDataAll = ownerDataAll.filter(ro => {
+                if (rVal !== 'ALL' && ro.region !== rVal) return false;
+                if (sVal !== 'ALL' && ro.subregion !== sVal) return false;
+                if (bVal !== 'ALL' && ro.branch !== bVal) return false;
+                return true;
+            });
+
+            let isPM = currentOwnerView === 'ALL_PM' || pmOwners.includes(currentOwnerView);
+            let targetData = ownerDataAll.filter(ro => ro.isOpen);
+            if(currentFilter === 'OOS' && !isPM) {
+                targetData = targetData.filter(ro => ro.isOOS);
+            } else if(currentFilter === 'PRIORITY' && !isPM) {
+                targetData = targetData.filter(ro => isPriority(ro));
+            }
+
+            if (targetData.length === 0) { alert("No data available to export."); return; }
+
+            const excelRows = targetData.map(ro => {
+                let typePct = null;
+                if (ro.unitType === 'LTS') typePct = ro.usefulPctObj ? ro.usefulPctObj.LTS : null;
+                else if (ro.unitType === 'ST') typePct = ro.usefulPctObj ? ro.usefulPctObj.ST : null;
+                else if (ro.unitType === 'SHUTTLE') typePct = ro.usefulPctObj ? ro.usefulPctObj.SHUTTLE : null;
+
+                let usefulText = "N/A";
+                if (typePct !== null && !isNaN(typePct)) {
+                    usefulText = Math.round(typePct * 100) + '%';
+                } else if(ro.usefulPct !== null) {
+                    usefulText = Math.round(ro.usefulPct * 100) + '% (Total)';
+                }
+
+                return {
+                    "AFS RO #": ro.roNum.startsWith('NO RO') ? "NO ACTIVE RO" : ro.roNum, 
+                    "Unit No": ro.unitNo, 
+                    "OOS Status": ro.isOOS ? "OOS" : "",
+                    "LTS Useful %": (ro.usefulPctObj && ro.usefulPctObj.LTS !== null) ? Math.round(ro.usefulPctObj.LTS * 100) + '%' : "N/A",
+                    "ST Useful %": (ro.usefulPctObj && ro.usefulPctObj.ST !== null) ? Math.round(ro.usefulPctObj.ST * 100) + '%' : "N/A",
+                    "Shuttle Useful %": (ro.usefulPctObj && ro.usefulPctObj.SHUTTLE !== null) ? Math.round(ro.usefulPctObj.SHUTTLE * 100) + '%' : "N/A",
+                    "Opened Date": ro.openedFormatted,
+                    "Status": ro.status, "ECD": ro.ecdFormatted,
+                    "Customer Group": ro.drillTopLevel, "Subregion": ro.subregion, "Branch": ro.branch
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+            autoFitColumns(worksheet, excelRows);
+            
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered ROs");
+            XLSX.writeFile(workbook, `workflow_export_${String(currentOwnerView).replace(/\s+/g, '_')}_${currentFilter.toLowerCase()}.xlsx`);
+        }
+
+        function exportSearchToExcel() {
+            const searchTerm = document.getElementById('global-search').value.toLowerCase();
+            if(!searchTerm) return;
+            
+            const results = processedData.filter(ro => ro.unitNo.toLowerCase().includes(searchTerm));
+            if(results.length === 0) { alert("No data to export."); return; }
+            
+            const excelRows = results.map(ro => {
+                return {
+                    "AFS RO #": ro.roNum.startsWith('NO RO') ? "NO ACTIVE RO" : ro.roNum, 
+                    "Unit No": ro.unitNo, 
+                    "Priority Status": isPriority(ro) ? "Priority" : "Normal",
+                    "OOS Status": ro.isOOS ? "OOS" : "",
+                    "LTS Useful %": (ro.usefulPctObj && ro.usefulPctObj.LTS !== null) ? Math.round(ro.usefulPctObj.LTS * 100) + '%' : "N/A",
+                    "ST Useful %": (ro.usefulPctObj && ro.usefulPctObj.ST !== null) ? Math.round(ro.usefulPctObj.ST * 100) + '%' : "N/A",
+                    "Shuttle Useful %": (ro.usefulPctObj && ro.usefulPctObj.SHUTTLE !== null) ? Math.round(ro.usefulPctObj.SHUTTLE * 100) + '%' : "N/A",
+                    "Opened Date": ro.openedFormatted,
+                    "Owner": ro.owner, "Status": ro.status, "ECD": ro.ecdFormatted
+                };
+            });
+            
+            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+            autoFitColumns(worksheet, excelRows);
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Search Results");
+            XLSX.writeFile(workbook, `workflow_search_${searchTerm}.xlsx`);
+        }
+
+        window.exportSummaryToExcel = function() {
+            let rVal = document.getElementById('sum-region').value;
+            let sVal = document.getElementById('sum-subregion').value;
+            let bVal = document.getElementById('sum-branch').value;
+
+            // Tab 1: Consolidation Summary
+            let sumRows = [];
+            for (let reg of Object.keys(summaryTree).sort()) {
+                if (rVal !== 'ALL' && reg !== rVal) continue;
+
+                let rData = summaryTree[reg];
+                let rActive = Math.max(0, rData.totalUnits - rData.oos);
+                let rPct = rData.maxRoutes > 0 ? (rActive / rData.maxRoutes) : 0;
+                
+                sumRows.push({
+                    "Level": "Region", "Name": reg, "Max Routes": rData.maxRoutes, 
+                    "Total Units": rData.totalUnits, "OOS": rData.oos, 
+                    "Useful %": rData.maxRoutes > 0 ? Math.round(rPct * 100) + '%' : '0%', 
+                    "DoD OOS": rData.dodOos, 
+                    "DoD Change": rData.oos - rData.dodOos
+                });
+                
+                for (let sub of Object.keys(rData.subs).sort()) {
+                    if (sVal !== 'ALL' && sub !== sVal) continue;
+
+                    let sData = rData.subs[sub];
+                    let sActive = Math.max(0, sData.totalUnits - sData.oos);
+                    let sPct = sData.maxRoutes > 0 ? (sActive / sData.maxRoutes) : 0;
+                    
+                    sumRows.push({
+                        "Level": "Sub Region", "Name": sub, "Max Routes": sData.maxRoutes, 
+                        "Total Units": sData.totalUnits, "OOS": sData.oos, 
+                        "Useful %": sData.maxRoutes > 0 ? Math.round(sPct * 100) + '%' : '0%', 
+                        "DoD OOS": sData.dodOos, 
+                        "DoD Change": sData.oos - sData.dodOos
+                    });
+                    
+                    for (let bra of Object.keys(sData.branches).sort()) {
+                        if (bVal !== 'ALL' && bra !== bVal) continue;
+
+                        let bData = sData.branches[bra];
+                        let bActive = Math.max(0, bData.totalUnits - bData.oos);
+                        let bPct = bData.maxRoutes > 0 ? (bActive / bData.maxRoutes) : 0;
+                        
+                        sumRows.push({
+                            "Level": "Branch", "Name": bra, "Max Routes": bData.maxRoutes, 
+                            "Total Units": bData.totalUnits, "OOS": bData.oos, 
+                            "Useful %": bData.maxRoutes > 0 ? Math.round(bPct * 100) + '%' : '0%', 
+                            "DoD OOS": bData.dodOos, 
+                            "DoD Change": bData.oos - bData.dodOos
+                        });
+                    }
+                }
+            }
+            
+            const wsConsolidation = XLSX.utils.json_to_sheet(sumRows);
+            autoFitColumns(wsConsolidation, sumRows);
+
+            // Tab 2: Amerit OOS Units
+            let oosRows = [];
+            const tbody = document.getElementById("amerit-oos-table-body");
+            Array.from(tbody.rows).forEach(row => {
+                if (row.cells.length > 1) {
+                    oosRows.push({
+                        "Region": row.cells[0].innerText.trim(),
+                        "Sub Region": row.cells[1].innerText.trim(),
+                        "Branch": row.cells[2].innerText.trim(),
+                        "Truck #": row.cells[3].innerText.trim(),
+                        "Max ECD": row.cells[4].innerText.trim(),
+                        "Notes": row.cells[5].innerText.trim()
+                    });
+                }
+            });
+            
+            const wsAmerit = XLSX.utils.json_to_sheet(oosRows);
+            autoFitColumns(wsAmerit, oosRows);
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, wsConsolidation, "Consolidation Summary");
+            XLSX.utils.book_append_sheet(workbook, wsAmerit, "Amerit OOS Units");
+            XLSX.writeFile(workbook, "VDR_Consolidation_Summary.xlsx");
+        }
+
+        // ==========================================
+        // UI & RENDERING FUNCTIONS
+        // ==========================================
+        function setFilter(val) {
+            currentFilter = val;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if(btn.dataset.filter === val) { btn.classList.add('active'); btn.style.background = 'var(--gold)'; } 
+                else { btn.classList.remove('active'); btn.style.background = '#e0e0e0'; }
+            });
+            triggerViewUpdate();
+        }
+
+        function setCustomerFilter(val) {
+            currentCustomerFilter = val;
+            document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = val; });
+            triggerViewUpdate();
+        }
+
+        function switchSummaryTab(subId, btn) {
+            document.querySelectorAll('#summary-view .sub-section').forEach(b => b.classList.remove('active'));
+            document.getElementById(subId).classList.add('active');
+            document.querySelectorAll('#summary-view .sub-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            let controls = document.getElementById('summary-tree-controls');
+            if (subId === 'sub-summary') controls.style.display = 'flex';
+            else controls.style.display = 'none';
+            
+            updateSummaryFilters();
+        }
+
+        window.triggerDrilldownFilter = function() {
+            if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView, true);
+        }
+        
+        window.updateSummaryFilters = function() {
+            renderSummary();
+            renderAmeritOos();
+        }
+
+        function populateDrilldownDropdowns(dataToScan) {
+            let rSel = document.getElementById('dd-region');
+            let sSel = document.getElementById('dd-subregion');
+            let bSel = document.getElementById('dd-branch');
+            
+            let rVal = rSel.value; let sVal = sSel.value; let bVal = bSel.value;
+            let regions = new Set(); let subs = new Set(); let branches = new Set();
+
+            dataToScan.forEach(ro => {
+                regions.add(ro.region);
+                if (rVal === 'ALL' || ro.region === rVal) {
+                    subs.add(ro.subregion);
+                    if (sVal === 'ALL' || ro.subregion === sVal) branches.add(ro.branch);
+                }
+            });
+
+            rSel.innerHTML = '<option value="ALL">All Regions</option>';
+            Array.from(regions).sort().forEach(r => rSel.innerHTML += `<option value="${r}">${r}</option>`);
+            rSel.value = regions.has(rVal) ? rVal : 'ALL';
+
+            sSel.innerHTML = '<option value="ALL">All Subregions</option>';
+            Array.from(subs).sort().forEach(s => sSel.innerHTML += `<option value="${s}">${s}</option>`);
+            sSel.value = subs.has(sVal) ? sVal : 'ALL';
+
+            bSel.innerHTML = '<option value="ALL">All Branches</option>';
+            Array.from(branches).sort().forEach(b => bSel.innerHTML += `<option value="${b}">${b}</option>`);
+            bSel.value = branches.has(bVal) ? bVal : 'ALL';
+        }
+
+        function populateSummaryDropdowns() {
+            let rSel = document.getElementById('sum-region');
+            let sSel = document.getElementById('sum-subregion');
+            let bSel = document.getElementById('sum-branch');
+            
+            let rVal = rSel.value; let sVal = sSel.value; let bVal = bSel.value;
+            let regions = new Set(); let subs = new Set(); let branches = new Set();
+
+            for (let reg in summaryTree) {
+                regions.add(reg);
+                if (rVal === 'ALL' || rVal === reg) {
+                    for (let sub in summaryTree[reg].subs) {
+                        subs.add(sub);
+                        if (sVal === 'ALL' || sVal === sub) {
+                            for (let bra in summaryTree[reg].subs[sub].branches) {
+                                branches.add(bra);
+                            }
+                        }
+                    }
+                }
+            }
+
+            rSel.innerHTML = '<option value="ALL">All Regions</option>';
+            Array.from(regions).sort().forEach(r => rSel.innerHTML += `<option value="${r}">${r}</option>`);
+            rSel.value = regions.has(rVal) ? rVal : 'ALL';
+
+            sSel.innerHTML = '<option value="ALL">All Subregions</option>';
+            Array.from(subs).sort().forEach(s => sSel.innerHTML += `<option value="${s}">${s}</option>`);
+            sSel.value = subs.has(sVal) ? sVal : 'ALL';
+
+            bSel.innerHTML = '<option value="ALL">All Branches</option>';
+            Array.from(branches).sort().forEach(b => bSel.innerHTML += `<option value="${b}">${b}</option>`);
+            bSel.value = branches.has(bVal) ? bVal : 'ALL';
+        }
+
+        function triggerViewUpdate() {
+            let activeView = document.querySelector('.view-section.active').id;
+            if(activeView === 'home-view') renderHomeDashboard();
+            else if(activeView === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
+            else if(activeView === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
+            else if(activeView === 'ers-view') renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
+            else if(activeView === 'person-view') { if(currentOwnerView) loadPersonDrilldown(currentOwnerView, currentParentView, true); }
+            else if(activeView === 'summary-view') { renderSummary(); renderAmeritOos(); }
+            else if(activeView === 'vendor-view') renderVendorLookup();
+        }
+
+        function formatUsefulBadge(label, val) {
+            if(val === null || val === undefined || isNaN(val) || val === '') return '';
+            let pct = Math.round(val * 100);
+            let bg = '#00ff00'; // bright green
+            let tc = 'black';
+            
+            if (pct < 95) { bg = '#d9534f'; tc = 'white'; } 
+            else if (pct >= 95 && pct < 100) { bg = '#FFC600'; tc = 'black'; } 
+            else if (pct === 100) { bg = '#bbf7d0'; tc = 'black'; } // light green
+
+            return `<span class="badge" style="background-color: ${bg}; color: ${tc}; font-size: 11px; margin-left: 10px;">${label}: ${pct}%</span>`;
+        }
+
+        function getAggregatedBadges(pctArray) {
+            if (!pctArray || pctArray.length === 0) return '';
+            let ltsSum = 0, ltsCount = 0;
+            let stSum = 0, stCount = 0;
+            let shutSum = 0, shutCount = 0;
+
+            pctArray.forEach(p => {
+                if (p.LTS !== null && p.LTS !== undefined && !isNaN(p.LTS)) { ltsSum += p.LTS; ltsCount++; }
+                if (p.ST !== null && p.ST !== undefined && !isNaN(p.ST)) { stSum += p.ST; stCount++; }
+                if (p.SHUTTLE !== null && p.SHUTTLE !== undefined && !isNaN(p.SHUTTLE)) { shutSum += p.SHUTTLE; shutCount++; }
+            });
+
+            let badges = '';
+            if (ltsCount > 0) badges += formatUsefulBadge('LTS Useful', ltsSum / ltsCount);
+            if (stCount > 0) badges += formatUsefulBadge('ST Useful', stSum / stCount);
+            if (shutCount > 0) badges += formatUsefulBadge('Shuttle Useful', shutSum / shutCount);
+
+            return badges;
+        }
+
+        function getSummaryUsefulHtml(active, maxRoutes) {
+            if (maxRoutes <= 0) return `<span style="color:#888; font-weight:bold;">0%</span>`;
+            let pct = (active / maxRoutes) * 100;
+            let formatted = pct.toFixed(1) + '%';
+            if (pct < 95) return `<span style="color:var(--urgent-red); font-weight:bold;">${formatted}</span>`;
+            if (pct >= 95 && pct < 100) return `<span style="color:#854d0e; background:#fef08a; padding:2px 4px; border-radius:4px; font-weight:800;">${formatted}</span>`;
+            if (pct === 100) return `<span style="color:#065f46; background:#bbf7d0; padding:2px 4px; border-radius:4px; font-weight:800;">${formatted}</span>`;
+            return `<span style="color:var(--low-green); font-weight:bold;">${formatted}</span>`;
+        }
+
+        function getDoDChangeHtml(currentOos, dodOos) {
+            let diff = currentOos - dodOos;
+            if (diff > 0) return `<span style="color:var(--urgent-red); font-weight:bold;">+${diff}</span>`;
+            if (diff < 0) return `<span style="color:var(--low-green); font-weight:bold;">${diff}</span>`;
+            return `<span style="color:#888; font-weight:bold;">0</span>`;
+        }
+
+        window.toggleSummary = function(id) { 
+            expandedSummaryState[id] = !expandedSummaryState[id]; 
+            renderSummary(); 
+        }
+        
+        window.toggleAllSummary = function(expand) { 
+            Object.keys(expandedSummaryState).forEach(k => expandedSummaryState[k] = expand); 
+            if (expand) {
+                for (let reg in summaryTree) {
+                    expandedSummaryState[reg] = true;
+                    for (let sub in summaryTree[reg].subs) {
+                        expandedSummaryState[reg+'|'+sub] = true;
+                    }
+                }
+            }
+            renderSummary(); 
         }
 
         function generateTileHTML(name, dataSet, chartId = null, isPM = false) {
             let filteredOpen = dataSet.filter(ro => ro.isOpen);
-            let priorityCount = dataSet.filter(ro => ro.isOpen && ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100).length;
-            
             let completedOrders = dataSet.filter(ro => ro.isCompletedKPI);
             let compCount = completedOrders.length;
             let onTimeCount = completedOrders.filter(ro => ro.isOnTimeKPI).length;
@@ -1321,43 +1824,39 @@
                 chartHTML = `<div class="chart-box"><canvas id="${chartId}" data-comp="${compPct}" data-late="${latePct}"></canvas></div>`;
             }
 
-            let priorityBoxHtml = isPM ? '' : `
-                <div class="highlight-box urgent-box">
-                    <div class="title">Priority ROs</div>
-                    <div class="num">${priorityCount}</div>
-                </div>
-            `;
+            let oosAndPriorityHtml = '';
+            if (!isPM) {
+                let oosCount = dataSet.filter(ro => ro.isOpen && ro.isOOS).length;
+                let priorityCount = dataSet.filter(ro => ro.isOpen && isPriority(ro)).length;
+                oosAndPriorityHtml = `
+                    <div class="highlight-box oos-box">
+                        <div class="title">OOS ROs</div>
+                        <div class="num">${oosCount}</div>
+                    </div>
+                    <div class="highlight-box urgent-box">
+                        <div class="title">Priority ROs</div>
+                        <div class="num">${priorityCount}</div>
+                    </div>
+                `;
+            }
 
-            let innerHtml = `
+            return `
                 <div class="kpi-name">${name}</div>
                 <div class="kpi-top-metrics">
                     <div class="highlight-box">
                         <div class="title">Open ROs</div>
                         <div class="num">${filteredOpen.length}</div>
                     </div>
-                    ${priorityBoxHtml}
+                    ${oosAndPriorityHtml}
                     ${chartHTML}
                 </div>
                 <div class="kpi-stats-grid">
-                    <div class="stat-box">
-                        <div class="title">Completed</div>
-                        <div class="num">${compCount}</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="title">On-Time</div>
-                        <div class="num">${onTimeCount}</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="title">% Compliance</div>
-                        <div class="num good">${compPct}%</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="title">% Late</div>
-                        <div class="num urgent">${latePct}%</div>
-                    </div>
+                    <div class="stat-box"><div class="title">Completed</div><div class="num">${compCount}</div></div>
+                    <div class="stat-box"><div class="title">On-Time</div><div class="num">${onTimeCount}</div></div>
+                    <div class="stat-box"><div class="title">% Compliance</div><div class="num good">${compPct}%</div></div>
+                    <div class="stat-box"><div class="title">% Late</div><div class="num urgent">${latePct}%</div></div>
                 </div>
             `;
-            return innerHtml;
         }
 
         Chart.register({
@@ -1391,22 +1890,23 @@
 
         function renderHomeDashboard() {
             const container = document.getElementById('home-kpi-container'); container.innerHTML = '';
-            
             let aggData = processedData;
 
             if (currentCustomerFilter !== 'ALL') {
                 aggData = aggData.filter(ro => ro.custKey === currentCustomerFilter);
             }
 
-            let pmData = aggData.filter(ro => pmOwners.includes(ro.owner));
-            let vendedData = aggData.filter(ro => vendedOwners.includes(ro.owner));
-            let ersRoData = aggData.filter(ro => ersOwners.includes(ro.owner));
+            let pmData = aggData.filter(ro => ro.kpiOwners.some(o => pmOwners.includes(o)));
+            let vendedData = aggData.filter(ro => ro.kpiOwners.some(o => vendedOwners.includes(o)));
+            let ersRoData = aggData.filter(ro => ro.kpiOwners.some(o => ersOwners.includes(o)));
 
-            const pmTile = document.createElement('div'); pmTile.className = 'kpi-tile home-master-tile'; pmTile.innerHTML = generateTileHTML('PM Dashboard', pmData, 'chart-pm', true);
+            const pmTile = document.createElement('div'); pmTile.className = 'kpi-tile home-master-tile'; 
+            pmTile.innerHTML = generateTileHTML('PM Dashboard', pmData, 'chart-pm', true);
             pmTile.onclick = () => loadPersonDrilldown('ALL_PM', 'home-view');
             container.appendChild(pmTile);
             
-            const vendedTile = document.createElement('div'); vendedTile.className = 'kpi-tile home-master-tile'; vendedTile.innerHTML = generateTileHTML('Vended Repair Dashboard', vendedData, 'chart-vended');
+            const vendedTile = document.createElement('div'); vendedTile.className = 'kpi-tile home-master-tile'; 
+            vendedTile.innerHTML = generateTileHTML('Vended Repair Dashboard', vendedData, 'chart-vended');
             vendedTile.onclick = () => loadPersonDrilldown('ALL_VENDED', 'home-view');
             container.appendChild(vendedTile);
             
@@ -1425,15 +1925,20 @@
             let isPM = containerId === 'pm-kpi-container';
 
             ownersList.forEach(owner => {
-                let ownerDataAll = processedData.filter(ro => ro.owner === owner);
+                let ownerDataAll = processedData.filter(ro => ro.kpiOwners.includes(owner));
                 
                 if (currentCustomerFilter !== 'ALL') {
                     ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
                 }
 
                 let targetData = ownerDataAll.filter(ro => ro.isOpen);
-                if(!isPM && currentFilter === 'PRIORITY') {
-                    targetData = targetData.filter(ro => ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
+                
+                if (!isPM) {
+                    if (currentFilter === 'OOS') {
+                        targetData = targetData.filter(ro => ro.isOOS);
+                    } else if (currentFilter === 'PRIORITY') {
+                        targetData = targetData.filter(ro => isPriority(ro));
+                    }
                 }
                 
                 if (targetData.length === 0) return; 
@@ -1448,35 +1953,36 @@
         function generateRoDrilldownHtml(ownerDataAll, isPM) {
             let baseOpenData = ownerDataAll.filter(ro => ro.isOpen);
 
-            // PASS 1: Build unfiltered static Useful % values
             let branchUsefulVals = {};
             let subUsefulMap = {};
             let topUsefulMap = {};
 
             baseOpenData.forEach(ro => {
-                if (ro.usefulPct !== null && ro.usefulPct !== undefined) {
-                    let topLvl = ro.drillTopLevel;
-                    let sub = ro.subregion;
-                    let branch = ro.branch;
-                    let branchKey = topLvl + '|||' + sub + '|||' + branch;
-                    let subKey = topLvl + '|||' + sub;
+                if (ro.usefulPctObj) {
+                    let branchKey = ro.drillTopLevel + '|||' + ro.subregion + '|||' + ro.branch;
+                    let subKey = ro.drillTopLevel + '|||' + ro.subregion;
+                    let topKey = ro.drillTopLevel;
 
                     if (branchUsefulVals[branchKey] === undefined) {
-                        branchUsefulVals[branchKey] = ro.usefulPct;
+                        branchUsefulVals[branchKey] = ro.usefulPctObj;
                         
                         if (!subUsefulMap[subKey]) subUsefulMap[subKey] = [];
-                        subUsefulMap[subKey].push(ro.usefulPct);
+                        subUsefulMap[subKey].push(ro.usefulPctObj);
                         
-                        if (!topUsefulMap[topLvl]) topUsefulMap[topLvl] = [];
-                        topUsefulMap[topLvl].push(ro.usefulPct);
+                        if (!topUsefulMap[topKey]) topUsefulMap[topKey] = [];
+                        topUsefulMap[topKey].push(ro.usefulPctObj);
                     }
                 }
             });
 
-            // PASS 2: Apply Filters
             let targetData = baseOpenData;
-            if(!isPM && currentFilter === 'PRIORITY') {
-                targetData = targetData.filter(ro => ro.isOOS && ro.usefulPct !== null && Math.round(ro.usefulPct * 100) < 100);
+            
+            if (!isPM) {
+                if (currentFilter === 'OOS') {
+                    targetData = targetData.filter(ro => ro.isOOS);
+                } else if(currentFilter === 'PRIORITY') {
+                    targetData = targetData.filter(ro => isPriority(ro));
+                }
             }
 
             if(targetData.length === 0) return `<p style="margin-top:15px; color:#666;">No active Repair Orders to display under the current filters.</p>`;
@@ -1491,33 +1997,29 @@
             
             let htmlStr = '';
             for(let topLvl in hierarchy) {
-                let topBadge = getUsefulBadge(topUsefulMap[topLvl] || []);
+                let topBadges = getAggregatedBadges(topUsefulMap[topLvl] || []);
                 let subHtml = '';
                 for(let sub in hierarchy[topLvl]) {
                     let subKey = topLvl + '|||' + sub;
-                    let subBadge = getUsefulBadge(subUsefulMap[subKey] || []);
+                    let subBadges = getAggregatedBadges(subUsefulMap[subKey] || []);
                     let branchHtml = '';
                     for(let branch in hierarchy[topLvl][sub]) {
                         let branchKey = subKey + '|||' + branch;
                         let branchROs = hierarchy[topLvl][sub][branch];
                         
-                        let bPct = branchUsefulVals[branchKey];
-                        let branchBadge = getUsefulBadge(bPct !== undefined && bPct !== null ? [bPct] : []);
+                        let u = branchUsefulVals[branchKey] || {};
+                        let badgesHtml = '';
+                        if (u) {
+                            if (u.LTS !== null) badgesHtml += formatUsefulBadge('LTS Useful', u.LTS);
+                            if (u.ST !== null) badgesHtml += formatUsefulBadge('ST Useful', u.ST);
+                            if (u.SHUTTLE !== null) badgesHtml += formatUsefulBadge('Shuttle Useful', u.SHUTTLE);
+                        }
 
                         let unitsMap = {};
                         branchROs.forEach(ro => {
                             if(!unitsMap[ro.unitNo]) {
                                 unitsMap[ro.unitNo] = {
-                                    unitNo: ro.unitNo,
-                                    roNums: [],
-                                    roLinks: [],
-                                    openedDates: [],
-                                    statuses: [],
-                                    ecdCells: [],
-                                    isOOS: ro.isOOS,
-                                    usefulPct: ro.usefulPct,
-                                    isDedicated: ro.isDedicated,
-                                    custKey: ro.custKey
+                                    unitNo: ro.unitNo, unitType: ro.unitType, roNums: [], roLinks: [], openedDates: [], statuses: [], ecdCells: [], dupFlags: [], isOOS: ro.isOOS, usefulPct: ro.usefulPct, usefulPctObj: ro.usefulPctObj, custKey: ro.custKey
                                 };
                             }
                             
@@ -1527,29 +2029,31 @@
                             else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
 
                             unitsMap[ro.unitNo].roNums.push(ro.roNum);
-                            unitsMap[ro.unitNo].roLinks.push(`<a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a>`);
+                            unitsMap[ro.unitNo].dupFlags.push(ro.possibleDuplicate);
+                            
+                            let dupBadge = ro.possibleDuplicate ? ' <span class="badge badge-dup" title="Multiple open orders share similar tasks for this unit.">⚠️ DUP?</span>' : '';
+
+                            let roLinkHtml = ro.roNum.startsWith('NO RO') 
+                                ? `<span style="font-weight: 800; color: var(--urgent-red);">NO ACTIVE RO</span>` 
+                                : `<a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a>${dupBadge}`;
+                            
+                            unitsMap[ro.unitNo].roLinks.push(roLinkHtml);
                             unitsMap[ro.unitNo].openedDates.push(ro.openedFormatted);
                             unitsMap[ro.unitNo].statuses.push(ro.status);
                             unitsMap[ro.unitNo].ecdCells.push(ecdCell);
                         });
 
                         let groupedUnits = Object.values(unitsMap);
-                        groupedUnits.sort((a,b) => { 
-                            return (b.isOOS === true ? 1 : 0) - (a.isOOS === true ? 1 : 0);
-                        });
-                        
-                        let isBranchDedicated = branchROs.some(ro => ro.isDedicated);
-                        let dedicatedBadge = isBranchDedicated ? `<span style="background-color: white; color: black; border: 1px solid black; border-radius: 12px; padding: 2px 6px; margin-left: 5px; font-size: 10px; font-weight: bold;">(DEDICATED)</span>` : '';
+                        groupedUnits.sort((a,b) => { return (b.isOOS === true ? 1 : 0) - (a.isOOS === true ? 1 : 0); });
 
-                        branchHtml += `<details class="ro-detail-node"><summary>${branch} (${branchROs.length} ROs)${branchBadge}${dedicatedBadge}</summary>`;
+                        branchHtml += `<details class="ro-detail-node"><summary><div style="flex-grow:1; display:flex; align-items:center;">${branch} (${branchROs.length} ROs)</div><div>${badgesHtml}</div></summary>`;
                         let tableHTML = `<div class="table-wrapper"><table><colgroup><col style="width:23%;"><col style="width:11%;">${isPM ? '' : '<col style="width:11%;">'}<col style="width:9%;"><col style="width:11%;"><col style="width:21%;"><col style="width:14%;"></colgroup><thead><tr><th>AFS RO # & Dispatch</th><th>Unit No</th>${isPM ? '' : '<th>Priority Status</th>'}<th>OOS Status</th><th>Opened Date</th><th>Status</th><th>ECD</th></tr></thead><tbody>`;
                         
                         groupedUnits.forEach(u => {
-                            let isGarda = u.custKey === 'Garda';
-                            let oosBadge = isGarda ? (u.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
+                            let oosBadge = u.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`;
                             
-                            let isPriority = u.isOOS && u.usefulPct !== null && Math.round(u.usefulPct * 100) < 100;
-                            let priorityStatusBadge = isPriority ? `<span class="badge badge-urgent">Priority</span>` : `<span class="badge badge-low">Normal</span>`;
+                            let isPri = (u.isOOS && isPriority({isOOS: u.isOOS, usefulPctObj: u.usefulPctObj, unitType: u.unitType}));
+                            let priorityStatusBadge = isPri ? `<span class="badge badge-urgent">Priority</span>` : `<span class="badge badge-low">Normal</span>`;
 
                             let rowCount = u.roNums.length;
 
@@ -1572,10 +2076,8 @@
                                 tableHTML += `<td style="vertical-align:top; padding-top:15px; border-bottom: ${idx === rowCount - 1 ? '1px solid var(--border)' : '1px dashed #eee'};">${roHtml}</td>`;
                                 
                                 if (idx === 0) {
-                                    tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border); border-left: 1px dashed #eee;"><strong>${u.unitNo}</strong></td>`;
-                                    if (!isPM) {
-                                        tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border);">${priorityStatusBadge}</td>`;
-                                    }
+                                    tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border); border-left: 1px dashed #eee;"><strong>${u.unitNo}</strong> <span style="font-size:10px; color:#888;">(${u.unitType})</span></td>`;
+                                    if (!isPM) tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border);">${priorityStatusBadge}</td>`;
                                     tableHTML += `<td rowspan="${rowCount}" style="vertical-align:top; padding-top:15px; border-bottom: 1px solid var(--border); border-right: 1px dashed #eee;">${oosBadge}</td>`;
                                 }
 
@@ -1593,14 +2095,14 @@
                         tableHTML += `</tbody></table></div>`; 
                         branchHtml += tableHTML + `</details>`;
                     }
-                    subHtml += `<details class="ro-detail-node"><summary>${sub}${subBadge}</summary>${branchHtml}</details>`;
+                    subHtml += `<details class="ro-detail-node"><summary><div style="flex-grow:1; display:flex; align-items:center;">${sub}</div><div>${subBadges}</div></summary>${branchHtml}</details>`;
                 }
-                htmlStr += `<details class="ro-detail-node"><summary>${topLvl}${topBadge}</summary>${subHtml}</details>`;
+                htmlStr += `<details class="ro-detail-node"><summary><div style="flex-grow:1; display:flex; align-items:center;">${topLvl}</div><div>${topBadges}</div></summary>${subHtml}</details>`;
             }
             return htmlStr;
         }
 
-        function loadPersonDrilldown(owner, parentViewId) {
+        function loadPersonDrilldown(owner, parentViewId, preserveFilters = false) {
             navigate('person-view', null, true); 
             currentOwnerView = owner; currentParentView = parentViewId;
             
@@ -1621,19 +2123,37 @@
                 document.getElementById('standard-drilldown-filters').style.display = 'flex';
             }
 
-            const container = document.getElementById('drilldown-body'); 
-            
             let ownerDataAll = processedData;
-            if (owner === 'ALL_PM') ownerDataAll = processedData.filter(ro => pmOwners.includes(ro.owner));
-            else if (owner === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => vendedOwners.includes(ro.owner));
-            else if (owner === 'ALL_ERS') ownerDataAll = processedData.filter(ro => ersOwners.includes(ro.owner));
-            else ownerDataAll = processedData.filter(ro => ro.owner === String(owner));
+            // Key difference: Drilldowns use drilldownOwners, so branch managers see PM/ERS work
+            if (owner === 'ALL_PM') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => pmOwners.includes(o)));
+            else if (owner === 'ALL_VENDED') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => vendedOwners.includes(o)));
+            else if (owner === 'ALL_ERS') ownerDataAll = processedData.filter(ro => ro.drilldownOwners.some(o => ersOwners.includes(o)));
+            else ownerDataAll = processedData.filter(ro => ro.drilldownOwners.includes(String(owner)));
             
             if (currentCustomerFilter !== 'ALL') {
                 ownerDataAll = ownerDataAll.filter(ro => ro.custKey === currentCustomerFilter);
             }
 
-            container.innerHTML = generateRoDrilldownHtml(ownerDataAll, isPM);
+            if (!preserveFilters) {
+                document.getElementById('dd-region').value = 'ALL';
+                document.getElementById('dd-subregion').value = 'ALL';
+                document.getElementById('dd-branch').value = 'ALL';
+            }
+
+            populateDrilldownDropdowns(ownerDataAll);
+
+            let rVal = document.getElementById('dd-region').value;
+            let sVal = document.getElementById('dd-subregion').value;
+            let bVal = document.getElementById('dd-branch').value;
+
+            ownerDataAll = ownerDataAll.filter(ro => {
+                if (rVal !== 'ALL' && ro.region !== rVal) return false;
+                if (sVal !== 'ALL' && ro.subregion !== sVal) return false;
+                if (bVal !== 'ALL' && ro.branch !== bVal) return false;
+                return true;
+            });
+
+            document.getElementById('drilldown-body').innerHTML = generateRoDrilldownHtml(ownerDataAll, isPM);
             updateAllNoteButtons(); 
         }
 
@@ -1658,16 +2178,7 @@
                     results.forEach(ro => {
                         if(!searchUnitsMap[ro.unitNo]) {
                             searchUnitsMap[ro.unitNo] = {
-                                unitNo: ro.unitNo,
-                                roNums: [],
-                                roLinks: [],
-                                openedDates: [],
-                                statuses: [],
-                                ecdCells: [],
-                                owners: [],
-                                isOOS: ro.isOOS,
-                                usefulPct: ro.usefulPct,
-                                custKey: ro.custKey
+                                unitNo: ro.unitNo, unitType: ro.unitType, roNums: [], roLinks: [], openedDates: [], statuses: [], ecdCells: [], dupFlags: [], owners: [], isOOS: ro.isOOS, usefulPct: ro.usefulPct, usefulPctObj: ro.usefulPctObj, custKey: ro.custKey
                             };
                         }
                         
@@ -1677,18 +2188,25 @@
                         else ecdCell = `<span class="ecd-green">${ro.ecdFormatted}</span>`;
 
                         searchUnitsMap[ro.unitNo].roNums.push(ro.roNum);
-                        searchUnitsMap[ro.unitNo].roLinks.push(`<a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a>`);
+                        searchUnitsMap[ro.unitNo].dupFlags.push(ro.possibleDuplicate);
+                        
+                        let dupBadge = ro.possibleDuplicate ? ' <span class="badge badge-dup" title="Multiple open orders share similar tasks for this unit.">⚠️ DUP?</span>' : '';
+
+                        let roLinkHtml = ro.roNum.startsWith('NO RO') 
+                            ? `<span style="font-weight: 800; color: var(--urgent-red);">NO ACTIVE RO</span>` 
+                            : `<a href="https://afshub.azurewebsites.net/Vendors/VendedRepairOrder/Estimate/${ro.roNum}" target="_blank" class="ro-link">${ro.roNum}</a>${dupBadge}`;
+                            
+                        searchUnitsMap[ro.unitNo].roLinks.push(roLinkHtml);
                         searchUnitsMap[ro.unitNo].openedDates.push(ro.openedFormatted);
                         searchUnitsMap[ro.unitNo].statuses.push(ro.status);
                         searchUnitsMap[ro.unitNo].ecdCells.push(ecdCell);
-                        searchUnitsMap[ro.unitNo].owners.push(ro.owner);
+                        ro.drilldownOwners.forEach(o => searchUnitsMap[ro.unitNo].owners.push(o));
                     });
 
                     Object.values(searchUnitsMap).forEach(u => {
-                        let isGarda = u.custKey === 'Garda';
-                        let oosBadge = isGarda ? (u.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`) : '';
-                        let isPriority = u.isOOS && u.usefulPct !== null && Math.round(u.usefulPct * 100) < 100;
-                        let priorityStatusBadge = isPriority ? `<span class="badge badge-urgent">Priority</span>` : `<span class="badge badge-low">Normal</span>`;
+                        let oosBadge = u.isOOS ? `<span class="badge badge-oos">OOS</span>` : `<span class="badge badge-active">ACTIVE</span>`;
+                        let isPri = (u.isOOS && isPriority({isOOS: u.isOOS, usefulPctObj: u.usefulPctObj, unitType: u.unitType}));
+                        let priorityStatusBadge = isPri ? `<span class="badge badge-urgent">Priority</span>` : `<span class="badge badge-low">Normal</span>`;
 
                         let joinedOwnersHtml = [...new Set(u.owners)].map(ow => `<div class="grouped-ro-item">${ow}</div>`).join('');
                         let rowCount = u.roNums.length;
@@ -1736,10 +2254,193 @@
             }, 300);
         }
 
+        function renderSummary() {
+            let rVal = document.getElementById('sum-region').value;
+            let sVal = document.getElementById('sum-subregion').value;
+            let bVal = document.getElementById('sum-branch').value;
+
+            let html = '';
+            for (let reg of Object.keys(summaryTree).sort()) {
+                if (rVal !== 'ALL' && reg !== rVal) continue;
+                
+                let rData = summaryTree[reg];
+                let rActive = Math.max(0, rData.totalUnits - rData.oos);
+                let rIcon = expandedSummaryState[reg] ? '▼' : '▶';
+                
+                html += `<tr style="background:#f1f5f9; cursor:pointer;" onclick="toggleSummary('${reg}')">
+                    <td style="font-weight:800; color:#334155;"><span style="color:#94a3b8; width:15px; display:inline-block;">${rIcon}</span> ${reg}</td>
+                    <td style="text-align:right; font-weight:700;">${rData.maxRoutes}</td>
+                    <td style="text-align:right; font-weight:700;">${rData.totalUnits}</td>
+                    <td style="text-align:right; font-weight:800; font-size:14px;">${rData.oos}</td>
+                    <td style="text-align:right;">${getSummaryUsefulHtml(rActive, rData.maxRoutes)}</td>
+                    <td style="text-align:right; color:#64748b;">${rData.dodOos}</td>
+                    <td style="text-align:right;">${getDoDChangeHtml(rData.oos, rData.dodOos)}</td>
+                </tr>`;
+
+                if (expandedSummaryState[reg]) {
+                    for (let sub of Object.keys(rData.subs).sort()) {
+                        if (sVal !== 'ALL' && sub !== sVal) continue;
+
+                        let sData = rData.subs[sub];
+                        let sActive = Math.max(0, sData.totalUnits - sData.oos);
+                        let subId = reg + '|' + sub;
+                        let sIcon = expandedSummaryState[subId] ? '▼' : '▶';
+                        
+                        html += `<tr style="background:#f8fafc; cursor:pointer;" onclick="toggleSummary('${subId}')">
+                            <td style="padding-left:30px; font-weight:700; color:#475569;"><span style="color:#cbd5e1; width:15px; display:inline-block;">${sIcon}</span> ${sub}</td>
+                            <td style="text-align:right; font-weight:600;">${sData.maxRoutes}</td>
+                            <td style="text-align:right; font-weight:600;">${sData.totalUnits}</td>
+                            <td style="text-align:right; font-weight:800; font-size:13px;">${sData.oos}</td>
+                            <td style="text-align:right;">${getSummaryUsefulHtml(sActive, sData.maxRoutes)}</td>
+                            <td style="text-align:right; color:#64748b;">${sData.dodOos}</td>
+                            <td style="text-align:right;">${getDoDChangeHtml(sData.oos, sData.dodOos)}</td>
+                        </tr>`;
+
+                        if (expandedSummaryState[subId]) {
+                            for (let bra of Object.keys(sData.branches).sort()) {
+                                if (bVal !== 'ALL' && bra !== bVal) continue;
+
+                                let bData = sData.branches[bra];
+                                let bActive = Math.max(0, bData.totalUnits - bData.oos);
+                                
+                                html += `<tr style="background:#ffffff;">
+                                    <td style="padding-left:55px; font-weight:600; color:#64748b;">${bra}</td>
+                                    <td style="text-align:right; color:#475569;">${bData.maxRoutes}</td>
+                                    <td style="text-align:right; color:#475569;">${bData.totalUnits}</td>
+                                    <td style="text-align:right; font-weight:800; color:#334155;">${bData.oos}</td>
+                                    <td style="text-align:right;">${getSummaryUsefulHtml(bActive, bData.maxRoutes)}</td>
+                                    <td style="text-align:right; color:#94a3b8;">${bData.dodOos}</td>
+                                    <td style="text-align:right;">${getDoDChangeHtml(bData.oos, bData.dodOos)}</td>
+                                </tr>`;
+                            }
+                        }
+                    }
+                }
+            }
+            document.getElementById('summary-table-body').innerHTML = html || '<tr><td colspan="7" style="text-align:center; padding: 20px;">No data available</td></tr>';
+        }
+
+        function renderAmeritOos() {
+            let rVal = document.getElementById('sum-region').value;
+            let sVal = document.getElementById('sum-subregion').value;
+            let bVal = document.getElementById('sum-branch').value;
+            let notesOnly = document.getElementById('sum-notes-only').checked;
+
+            let unitRoGroups = {};
+            processedData.forEach(ro => {
+                if (!unitRoGroups[ro.unitNo]) unitRoGroups[ro.unitNo] = [];
+                unitRoGroups[ro.unitNo].push(ro);
+            });
+
+            let tbody = document.getElementById('amerit-oos-table-body');
+            let html = '';
+            let hasRecords = false;
+
+            let today = new Date();
+            let todayDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+            for (let unit in masterUnits) {
+                let mUnit = masterUnits[unit];
+                if (rVal !== 'ALL' && mUnit.region !== rVal) continue;
+                if (sVal !== 'ALL' && mUnit.subregion !== sVal) continue;
+                if (bVal !== 'ALL' && mUnit.branch !== bVal) continue;
+
+                if (mUnit.isOOS) { 
+                    let ros = unitRoGroups[unit] || [];
+                    let maxEcdMs = 0;
+                    let maxEcdFormatted = 'N/A';
+                    ros.forEach(ro => {
+                        if (ro.ecdMs > maxEcdMs) {
+                            maxEcdMs = ro.ecdMs;
+                            maxEcdFormatted = ro.ecdFormatted;
+                        }
+                    });
+
+                    let notes = [];
+                    ros.forEach(ro => {
+                        if (ro.roNum && !ro.roNum.startsWith('NO RO')) {
+                            let safeRo = ro.roNum.replace(/[.#$\[\]]/g, '_');
+                            let n = globalRoNotesState[safeRo];
+                            if (n && n.trim() !== '') {
+                                notes.push(`<b>[${ro.roNum}]</b> ${n.trim()}`);
+                            }
+                        } else if (ro.roNum && ro.roNum.startsWith('NO RO')) {
+                            let safeRo = ro.roNum.replace(/[.#$\[\]]/g, '_');
+                            let n = globalRoNotesState[safeRo];
+                            if (n && n.trim() !== '') {
+                                notes.push(`<b>[NO ACTIVE RO]</b> ${n.trim()}`);
+                            }
+                        }
+                    });
+                    
+                    if (notesOnly && notes.length === 0) continue;
+
+                    let notesHtml = notes.join(' <br><hr style="border-top:1px dashed #ccc; margin:4px 0;"> ');
+                    if (!notesHtml) notesHtml = '<i style="color:#aaa;">No Notes</i>';
+
+                    let ecdBadgeHtml = `<span class="badge-ecd-missing">N/A</span>`;
+                    if (maxEcdFormatted !== 'N/A' && maxEcdFormatted !== 'NO ECD, UPDATE') {
+                        let maxDate = new Date(maxEcdMs);
+                        let maxDay = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
+                        if (maxDay < todayDay) {
+                            ecdBadgeHtml = `<span class="ecd-red">${maxEcdFormatted}</span>`;
+                        } else {
+                            ecdBadgeHtml = `<span class="ecd-green">${maxEcdFormatted}</span>`;
+                        }
+                    } else if (maxEcdFormatted === 'NO ECD, UPDATE') {
+                        ecdBadgeHtml = `<span class="badge-ecd-missing">NO ECD, UPDATE</span>`;
+                    }
+
+                    html += `<tr>
+                        <td>${mUnit.region || 'Unknown'}</td>
+                        <td>${mUnit.subregion || 'Unknown'}</td>
+                        <td>${mUnit.branch || 'Unknown'}</td>
+                        <td><strong>${unit}</strong></td>
+                        <td>${ecdBadgeHtml}</td>
+                        <td style="white-space: pre-wrap; font-size:12px;">${notesHtml}</td>
+                    </tr>`;
+                    hasRecords = true;
+                }
+            }
+
+            if (!hasRecords) {
+                html = '<tr><td colspan="6" style="text-align: center; padding: 20px;">No OOS Units found.</td></tr>';
+            }
+
+            tbody.innerHTML = html;
+        }
+
+        function renderVendorLookup() {
+            const customer = document.getElementById('vendor-customer-select').value;
+            const search = document.getElementById('vendor-search-text').value.toLowerCase();
+            const tbody = document.getElementById('vendor-table-body');
+            
+            let data = vendorStore[customer] || [];
+            let html = '';
+            
+            data.filter(v => {
+                let group = String(v.Group || '').toLowerCase();
+                let name = String(v.Vendor || '').toLowerCase();
+                return group.includes(search) || name.includes(search);
+            }).forEach(v => {
+                html += `<tr>
+                    <td style="font-weight:700;">${v.Group}</td>
+                    <td>${v.Vendor}</td>
+                    <td><a href="mailto:${v['Contact Email'] || ''}">${v['Contact Email'] || ''}</a></td>
+                    <td>${v['Contact Phone#'] || ''}</td>
+                </tr>`;
+            });
+            
+            tbody.innerHTML = html || '<tr><td colspan="4" align="center" style="padding: 20px; color:#888;">No vendors found.</td></tr>';
+        }
+
         function navigate(viewId, menuElement = null, preserveCustomerFilter = false) {
             if (!preserveCustomerFilter) {
                 currentCustomerFilter = 'ALL';
                 document.querySelectorAll('.customer-filter-select').forEach(sel => { sel.value = 'ALL'; });
+            }
+            if(viewId === 'pm-view') {
+                currentFilter = 'ALL';
             }
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
@@ -1748,10 +2449,18 @@
                 document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
                 menuElement.classList.add('active');
             }
+            
             if(viewId === 'pm-view') renderKPITiles(pmOwners, 'pm-kpi-container', 'pm-view');
             else if (viewId === 'vended-view') renderKPITiles(vendedOwners, 'vended-kpi-container', 'vended-view');
             else if (viewId === 'ers-view') renderKPITiles(ersOwners, 'ers-kpi-container', 'ers-view');
             else if (viewId === 'home-view') renderHomeDashboard();
+            else if (viewId === 'summary-view') {
+                renderSummary();
+                renderAmeritOos();
+            }
+            else if (viewId === 'vendor-view') {
+                renderVendorLookup();
+            }
         }
     </script>
 </body>
